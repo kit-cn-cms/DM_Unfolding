@@ -9,9 +9,15 @@
 #include "TGraph.h"
 #include "math.h"
 #include "TStyle.h"
+#include "TChain.h"
+#include "TString.h"
 // #include "gstyle.h"
 // #include <sys/stat.h>
 #include <dirent.h>
+#include <unistd.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
 
 
 using namespace std;
@@ -22,9 +28,29 @@ using namespace std;
 class HistMaker
 {
 public:
-	void GetInputFileList(const char* path, std::string type);
-	void SetUpHistos();
-	TFile histos;
+	std::vector<TString> GetInputFileList(TString path , TString type);
+	TFile* SetUpHistos();
+	void ParseConfig();
+	void FillHistos(TChain* chain, TFile* histos);
+	void MakeHistos();
+	TChain* ChainFiles();
+
+
+	TFile* histos;
+	TString genvar;
+	TString recovar;
+	TString path;
+	TString variation;
+	int nBins_Gen; 
+	int nBins_Reco;
+	int xMin;
+	int xMax;
+	double nMax;
+	std::vector<TString> filelist;
+
+	TH1F h_Gen;
+	TH1F h_Reco;
+
 
 
 

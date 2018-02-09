@@ -19,15 +19,12 @@ int main()
 	string path = pt.get<std::string>("Sample1.path");
 	std::cout << path << std::endl;
 
-
-
-
 	HistMaker histomaker;
-	// const char* path = "/nfs/dust/cms/user/mwassmer/DarkMatter/ntuples";
+	histomaker.MakeHistos();
 
-	histomaker.GetInputFileList(path.c_str(),"nominal");
-	histomaker.SetUpHistos();
-	cout << "test" << endl;
+	// histomaker.ParseConfig();
+	// histomaker.SetUpHistos();
+	// histomaker.ChainFiles();
 
 
 	return (0);
