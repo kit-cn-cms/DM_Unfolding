@@ -1,61 +1,72 @@
-# TOPDIR := $(PWD)/
-# SRCDIR := $(TOPDIR)\src
-# BINDIR := $(TOPDIR)\bin
+CXX ?= g++
 
-# SOURCES := $(shell find $(SRCDIR) -name "*.cpp" ) 
-# OBJECTS := $(patsubst %.c, %.o, $(SOURCES))
+# path #
+SRC_PATH = src
+BUILD_PATH = build
+BIN_PATH = bin
 
-# CC := g++
-# CFLAGS   := -Wall -std=c++17   `root-config --cflags` -I `root-config --incdir` `root-config --libs` 
+# executable # 
+BIN_NAME = Unfold
 
+# extensions #
+SRC_EXT = cpp
 
+# code lists #
+# Find all source files in the source directory, sorted by
+# most recently modified
+SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' | sort -k 1nr | cut -f2-)
+# Set the object file names, with the source directory stripped
+# from the path, and the build path prepended in its place
+OBJECTS = $(SOURCES:$(SRC_PATH)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
+# Set the dependency files that will be used to add header dependencies
+DEPS = $(OBJECTS:.o=.d)
 
-# ALLFILES := $(SOURCES) // add headers and the like if required
+# flags #
+COMPILE_FLAGS = -std=c++11 -Wall -Wextra -g  -std=c++17   `root-config --cflags` -I `root-config --incdir` `root-config --libs` 
+INCLUDES = -I include/ -I /usr/local/include  -I `root-config --incdir`
+# Space-separated pkg-config libraries used by this project
+LIBS = root-config
 
-# .PHONY: all
+.PHONY: default_target
+default_target: release
 
-# all: Unfold
+.PHONY: release
+release: export CXXFLAGS := $(CXXFLAGS) $(COMPILE_FLAGS)
+release: dirs
+	@$(MAKE) all
 
-# Unfold: $(OBJECTS)
-# 	$(CC) $(CFLAGS) $^ -o $(BINDIR)/$@
+.PHONY: dirs
+dirs:
+	@echo "Creating directories"
+	@mkdir -p $(dir $(OBJECTS))
+	@mkdir -p $(BIN_PATH)
 
-
-# clean:
-# 	rm -f $(OBJECTS) $(EXE)`
-
-
-
-# Compiler
-CC = g++
-OPTS =  -Wall -std=c++17  `root-config --cflags` -I `root-config --incdir` `root-config --glibs`   
-
-# Project name
-PROJECT = Unfold
-
-# Directories
-SRCDIR = src
-TOPDIR := $(PWD)/
-BINDIR := $(TOPDIR)\bin
-OBJDIR = $(TOPDIR)\obj
-
-# Libraries
-LIBS = 
-
-# Files and folders
-SRCS    = $(shell find $(SRCDIR) -name '*.cpp')
-SRCDIRS = $(shell find . -name '*.cpp' | dirname {} | sort | uniq | sed 's/\/$(SRCDIR)//g' )
-OBJS    = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
-
-
-
-# Targets
-$(PROJECT):$(OBJS)
-	$(CC)  $(OPTS) $(OBJS) $(LIBS) -o $(BINDIR)/$@
-
-
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) $(OPTS) -c $< -o   $@
-	
+.PHONY: clean
 clean:
-	rm $(PROJECT) $(OBJDIR) -Rf
-	
+	@echo "Deleting $(BIN_NAME) symlink"
+	@$(RM) $(BIN_NAME)
+	@echo "Deleting directories"
+	@$(RM) -r $(BUILD_PATH)
+	@$(RM) -r $(BIN_PATH)
+
+# checks the executable and symlinks to the output
+.PHONY: all
+all: $(BIN_PATH)/$(BIN_NAME)
+	@echo "Making symlink: $(BIN_NAME) -> $<"
+	@$(RM) $(BIN_NAME)
+	@ln -s $(BIN_PATH)/$(BIN_NAME) $(BIN_NAME)
+
+# Creation of the executable
+$(BIN_PATH)/$(BIN_NAME): $(OBJECTS)
+	@echo "Linking: $@"
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
+
+# Add dependency files, if they exist
+-include $(DEPS)
+
+# Source file rules
+# After the first compilation they will be joined with the rules from the
+# dependency files to provide header dependencies
+$(BUILD_PATH)/%.o: $(SRC_PATH)/%.$(SRC_EXT)
+	@echo "Compiling: $< -> $@"
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -MP -MMD -c $< -o $@
