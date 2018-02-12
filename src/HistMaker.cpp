@@ -72,13 +72,21 @@ std::vector<TString> HistMaker::GetInputFileList(TString path , TString type)
 	return filelist;
 }
 
+<<<<<<< HEAD
 TString GetHistoFilePath()
 {
+=======
+
+TFile* HistMaker::SetUpHistos() {
+	cout << "Setting up Histos..." << endl;
+	// # create File to Save Histos
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 	char currentdir[1024];
 	getcwd(currentdir, sizeof(currentdir));
 	string workingdir(currentdir);
 
 	TString filepath = workingdir + "/rootfiles/histos.root";
+<<<<<<< HEAD
 	return filepath;
 }
 
@@ -88,6 +96,11 @@ void HistMaker::SetUpHistos() {
 	//create File to Save Histos
 
 	TFile *histos = new TFile(GetHistoFilePath(), "recreate");
+=======
+	// const char * c = filepath.c_str();
+
+	TFile *histos = new TFile(filepath, "recreate");
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 
 	// book histos
 	TH1F* h_Reco = new TH1F(recovar, recovar, nBins_Reco, xMin, xMax);
@@ -101,6 +114,7 @@ void HistMaker::SetUpHistos() {
 	h_Reco->Sumw2();
 	A->Sumw2();
 
+<<<<<<< HEAD
 	h_Gen->Write();
 	h_Reco->Write();
 	A->Write();
@@ -108,6 +122,15 @@ void HistMaker::SetUpHistos() {
 	histos->Close();
 
 	cout << "All Histos SetUp!" << endl;
+=======
+	// h_Reco->Write();
+	// h_Gen->Write();
+	// A->Write();
+	// histos->Close();
+
+	cout << "All Histos SetUp!" << endl;
+	return histos;
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 
 }
 
@@ -176,17 +199,28 @@ TChain* HistMaker::ChainFiles() {
 	return chain;
 }
 
+<<<<<<< HEAD
 void HistMaker::FillHistos(TChain* chain) {
 
 
+=======
+void HistMaker::FillHistos(TChain* chain, TFile* histos) {
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 	float var_gen;
 	chain->SetBranchAddress(genvar, &var_gen);
 	float var_reco;
 	chain->SetBranchAddress(recovar, &var_reco);
 
+<<<<<<< HEAD
 	TH1F* h_Gen = GetHisto(genvar);
 	TH1F* h_Reco = GetHisto(recovar);
 	TH1F* A = GetHisto("A");
+=======
+	TH1F* h_Gen = (TH1F*)histos->Get(genvar);
+	h_Gen->Print();
+	TH1F* h_Reco = (TH1F*)histos->Get(recovar);
+	TH1F* A = (TH1F*)histos->Get("A");
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 
 	//Loop over all Events and Fill Histogram
 	double nentries = chain->GetEntries();
@@ -201,20 +235,29 @@ void HistMaker::FillHistos(TChain* chain) {
 		A->Fill(var_reco, var_gen);
 	}
 
+<<<<<<< HEAD
 	cout << "All Histos filled!" << endl;
 	//Write Filles Histos to File
 	TFile *histos = new TFile(GetHistoFilePath(), "recreate");
 	histos->Map();
+=======
+	//Write Filles Histos to File
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 	h_Reco->Write();
 	h_Gen->Write();
 	A->Write();
 	histos->Close();
+<<<<<<< HEAD
+=======
+
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 }
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
 	cout << path << endl;
 	GetInputFileList(path, variation);
+<<<<<<< HEAD
 	SetUpHistos();
 	TChain* chain = ChainFiles();
 	return FillHistos(chain);
@@ -227,4 +270,9 @@ TH1F* HistMaker::GetHisto(TString name) {
 	TH1F* hist = (TH1F*)file->Get(name);
 	// file ->Close();
 	return hist;
+=======
+	histos = SetUpHistos();
+	TChain* chain = ChainFiles();
+	FillHistos(chain, histos);
+>>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 }
