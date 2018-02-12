@@ -15,18 +15,14 @@ int main()
 {
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
-<<<<<<< HEAD
 
-=======
-	
->>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
 	string path = pt.get<std::string>("Sample1.path");
 	std::cout << path << std::endl;
 
 	HistMaker histomaker;
 	histomaker.MakeHistos();
 
-<<<<<<< HEAD
+
 	TString genvar = pt.get<string>("vars.gen");
 	TString recovar = pt.get<string>("vars.reco");
 
@@ -41,11 +37,7 @@ int main()
 	cout << n << endl;
 	reco->Print();
 	A->Print();
-=======
-	// histomaker.ParseConfig();
-	// histomaker.SetUpHistos();
-	// histomaker.ChainFiles();
->>>>>>> de19a9a899ab5752a1c8c7351fe4f77f8e0dbae7
+
 
 
 	return (0);
