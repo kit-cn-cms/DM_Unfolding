@@ -31,25 +31,24 @@ public:
 	std::vector<TString> GetInputFileList(TString path , TString type);
 	void SetUpHistos();
 	void ParseConfig();
-	void FillHistos(TChain* chain);
+	void FillHistos(TChain* MCChain, TChain* DataChain);
 	void MakeHistos();
-	TChain* ChainFiles();
+	TChain* ChainFiles(std::vector<TString> filelist);
 	TH1F* GetHisto(TString name);
 
 
 	TFile* histos;
 	TString genvar;
 	TString recovar;
-	TString path;
+	TString MCPath;
+	TString DataPath;
 	TString variation;
 	int nBins_Gen;
 	int nBins_Reco;
 	int xMin;
 	int xMax;
+	int split;
 	double nMax;
-	std::vector<TString> filelist;
-
-	TH1F h_Gen;
-	TH1F h_Reco;
+	bool useData;
 };
 

@@ -5,6 +5,7 @@ using namespace std;
 
 std::vector<TString> HistMaker::GetInputFileList(TString path , TString type)
 {
+	std::vector<TString> filelist;
 	DIR* dirFile = opendir( path );
 	if ( dirFile )
 	{
@@ -92,8 +93,7 @@ void HistMaker::SetUpHistos() {
 	// book histos
 	TH1F* h_Reco = new TH1F(recovar, recovar, nBins_Reco, xMin, xMax);
 	TH1F* h_Gen = new TH1F(genvar, genvar, nBins_Gen, xMin, xMax);
-	h_Gen->Print();
-	// h_pt_dummyData = TH1F("h_pt_dummyData", "h_pt_dummyData", 50, 0, 1000)
+	TH1F* h_Data = new TH1F("Data", "Data", nBins_Reco, xMin, xMax);
 
 	TH2D* A = new TH2D("A", "A", nBins_Reco, xMin, xMax, nBins_Gen, xMin, xMax);
 
@@ -103,6 +103,7 @@ void HistMaker::SetUpHistos() {
 
 	h_Gen->Write();
 	h_Reco->Write();
+	h_Data->Write();
 	A->Write();
 
 	histos->Close();
@@ -115,37 +116,25 @@ void HistMaker::ParseConfig() {
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
 
+	MCPath = pt.get<string>("MCSample.path");
+	DataPath = pt.get<string>("DataSample.path");
+
 	genvar = pt.get<string>("vars.gen");
-	// std::cout << genvar << std::endl;
-
 	recovar = pt.get<string>("vars.reco");
-	// std::cout << recovar << std::endl;
-
-	path = pt.get<string>("Sample1.path");
-	// std::cout << path << std::endl;
-
-	variation = pt.get<string>("Sample1.variation");
-	// std::cout << path << std::endl;
-
+	variation = pt.get<string>("general.variation");
 	nBins_Gen = pt.get<int>("Binning.nBins_Gen");
-	// std::cout << nBins_Gen << std::endl;
-
 	nBins_Reco = pt.get<int>("Binning.nBins_Reco");
-	// std::cout << nBins_Reco << std::endl;
-
 	xMin = pt.get<int>("Binning.xMin");
-	// std::cout << xMin << std::endl;
-
 	xMax = pt.get<int>("Binning.xMax");
-	// std::cout << xMax << std::endl;
-
 	nMax = pt.get<int>("general.maxEvents");
-
+	useData = pt.get<bool>("general.useData");
+	split = pt.get<int>("general.split");
+	cout << split << endl;
 	cout << "Config parsed!" << endl;
 
 }
 
-TChain* HistMaker::ChainFiles() {
+TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	cout << "Setting up TChain" << endl;
 	TChain* chain = new TChain("MVATree");
 	for (const TString& fileName : filelist) {
@@ -175,51 +164,92 @@ TChain* HistMaker::ChainFiles() {
 	return chain;
 }
 
-void HistMaker::FillHistos(TChain* chain) {
-	float var_gen;
-	chain->SetBranchAddress(genvar, &var_gen);
-	float var_reco;
-	chain->SetBranchAddress(recovar, &var_reco);
+void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
+
 
 
 	TH1F* h_Gen = GetHisto(genvar);
 	TH1F* h_Reco = GetHisto(recovar);
+	TH1F* h_Data = GetHisto("Data");
 	TH1F* A = GetHisto("A");
 
-	//Loop over all Events and Fill Histogram
-	double nentries = chain->GetEntries();
-	cout << "total number of events: " << nentries << endl;
+	//Loop over all MCEvents and Fill MCHistograms
+	float var_gen;
+	MCChain->SetBranchAddress(genvar, &var_gen);
+	float var_reco;
+	MCChain->SetBranchAddress(recovar, &var_reco);
+	float dummydata;
+	MCChain->SetBranchAddress(recovar, &dummydata);
+
+	cout << "Filling MC Events..." << endl;
+	double nentries = MCChain->GetEntries();
+	cout << "total number of MC events: " << nentries << endl;
+
+	if(split > 50){
+		cout << "WARNING split >50, therefore not working correctly -> Proceeding with split =50" << endl;
+		split=50;
+	}
+	int split_= 100/split;
+	// int split_=2;
+
 	for (long iEntry = 0; iEntry < nentries; iEntry++) {
 		if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
 		if (iEntry > nMax && nMax > 0) break;
-		chain->GetEntry(iEntry);
+		MCChain->GetEntry(iEntry);
 
-		h_Gen->Fill(var_gen);
-		h_Reco->Fill(var_reco);
-		A->Fill(var_reco, var_gen);
+		if (!useData) {			// split MC Sample for studies
+			if (iEntry % split_ != 0) {
+				A->Fill(var_reco, var_gen);
+			}
+			else  {
+				h_Data->Fill(dummydata);
+				h_Gen->Fill(var_gen);
+				h_Reco->Fill(var_reco);
+			}
+		}
+		else {					// use full MC Sample
+			h_Gen->Fill(var_gen);
+			h_Reco->Fill(var_reco);
+			A->Fill(var_reco, var_gen);
+		}
+	}
+	if (useData) {
+		float var;
+		DataChain->SetBranchAddress(recovar, &var);
+		//Loop over all DataEvents to Fill DataHisto
+		cout << "Filling Data Events..." << endl;
+		double nentries = DataChain->GetEntries();
+		cout << "total number of Data events: " << nentries << endl;
+		for (long iEntry = 0; iEntry < nentries; iEntry++) {
+			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
+			if (iEntry > nMax && nMax > 0) break;
+			DataChain->GetEntry(iEntry);
+
+			h_Data->Fill(var);
+		}
 	}
 
 	cout << "All Histos filled!" << endl;
 	//Write Filles Histos to File
 	TFile *histos = new TFile(GetHistoFilePath(), "recreate");
-	histos->Map();
 
 	//Write Filles Histos to File
-
 	h_Reco->Write();
 	h_Gen->Write();
 	A->Write();
+	h_Data->Write();
 	histos->Close();
 
 }
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
-	cout << path << endl;
-	GetInputFileList(path, variation);
+	std::vector<TString> MCFilelist = GetInputFileList(MCPath, variation);
+	TChain* MCChain = ChainFiles(MCFilelist);
+	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
+	TChain* DataChain = ChainFiles(DataFilelist);
 	SetUpHistos();
-	TChain* chain = ChainFiles();
-	return FillHistos(chain);
+	return FillHistos(MCChain, DataChain);
 }
 
 
