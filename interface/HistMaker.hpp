@@ -2,17 +2,9 @@
 #include "TFile.h"
 #include "TH1F.h"
 #include "TCanvas.h"
-// #include "TUnfold.h"
-#include "TUnfoldDensity.h"
 #include "TH2D.h"
-#include "TSpline.h"
-#include "TGraph.h"
-#include "math.h"
-#include "TStyle.h"
 #include "TChain.h"
 #include "TString.h"
-// #include "gstyle.h"
-// #include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <boost/property_tree/ptree.hpp>
@@ -34,7 +26,9 @@ public:
 	void FillHistos(TChain* MCChain, TChain* DataChain);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
-	TH1F* GetHisto(TString name);
+	TH1F* Get1DHisto(TString name);
+	TH2F* Get2DHisto(TString name);
+
 
 
 	TFile* histos;

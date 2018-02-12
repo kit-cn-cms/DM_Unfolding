@@ -112,7 +112,7 @@ void HistMaker::SetUpHistos() {
 }
 
 void HistMaker::ParseConfig() {
-	cout << "Parsing Config..." << endl;
+	cout << "Parsing Hist Config..." << endl;
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
 
@@ -129,7 +129,6 @@ void HistMaker::ParseConfig() {
 	nMax = pt.get<int>("general.maxEvents");
 	useData = pt.get<bool>("general.useData");
 	split = pt.get<int>("general.split");
-	cout << split << endl;
 	cout << "Config parsed!" << endl;
 
 }
@@ -168,10 +167,10 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 
 
 
-	TH1F* h_Gen = GetHisto(genvar);
-	TH1F* h_Reco = GetHisto(recovar);
-	TH1F* h_Data = GetHisto("Data");
-	TH1F* A = GetHisto("A");
+	TH1F* h_Gen = Get1DHisto(genvar);
+	TH1F* h_Reco = Get1DHisto(recovar);
+	TH1F* h_Data = Get1DHisto("Data");
+	TH2F* A = Get2DHisto("A");
 
 	//Loop over all MCEvents and Fill MCHistograms
 	float var_gen;
@@ -186,7 +185,7 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 	cout << "total number of MC events: " << nentries << endl;
 
 	if(split > 50){
-		cout << "WARNING split >50, therefore not working correctly -> Proceeding with split =50" << endl;
+		cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << endl;
 		split=50;
 	}
 	int split_= 100/split;
@@ -254,9 +253,16 @@ void HistMaker::MakeHistos() {
 
 
 
-TH1F* HistMaker::GetHisto(TString name) {
+TH1F* HistMaker::Get1DHisto(TString name) {
 	TFile *file = new TFile(GetHistoFilePath(), "update");
 	TH1F* hist = (TH1F*)file->Get(name);
+	// file ->Close();
+	return hist;
+}
+
+TH2F* HistMaker::Get2DHisto(TString name) {
+	TFile *file = new TFile(GetHistoFilePath(), "update");
+	TH2F* hist = (TH2F*)file->Get(name);
 	// file ->Close();
 	return hist;
 }
