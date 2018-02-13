@@ -1,17 +1,15 @@
 #include "../interface/Unfolder.hpp"
 
+
+#include <iostream>
+#include <tuple>
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TH2D.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
 using namespace std;
-
-
-TString GetOutputFilePath()
-{
-	char currentdir[1024];
-	getcwd(currentdir, sizeof(currentdir));
-	string workingdir(currentdir);
-
-	TString filepath = workingdir + "/rootfiles/output.root";
-	return filepath;
-}
 
 
 TUnfoldDensity* Unfolder::SetUp(TH2F* A, TH1F* input) {
@@ -63,7 +61,7 @@ void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple) {
 	}
 	TGraph *knots = new TGraph(nScan, tAll, rhoAll);
 
-	TFile *output = new TFile(GetOutputFilePath(), "recreate");
+	TFile *output = new TFile(path.GetOutputFilePath(), "recreate");
 	//Draw Tau Graphs
 	TCanvas* tau = new TCanvas("tau", "tau");
 	tau->cd();
@@ -83,11 +81,10 @@ void Unfolder::DoUnfolding(TUnfoldDensity* unfold, TH1F* h_Data) {
 std::tuple<TH1*, TH1*> Unfolder::GetOutput(TUnfoldDensity* unfold) {
 	//GetOutput
 	TH1 *h_unfolded = unfold->GetOutput("h_unfolded");
-	h_unfolded->Print();
 	h_unfolded->SetXTitle("unfolded");
 	TH1 *h_unfoldedback = unfold->GetFoldedOutput("unfoldedback");
 
-	TFile *output = new TFile(GetOutputFilePath(), "update");
+	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	h_unfolded->Write();
 	h_unfoldedback->Write();
 	output->Map();

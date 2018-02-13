@@ -1,5 +1,14 @@
 #include "../interface/HistMaker.hpp"
 
+#include <iostream>
+#include "TCanvas.h"
+#include "TH2D.h"
+
+#include <dirent.h>
+#include <unistd.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
 using namespace std;
 
 
@@ -73,22 +82,13 @@ std::vector<TString> HistMaker::GetInputFileList(TString path , TString type)
 	return filelist;
 }
 
-TString GetHistoFilePath()
-{
-	char currentdir[1024];
-	getcwd(currentdir, sizeof(currentdir));
-	string workingdir(currentdir);
-
-	TString filepath = workingdir + "/rootfiles/histos.root";
-	return filepath;
-}
 
 
 void HistMaker::SetUpHistos() {
 	cout << "Setting up Histos..." << endl;
 	//create File to Save Histos
 
-	TFile *histos = new TFile(GetHistoFilePath(), "recreate");
+	TFile *histos = new TFile(path->GetHistoFilePath(), "recreate");
 
 	// book histos
 	TH1F* h_Reco = new TH1F(recovar, recovar, nBins_Reco, xMin, xMax);
@@ -228,7 +228,7 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 
 	cout << "All Histos filled!" << endl;
 	//Write Filles Histos to File
-	TFile *histos = new TFile(GetHistoFilePath(), "recreate");
+	TFile *histos = new TFile(path->GetHistoFilePath(), "recreate");
 
 	//Write Filles Histos to File
 	h_Reco->Write();
@@ -252,14 +252,14 @@ void HistMaker::MakeHistos() {
 
 
 TH1F* HistMaker::Get1DHisto(TString name) {
-	TFile *file = new TFile(GetHistoFilePath(), "update");
+	TFile *file = new TFile(path->GetHistoFilePath(), "update");
 	TH1F* hist = (TH1F*)file->Get(name);
 	// file ->Close();
 	return hist;
 }
 
 TH2F* HistMaker::Get2DHisto(TString name) {
-	TFile *file = new TFile(GetHistoFilePath(), "update");
+	TFile *file = new TFile(path->GetHistoFilePath(), "update");
 	TH2F* hist = (TH2F*)file->Get(name);
 	// file ->Close();
 	return hist;

@@ -1,18 +1,12 @@
-#include <iostream>
-#include <tuple>
-#include "TFile.h"
-#include "TCanvas.h"
-#include "TH2D.h"
+#ifndef Unfolder_HPP_
+#define Unfolder_HPP_
+
+
 #include "TUnfoldDensity.h"
 #include "TSpline.h"
 #include "TGraph.h"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
+#include "../interface/PathHelper.hpp"
 
-
-
-
-using namespace std;
 
 
 class Unfolder
@@ -28,9 +22,11 @@ public:
 
 
 
-
+	PathHelper path;
 	float biasScale;
 	int nScan;
 	double tauMin;
 	double tauMax;
 };
+
+#endif
