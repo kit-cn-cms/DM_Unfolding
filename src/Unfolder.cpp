@@ -87,7 +87,6 @@ std::tuple<TH1*, TH1*> Unfolder::GetOutput(TUnfoldDensity* unfold) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	h_unfolded->Write();
 	h_unfoldedback->Write();
-	output->Map();
 	output->Close();
 
 	return std::make_tuple(h_unfolded, h_unfoldedback);

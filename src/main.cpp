@@ -7,6 +7,7 @@
 
 #include "../interface/HistMaker.hpp"
 #include "../interface/Unfolder.hpp"
+#include "../interface/HistDrawer.hpp"
 
 
 using namespace std;
@@ -32,8 +33,8 @@ int main()
 
 	Unfolder Unfolder;
 	TUnfoldDensity* unfold = Unfolder.Unfold(A, data);
-	unfold->Print();
-	Unfolder.GetOutput(unfold);
+	std::tuple<TH1*, TH1*> unfold_output;
+	unfold_output = Unfolder.GetOutput(unfold);
 
 
 //Testing stuff
@@ -47,6 +48,17 @@ int main()
 	reco->Print();
 	A->Print();
 	data->Print();
+
+	HistDrawer Drawer;
+	Drawer.Draw1D(reco, recovar);
+	Drawer.Draw1D(gen, genvar);
+	Drawer.Draw1D(std::get<0>(unfold_output), recovar+"unfolded");
+	Drawer.Draw1D(std::get<1>(unfold_output), recovar+"foldedback");
+	Drawer.Draw2D(A, "A");
+	Drawer.DrawRatio(std::get<0>(unfold_output),gen,"unfolded_Gen","unfolded/Gen");
+	Drawer.DrawRatio(std::get<1>(unfold_output),data,"foldedback_data","foldedback/data");
+
+
 
 
 

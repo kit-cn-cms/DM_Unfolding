@@ -1,19 +1,14 @@
-#include <iostream>
+#ifndef HistMaker_HPP_
+#define HistMaker_HPP_
+
+
+
 #include "TFile.h"
 #include "TH1F.h"
-#include "TCanvas.h"
-#include "TH2D.h"
 #include "TChain.h"
 #include "TString.h"
-#include <dirent.h>
-#include <unistd.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
-
-
-
-using namespace std;
-
+#include "TH2F.h"
+#include "../interface/PathHelper.hpp"
 
 
 
@@ -30,7 +25,7 @@ public:
 	TH2F* Get2DHisto(TString name);
 
 
-
+	PathHelper* path;
 	TFile* histos;
 	TString genvar;
 	TString recovar;
@@ -46,3 +41,4 @@ public:
 	bool useData;
 };
 
+#endif
