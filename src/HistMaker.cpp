@@ -177,19 +177,16 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 	MCChain->SetBranchAddress(genvar, &var_gen);
 	float var_reco;
 	MCChain->SetBranchAddress(recovar, &var_reco);
-	float dummydata;
-	MCChain->SetBranchAddress(recovar, &dummydata);
 
 	cout << "Filling MC Events..." << endl;
 	double nentries = MCChain->GetEntries();
 	cout << "total number of MC events: " << nentries << endl;
 
-	if(split > 50){
+	if (split > 50) {
 		cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << endl;
-		split=50;
+		split = 50;
 	}
-	int split_= 100/split;
-	// int split_=2;
+	int split_ = 100 / split;
 
 	for (long iEntry = 0; iEntry < nentries; iEntry++) {
 		if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
@@ -201,7 +198,7 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 				A->Fill(var_reco, var_gen);
 			}
 			else  {
-				h_Data->Fill(dummydata);
+				h_Data->Fill(var_reco);
 				h_Gen->Fill(var_gen);
 				h_Reco->Fill(var_reco);
 			}
@@ -212,10 +209,11 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 			A->Fill(var_reco, var_gen);
 		}
 	}
+
+	//Loop over all DataEvents to Fill DataHisto
 	if (useData) {
 		float var;
 		DataChain->SetBranchAddress(recovar, &var);
-		//Loop over all DataEvents to Fill DataHisto
 		cout << "Filling Data Events..." << endl;
 		double nentries = DataChain->GetEntries();
 		cout << "total number of Data events: " << nentries << endl;
