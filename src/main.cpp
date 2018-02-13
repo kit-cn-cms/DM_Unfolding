@@ -55,8 +55,8 @@ int main()
 	Drawer.Draw1D(std::get<0>(unfold_output), recovar+"unfolded");
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar+"foldedback");
 	Drawer.Draw2D(A, "A");
-	Drawer.DrawRatio(std::get<0>(unfold_output),gen,"unfolded_Gen","unfolded/Gen");
-	Drawer.DrawRatio(std::get<1>(unfold_output),data,"foldedback_data","foldedback/data");
+	Drawer.DrawRatio(std::get<0>(unfold_output),gen,"ratio_unfolded_Gen","unfolded/Gen");
+	Drawer.DrawRatio(std::get<1>(unfold_output),data,"ratio_foldedback_data","foldedback/data");
 
 
 

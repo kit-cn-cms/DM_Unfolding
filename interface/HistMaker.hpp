@@ -15,7 +15,7 @@
 class HistMaker
 {
 public:
-	std::vector<TString> GetInputFileList(TString path , TString type);
+	std::vector<TString> GetInputFileList(std::vector<std::string> paths , TString type);
 	void SetUpHistos();
 	void ParseConfig();
 	void FillHistos(TChain* MCChain, TChain* DataChain);
@@ -25,12 +25,12 @@ public:
 	TH2F* Get2DHisto(TString name);
 
 
-	PathHelper* path;
+	PathHelper path;
 	TFile* histos;
 	TString genvar;
 	TString recovar;
-	TString MCPath;
-	TString DataPath;
+	std::vector<std::string> MCPath;
+	std::vector<std::string> DataPath;
 	TString variation;
 	int nBins_Gen;
 	int nBins_Reco;

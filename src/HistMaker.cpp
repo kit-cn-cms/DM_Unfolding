@@ -8,77 +8,83 @@
 #include <unistd.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include "boost/lexical_cast.hpp"
 
 using namespace std;
 
 
-std::vector<TString> HistMaker::GetInputFileList(TString path , TString type)
+std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths , TString type)
 {
 	std::vector<TString> filelist;
-	DIR* dirFile = opendir( path );
-	if ( dirFile )
-	{
-		struct dirent* hFile;
-		errno = 0;
+	for (const TString& path : paths) {
 
-		while (( hFile = readdir( dirFile )) != NULL )
+		DIR* dirFile = opendir( path );
+		cout << "opening" << path << endl;
+		if ( dirFile )
 		{
-			if ( !strcmp( hFile->d_name, "."  )) continue;
-			if ( !strcmp( hFile->d_name, ".." )) continue;
+			struct dirent* hFile;
+			errno = 0;
+			while (( hFile = readdir( dirFile )) != NULL )
+			{
+				if ( !strcmp( hFile->d_name, "."  )) continue;
+				if ( !strcmp( hFile->d_name, ".." )) continue;
 
-			// in linux hidden files all start with '.'
-			// if ( gIgnoreHidden && ( hFile->d_name[0] == '.' )) continue;
+				// in linux hidden files all start with '.'
+				// if ( gIgnoreHidden && ( hFile->d_name[0] == '.' )) continue;
 
-			// dirFile.name is the name of the file. Do whatever string comparison
-			// you want here. Something like:
-			if (type == "nominal") {
-				if ( strstr( hFile->d_name, "nominal_Tree.root" )) {
-					printf( "found an .root file: %s \n", hFile->d_name );
-					TString path_ = path;
-					TString fileName = hFile->d_name;
-					TString fullpath = path + fileName;
-					filelist.push_back( fullpath );
+				// dirFile.name is the name of the file. Do whatever string comparison
+				// you want here. Something like:
+				if (type == "nominal") {
+					if ( strstr( hFile->d_name, "nominal_Tree.root" )) {
+						printf( "found an .root file: %s \n", hFile->d_name );
+						TString path_ = path;
+						TString fileName = hFile->d_name;
+						TString fullpath = path + fileName;
+						filelist.push_back( fullpath );
+					}
 				}
-			}
-			else if (type == "JESup") {
-				if ( strstr( hFile->d_name, "JESup_Tree.root" )) {
-					printf( "found an .root file: %s \n", hFile->d_name );
-					TString path_ = path;
-					TString fileName = hFile->d_name;
-					TString fullpath = path + fileName;
-					filelist.push_back( fullpath );
+				else if (type == "JESup") {
+					if ( strstr( hFile->d_name, "JESup_Tree.root" )) {
+						printf( "found an .root file: %s \n", hFile->d_name );
+						TString path_ = path;
+						TString fileName = hFile->d_name;
+						TString fullpath = path + fileName;
+						filelist.push_back( fullpath );
+					}
 				}
-			}
-			else if (type == "JESdown") {
-				if ( strstr( hFile->d_name, "JESdown_Tree.root" )) {
-					printf( "found an .root file: %s \n", hFile->d_name );
-					TString path_ = path;
-					TString fileName = hFile->d_name;
-					TString fullpath = path + fileName;
-					filelist.push_back( fullpath );
+				else if (type == "JESdown") {
+					if ( strstr( hFile->d_name, "JESdown_Tree.root" )) {
+						printf( "found an .root file: %s \n", hFile->d_name );
+						TString path_ = path;
+						TString fileName = hFile->d_name;
+						TString fullpath = path + fileName;
+						filelist.push_back( fullpath );
+					}
 				}
-			}
-			else if (type == "JERup") {
-				if ( strstr( hFile->d_name, "JERup_Tree.root" )) {
-					printf( "found an .root file: %s \n", hFile->d_name );
-					TString path_ = path;
-					TString fileName = hFile->d_name;
-					TString fullpath = path + fileName;
-					filelist.push_back( fullpath );
+				else if (type == "JERup") {
+					if ( strstr( hFile->d_name, "JERup_Tree.root" )) {
+						printf( "found an .root file: %s \n", hFile->d_name );
+						TString path_ = path;
+						TString fileName = hFile->d_name;
+						TString fullpath = path + fileName;
+						filelist.push_back( fullpath );
+					}
 				}
-			}
-			else if (type == "JERdown") {
-				if ( strstr( hFile->d_name, "JERdown_Tree.root" )) {
-					printf( "found an .root file: %s \n", hFile->d_name );
-					TString path_ = path;
-					TString fileName = hFile->d_name;
-					TString fullpath = path + fileName;
-					filelist.push_back( fullpath );
+				else if (type == "JERdown") {
+					if ( strstr( hFile->d_name, "JERdown_Tree.root" )) {
+						printf( "found an .root file: %s \n", hFile->d_name );
+						TString path_ = path;
+						TString fileName = hFile->d_name;
+						TString fullpath = path + fileName;
+						filelist.push_back( fullpath );
+					}
 				}
 			}
 		}
+		closedir( dirFile );
+
 	}
-	closedir( dirFile );
+
 	return filelist;
 }
 
@@ -88,7 +94,7 @@ void HistMaker::SetUpHistos() {
 	cout << "Setting up Histos..." << endl;
 	//create File to Save Histos
 
-	TFile *histos = new TFile(path->GetHistoFilePath(), "recreate");
+	TFile *histos = new TFile(path.GetHistoFilePath(), "recreate");
 
 	// book histos
 	TH1F* h_Reco = new TH1F(recovar, recovar, nBins_Reco, xMin, xMax);
@@ -111,14 +117,24 @@ void HistMaker::SetUpHistos() {
 	cout << "All Histos SetUp!" << endl;
 }
 
+template<typename T>
+std::vector<T> to_array(const std::string& s)
+{
+	std::vector<T> result;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, ',')) result.push_back(boost::lexical_cast<T>(item));
+	return result;
+}
+
 void HistMaker::ParseConfig() {
 	cout << "Parsing Hist Config..." << endl;
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
 
-	MCPath = pt.get<string>("MCSample.path");
-	DataPath = pt.get<string>("DataSample.path");
-
+	MCPath = to_array<std::string>(pt.get<std::string>("MCSample.path"));
+	cout << MCPath.size() << endl;
+	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
 	variation = pt.get<string>("general.variation");
@@ -164,9 +180,6 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 }
 
 void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
-
-
-
 	TH1F* h_Gen = Get1DHisto(genvar);
 	TH1F* h_Reco = Get1DHisto(recovar);
 	TH1F* h_Data = Get1DHisto("Data");
@@ -228,7 +241,7 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 
 	cout << "All Histos filled!" << endl;
 	//Write Filles Histos to File
-	TFile *histos = new TFile(path->GetHistoFilePath(), "recreate");
+	TFile *histos = new TFile(path.GetHistoFilePath(), "recreate");
 
 	//Write Filles Histos to File
 	h_Reco->Write();
@@ -252,14 +265,14 @@ void HistMaker::MakeHistos() {
 
 
 TH1F* HistMaker::Get1DHisto(TString name) {
-	TFile *file = new TFile(path->GetHistoFilePath(), "update");
+	TFile *file = new TFile(path.GetHistoFilePath(), "update");
 	TH1F* hist = (TH1F*)file->Get(name);
 	// file ->Close();
 	return hist;
 }
 
 TH2F* HistMaker::Get2DHisto(TString name) {
-	TFile *file = new TFile(path->GetHistoFilePath(), "update");
+	TFile *file = new TFile(path.GetHistoFilePath(), "update");
 	TH2F* hist = (TH2F*)file->Get(name);
 	// file ->Close();
 	return hist;
