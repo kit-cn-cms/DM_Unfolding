@@ -103,5 +103,16 @@ TUnfoldDensity* Unfolder::Unfold(TH2F* A, TH1F* input) {
 	return unfold;
 }
 
+TH2* Unfolder::GetRegMatrix(TUnfoldDensity* unfold) {
+	TH2 *histL = unfold->GetL("L");
+	for (Int_t j = 1; j <= histL->GetNbinsY(); j++) {
+		cout << "L[" << unfold->GetLBinning()->GetBinName(j) << "]";
+		for (Int_t i = 1; i <= histL->GetNbinsX(); i++) {
+			Double_t c = histL->GetBinContent(i, j);
+			if (c != 0.0) cout << " [" << i << "]=" << c;
+		}
+		cout << "\n";
+	}
+}
 
 

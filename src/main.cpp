@@ -32,16 +32,23 @@ int main()
 	TH1F* data = histomaker.Get1DHisto("Data");
 	TH1F* gen = histomaker.Get1DHisto(genvar);
 	TH1F* reco = histomaker.Get1DHisto(recovar);
+	TH1F* wjets = histomaker.Get1DHisto("Wjet");
+	TH1F* zjets = histomaker.Get1DHisto("Zjet");
+	wjets->Print();
+
 
 //Do Unfolding
 	Unfolder Unfolder;
 	TUnfoldDensity* unfold = Unfolder.Unfold(A, data);
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
+	Unfolder.GetRegMatrix(unfold);
 
 // Draw Distributions
 	HistDrawer Drawer;
 	Drawer.Draw1D(reco, recovar);
+	Drawer.Draw1D(wjets, "Wjets_MET");
+	Drawer.Draw1D(zjets, "Zjets_MET");
 	Drawer.Draw1D(gen, genvar);
 	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "unfolded");
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "foldedback");

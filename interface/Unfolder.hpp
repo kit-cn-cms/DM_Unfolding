@@ -19,6 +19,8 @@ public:
 	void VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple);
 	void DoUnfolding(TUnfoldDensity* unfold, TH1F* h_Data);
 	std::tuple<TH1*, TH1*> GetOutput(TUnfoldDensity* unfold);
+	TH2* GetRegMatrix(TUnfoldDensity* unfold);
+
 
 
 

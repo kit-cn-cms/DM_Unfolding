@@ -101,11 +101,20 @@ void HistMaker::SetUpHistos() {
 	TH1F* h_Gen = new TH1F(genvar, genvar, nBins_Gen, xMin, xMax);
 	TH1F* h_Data = new TH1F("Data", "Data", nBins_Reco, xMin, xMax);
 
+	std::vector<TH1F*> h_bkg_vec;
+	for (const TString& name : bkgnames) {
+		TH1F* h_tmp = new TH1F(name, name, nBins_Reco, xMin, xMax);
+		h_tmp->Sumw2();
+		h_tmp->Write();
+		delete h_tmp;
+	}
+
 	TH2D* A = new TH2D("A", "A", nBins_Reco, xMin, xMax, nBins_Gen, xMin, xMax);
 
 	h_Gen->Sumw2();
 	h_Reco->Sumw2();
 	A->Sumw2();
+
 
 	h_Gen->Write();
 	h_Reco->Write();
@@ -133,8 +142,20 @@ void HistMaker::ParseConfig() {
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
 
 	MCPath = to_array<std::string>(pt.get<std::string>("MCSample.path"));
-	cout << MCPath.size() << endl;
 	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
+	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
+
+	for (const std::string& name : bkgnames) {
+		BkgPaths[name];
+		std::vector<std::string> tmp = to_array<std::string>(pt.get<std::string>(name + ".path"));
+		for (const std::string&  paths : tmp) {
+			BkgPaths[name].push_back(paths);
+		}
+	}
+
+	// cout << BkgPaths[bkgnames.at(1)][0] << endl;
+	// cout << BkgPaths[bkgnames.at(1)][1] << endl;
+	// cout << BkgPaths[bkgnames.at(1)][2] << endl;
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
 	variation = pt.get<string>("general.variation");
@@ -179,7 +200,7 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	return chain;
 }
 
-void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
+void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains) {
 	TH1F* h_Gen = Get1DHisto(genvar);
 	TH1F* h_Reco = Get1DHisto(recovar);
 	TH1F* h_Data = Get1DHisto("Data");
@@ -223,6 +244,8 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 		}
 	}
 
+
+
 	//Loop over all DataEvents to Fill DataHisto
 	if (useData) {
 		float var;
@@ -239,11 +262,37 @@ void HistMaker::FillHistos(TChain* MCChain, TChain* DataChain) {
 		}
 	}
 
-	cout << "All Histos filled!" << endl;
-	//Write Filles Histos to File
+	//Loop over all BkgEvents
+	std::vector<TH1F*> h_bkg_vec;
+	for (const std::string& name : bkgnames) {
+		cout << "Filling BkgHistos: " << name << endl;
+
+		TH1F* h_tmp = Get1DHisto(name);
+		TChain* chain_tmp = BkgChains.find(name)->second;
+		float var;
+		chain_tmp->SetBranchAddress(recovar, &var);
+		nentries = chain_tmp->GetEntries();
+		cout << "total number of " << name << " events: " << nentries << endl;
+
+		for (long iEntry = 0; iEntry < nentries; iEntry++) {
+			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
+			if (iEntry > nMax && nMax > 0) break;
+			chain_tmp->GetEntry(iEntry);
+			h_tmp->Fill(var);
+		}
+		h_bkg_vec.push_back(h_tmp);
+		delete chain_tmp;
+	}
 	TFile *histos = new TFile(path.GetHistoFilePath(), "recreate");
 
-	//Write Filles Histos to File
+	cout << "All Histos filled!" << endl;
+	// Write Filled Histos to File
+	// h_bkg_vec.at(0)->Print();
+	for (unsigned int i = 0; i < h_bkg_vec.size(); ++i)
+	{
+		h_bkg_vec.at(i)->Print();
+		h_bkg_vec.at(i)->Write();
+	}
 	h_Reco->Write();
 	h_Gen->Write();
 	A->Write();
@@ -258,14 +307,29 @@ void HistMaker::MakeHistos() {
 	TChain* MCChain = ChainFiles(MCFilelist);
 	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
 	TChain* DataChain = ChainFiles(DataFilelist);
+	std::vector<TString> tmp;
+
+	for (const std::string& name : bkgnames) {
+		BkgFilelists[name];
+		tmp = GetInputFileList(BkgPaths[name], variation);
+		for (const TString& file : tmp) {
+			BkgFilelists[name].push_back(file);
+		}
+	}
+	TChain* tmp_chain;
+	for (const std::string& name : bkgnames) {
+		tmp_chain = ChainFiles(BkgFilelists[name]);
+		BkgChains.insert( std::make_pair( name, tmp_chain ));
+	}
+
 	SetUpHistos();
-	return FillHistos(MCChain, DataChain);
+	return FillHistos(MCChain, DataChain, BkgChains);
 }
 
 
 
 TH1F* HistMaker::Get1DHisto(TString name) {
-	TFile *file = new TFile(path.GetHistoFilePath(), "update");
+	TFile *file = new TFile(path.GetHistoFilePath(), "open");
 	TH1F* hist = (TH1F*)file->Get(name);
 	// file ->Close();
 	return hist;
