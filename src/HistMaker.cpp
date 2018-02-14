@@ -141,6 +141,7 @@ void HistMaker::ParseConfig() {
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
 
+	weights = to_array<std::string>(pt.get<std::string>("general.weights"));
 	MCPath = to_array<std::string>(pt.get<std::string>("MCSample.path"));
 	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
 	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
@@ -211,6 +212,10 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 	MCChain->SetBranchAddress(genvar, &var_gen);
 	float var_reco;
 	MCChain->SetBranchAddress(recovar, &var_reco);
+	std::vector<float> varweight (weights.size());
+	for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
+		MCChain->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
+	}
 
 	cout << "Filling MC Events..." << endl;
 	double nentries = MCChain->GetEntries();
@@ -221,33 +226,38 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 		split = 50;
 	}
 	int split_ = 100 / split;
-
+	float weight_ = 1;
 	for (long iEntry = 0; iEntry < nentries; iEntry++) {
 		if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
 		if (iEntry > nMax && nMax > 0) break;
 		MCChain->GetEntry(iEntry);
-
+		weight_ = 1;
+		for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
+			weight_ *= *it;
+		}
 		if (!useData) {			// split MC Sample for studies
 			if (iEntry % split_ != 0) {
-				A->Fill(var_reco, var_gen);
+				A->Fill(var_reco, var_gen, weight_);
 			}
 			else  {
-				h_Data->Fill(var_reco);
-				h_Gen->Fill(var_gen);
-				h_Reco->Fill(var_reco);
+				h_Data->Fill(var_reco, weight_);
+				h_Gen->Fill(var_gen, weight_);
+				h_Reco->Fill(var_reco, weight_);
 			}
 		}
 		else {					// use full MC Sample
-			h_Gen->Fill(var_gen);
-			h_Reco->Fill(var_reco);
-			A->Fill(var_reco, var_gen);
+			h_Gen->Fill(var_gen, weight_);
+			h_Reco->Fill(var_reco, weight_);
+			A->Fill(var_reco, var_gen, weight_);
 		}
 	}
 
 
-
 	//Loop over all DataEvents to Fill DataHisto
 	if (useData) {
+		for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
+			DataChain->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
+		}
 		float var;
 		DataChain->SetBranchAddress(recovar, &var);
 		cout << "Filling Data Events..." << endl;
@@ -257,8 +267,12 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
 			if (iEntry > nMax && nMax > 0) break;
 			DataChain->GetEntry(iEntry);
+			weight_ = 1;
+			for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
+				weight_ *= *it;
+			}
 
-			h_Data->Fill(var);
+			h_Data->Fill(var, weight_);
 		}
 	}
 
@@ -271,6 +285,10 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 		TChain* chain_tmp = BkgChains.find(name)->second;
 		float var;
 		chain_tmp->SetBranchAddress(recovar, &var);
+
+		for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
+			chain_tmp->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
+		}
 		nentries = chain_tmp->GetEntries();
 		cout << "total number of " << name << " events: " << nentries << endl;
 
@@ -278,7 +296,11 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
 			if (iEntry > nMax && nMax > 0) break;
 			chain_tmp->GetEntry(iEntry);
-			h_tmp->Fill(var);
+			weight_ = 1;
+			for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
+				weight_ *= *it;
+			}
+			h_tmp->Fill(var,weight_);
 		}
 		h_bkg_vec.push_back(h_tmp);
 		delete chain_tmp;
@@ -287,10 +309,8 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 
 	cout << "All Histos filled!" << endl;
 	// Write Filled Histos to File
-	// h_bkg_vec.at(0)->Print();
 	for (unsigned int i = 0; i < h_bkg_vec.size(); ++i)
 	{
-		h_bkg_vec.at(i)->Print();
 		h_bkg_vec.at(i)->Write();
 	}
 	h_Reco->Write();

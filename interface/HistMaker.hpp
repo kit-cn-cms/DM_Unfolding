@@ -35,6 +35,7 @@ public:
 	std::map<std::string, std::vector<std::string>> BkgPaths;
 	std::map<std::string, std::vector<TString>> BkgFilelists;
 	std::map<std::string, TChain*> BkgChains;
+	std::vector<std::string> weights;
 
 
 	TString variation;
