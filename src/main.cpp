@@ -34,12 +34,24 @@ int main()
 	TH1F* reco = histomaker.Get1DHisto(recovar);
 	TH1F* wjets = histomaker.Get1DHisto("Wjet");
 	TH1F* zjets = histomaker.Get1DHisto("Zjet");
-	wjets->Print();
-
 
 //Do Unfolding
+	bool useData = pt.get<bool>("general.useData");
 	Unfolder Unfolder;
-	TUnfoldDensity* unfold = Unfolder.Unfold(A, data);
+	Unfolder.ParseConfig();
+	TUnfoldDensity* unfold = Unfolder.SetUp(A, data);
+	//Subtract BackGrounds
+	if (useData) {
+		Unfolder.SubBkg(unfold, wjets, "Wjet");
+		Unfolder.SubBkg(unfold, zjets, "Zjet");
+	}
+
+	std::tuple<int , TSpline*, TGraph*> TauResult;
+	TauResult = Unfolder.FindBestTau(unfold);
+	Unfolder.VisualizeTau(TauResult);
+	Unfolder.DoUnfolding(unfold, data);
+
+
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
 	Unfolder.GetRegMatrix(unfold);
@@ -50,6 +62,8 @@ int main()
 	Drawer.Draw1D(wjets, "Wjets_MET");
 	Drawer.Draw1D(zjets, "Zjets_MET");
 	Drawer.Draw1D(gen, genvar);
+	Drawer.Draw1D(data, "Data");
+
 	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "unfolded");
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "foldedback");
 	Drawer.Draw2D(A, "A");
