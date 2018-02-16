@@ -9,6 +9,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include "boost/lexical_cast.hpp"
+// #include "../interface/MCSelector.hpp"
+
 
 using namespace std;
 
@@ -139,7 +141,7 @@ std::vector<T> to_array(const std::string& s)
 void HistMaker::ParseConfig() {
 	cout << "Parsing Hist Config..." << endl;
 	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath("DMConfig")), pt);
 
 	weights = to_array<std::string>(pt.get<std::string>("general.weights"));
 	MCPath = to_array<std::string>(pt.get<std::string>("MCSample.path"));
@@ -323,11 +325,16 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
+	// MCSelector MCSelector_;
+	// MCSelector_.Print();
 	std::vector<TString> MCFilelist = GetInputFileList(MCPath, variation);
 	TChain* MCChain = ChainFiles(MCFilelist);
 	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
 	TChain* DataChain = ChainFiles(DataFilelist);
 	std::vector<TString> tmp;
+
+	// MCChain->Process("MCSelector.cpp");qq
+	// MCSelector_.Process();
 
 	for (const std::string& name : bkgnames) {
 		BkgFilelists[name];

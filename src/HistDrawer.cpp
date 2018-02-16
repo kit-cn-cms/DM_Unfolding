@@ -1,5 +1,6 @@
 #include "../interface/HistDrawer.hpp"
 
+
 #include <iostream>
 #include "TFile.h"
 #include "TCanvas.h"
@@ -16,8 +17,8 @@ void HistDrawer::Draw1D(TH1* hist, TString name, TString xlabel, TString ylabel)
 	}
 	else hist-> SetXTitle(xlabel);
 	hist->SetYTitle(ylabel);
-	
-	c->SaveAs("pdfs/" + name + ".pdf");
+
+	c->SaveAs(path.GetPdfPath() + name + ".pdf");
 	c->Write();
 	output->Close();
 }
@@ -39,7 +40,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, TString xlabel, TString ylabel)
 	}
 	else hist-> SetYTitle(ylabel);
 
-	c->SaveAs("pdfs/" + name + ".pdf");
+	c->SaveAs(path.GetPdfPath() + name + ".pdf");
 	c->Write();
 	output->Close();
 }
@@ -60,7 +61,7 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 
 	hist1-> SetYTitle(ylabel);
 
-	c->SaveAs("pdfs/" + name + ".pdf");
+	c->SaveAs(path.GetPdfPath() + name + ".pdf");
 	c->Write();
 	output->Close();
 }

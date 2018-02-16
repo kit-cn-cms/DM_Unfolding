@@ -8,15 +8,20 @@
 #include "../interface/HistMaker.hpp"
 #include "../interface/Unfolder.hpp"
 #include "../interface/HistDrawer.hpp"
-
+#include"../interface/PathHelper.hpp"
 
 using namespace std;
 
 
 int main()
-{
+{	
+
+	char currentdir[1024];
+	getcwd(currentdir, sizeof(currentdir));
+	string workingdir(currentdir);
+	PathHelper path;
 	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath("DMConfig")), pt);
 
 // Fill Histos
 	bool fillhistos = pt.get<bool>("general.fillhistos");

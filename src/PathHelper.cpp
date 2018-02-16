@@ -21,7 +21,7 @@ TString PathHelper::GetOutputFilePath()
 	getcwd(currentdir, sizeof(currentdir));
 	string workingdir(currentdir);
 
-	TString filepath = workingdir + "/rootfiles/output.root";
+	TString filepath = workingdir + "/.." + "/rootfiles/output.root";
 	return filepath;
 }
 
@@ -31,7 +31,25 @@ TString PathHelper::GetHistoFilePath()
 	getcwd(currentdir, sizeof(currentdir));
 	string workingdir(currentdir);
 
-	TString filepath = workingdir + "/rootfiles/histos.root";
+	TString filepath = workingdir + "/.." +"/rootfiles/histos.root";
+	return filepath;
+}
+
+TString PathHelper::GetConfigPath(TString name) {
+	char currentdir[1024];
+	getcwd(currentdir, sizeof(currentdir));
+	string workingdir(currentdir);
+
+	TString filepath = workingdir + "/.." + "/Config/" + name + ".ini";
+	return filepath;
+}
+
+TString PathHelper::GetPdfPath() {
+	char currentdir[1024];
+	getcwd(currentdir, sizeof(currentdir));
+	string workingdir(currentdir);
+
+	TString filepath = workingdir + "/.." + "/pdfs/" ;
 	return filepath;
 }
 
