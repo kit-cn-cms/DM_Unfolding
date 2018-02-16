@@ -23,7 +23,7 @@ TUnfoldDensity* Unfolder::SetUp(TH2F* A, TH1F* input) {
 void Unfolder::ParseConfig() {
 	cout << "Parsing Unfolder Config..." << endl;
 	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini("Config/DMConfig.ini", pt);
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath("DMConfig")), pt);
 	biasScale = pt.get<float>("Unfolding.biasScale");
 	nScan = pt.get<int>("Unfolding.nScan");
 	tauMin = pt.get<double>("Unfolding.tauMin");

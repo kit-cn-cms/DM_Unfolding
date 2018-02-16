@@ -19,19 +19,17 @@ find_package(ROOT REQUIRED COMPONENTS MathCore RIO Hist Tree Net TString)
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
 
+include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/interface)
-#ROOT_GENERATE_DICTIONARY(G__Event Event.h LINKDEF EventLinkDef.h)
+add_definitions(${ROOT_CXX_FLAGS})
+
+ROOT_GENERATE_DICTIONARY(G__MCSelector ../interface/MCSelector.hpp LINKDEF ../interface/LinkDef.h)
 
 #---Create a shared library with geneated dictionary
-#add_library(Event SHARED Event.cxx G__Event.cxx)
-# target_link_libraries(Unfold ${ROOT_LIBRARIES})
+add_library(MCSelector SHARED ${PROJECT_SOURCE_DIR}/src/MCSelector.cpp G__MCSelector.cxx)
+target_link_libraries(MCSelector ${ROOT_LIBRARIES})
 
-#---Create  a main program using the library
-#add_executable(Main MainEvent.cxx)
-#target_link_libraries(Main Event)
 
-# add_library(MyLib SHARED XXX.cxx YYY.cxx MyDict.cxx)
-# target_link_libraries(MyLib ${ROOT_LIBRARIES})
 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
@@ -44,20 +42,12 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/lib)
 # these instructions search the directory tree when cmake is
 # invoked and put all files that match the pattern in the variables 
 # `sources` and `data`
-file(GLOB_RECURSE sources      src/*.cpp interface/*.hpp)
-#file(GLOB_RECURSE sources_test src/test/*.cpp)
-#file(GLOB_RECURSE data resources/*)
-# you can use set(sources src/main.cpp) etc if you don't want to
-# use globing to find files automatically
+file(GLOB_RECURSE sources      src/*.cpp )
+file(GLOB_RECURSE headerfiles  interface/*.hpp interface/*.hpp)
 
-###############################################################################
-## target definitions #########################################################
-###############################################################################
 
 # add the data to the target, so it becomes visible in some IDE
 add_executable(Unfold ${sources} ${data})
-
-
 ###############################################################################
 ## dependencies ###############################################################
 ###############################################################################
@@ -69,6 +59,8 @@ find_package(Boost 1.36.0 COMPONENTS filesystem system REQUIRED)
 target_link_libraries(Unfold PUBLIC
   ${Boost_LIBRARIES}
   ${ROOT_LIBRARIES}
+  MCSelector
+
   # here you can add any library dependencies
 )
 
@@ -78,9 +70,7 @@ link_directories(${ROOT_LIBRARY_DIR})
 
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
-set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++")
-# set(CMAKE_CXX_FLAGS "-std=c++11 -Wall ${ROOT_CXX_FLAGS}  -Wextra -g  -std=c++17   `root-config --cflags` ")
-
+set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer" )
 
 ###############################################################################
 ## packaging ##################################################################
