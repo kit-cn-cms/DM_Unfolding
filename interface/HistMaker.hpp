@@ -9,7 +9,6 @@
 #include "TString.h"
 #include "TH2F.h"
 #include "../interface/PathHelper.hpp"
-// #include "../interface/MCSelector.hpp"
 
 
 
@@ -37,8 +36,6 @@ public:
 	std::map<std::string, std::vector<TString>> BkgFilelists;
 	std::map<std::string, TChain*> BkgChains;
 	std::vector<std::string> weights;
-
-	// MCSelector MCSelector_;
 
 
 	TString variation;

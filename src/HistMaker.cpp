@@ -9,7 +9,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include "boost/lexical_cast.hpp"
-// #include "../interface/MCSelector.hpp"
+#include "MCSelector.h"
+#include "TProof.h"
 
 
 using namespace std;
@@ -325,32 +326,45 @@ void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::s
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
-	// MCSelector MCSelector_;
-	// MCSelector_.Print();
+	MCSelector MCSelector_;
+	MCSelector_.Print();
 	std::vector<TString> MCFilelist = GetInputFileList(MCPath, variation);
 	TChain* MCChain = ChainFiles(MCFilelist);
 	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
 	TChain* DataChain = ChainFiles(DataFilelist);
 	std::vector<TString> tmp;
 
-	// MCChain->Process("MCSelector.cpp");qq
-	// MCSelector_.Process();
+	gROOT->SetBatch();
 
-	for (const std::string& name : bkgnames) {
-		BkgFilelists[name];
-		tmp = GetInputFileList(BkgPaths[name], variation);
-		for (const TString& file : tmp) {
-			BkgFilelists[name].push_back(file);
-		}
-	}
-	TChain* tmp_chain;
-	for (const std::string& name : bkgnames) {
-		tmp_chain = ChainFiles(BkgFilelists[name]);
-		BkgChains.insert( std::make_pair( name, tmp_chain ));
-	}
+	TStopwatch watch;
+	watch.Start();
+	TProof *pl = TProof::Open("workers=4");
+	pl->Load("/afs/desy.de/user/s/swieland/dust/DM_Unfolding/src/MCSelector.C+");
 
-	SetUpHistos();
-	return FillHistos(MCChain, DataChain, BkgChains);
+	MCSelector *sel = new MCSelector(); // This is my custom selector class
+	DataChain->SetProof();
+	DataChain->Process(sel);
+
+	pl->GetOutputList()->Print();
+	pl->GetStatistics(true);
+
+	watch.Stop();
+	watch.Print();
+	// for (const std::string& name : bkgnames) {
+	// 	BkgFilelists[name];
+	// 	tmp = GetInputFileList(BkgPaths[name], variation);
+	// 	for (const TString& file : tmp) {
+	// 		BkgFilelists[name].push_back(file);
+	// 	}
+	// }
+	// TChain* tmp_chain;
+	// for (const std::string& name : bkgnames) {
+	// 	tmp_chain = ChainFiles(BkgFilelists[name]);
+	// 	BkgChains.insert( std::make_pair( name, tmp_chain ));
+	// }
+
+	// SetUpHistos();
+	// return FillHistos(MCChain, DataChain, BkgChains);
 }
 
 

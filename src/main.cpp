@@ -41,25 +41,25 @@ int main()
 	TH1F* zjets = histomaker.Get1DHisto("Zjet");
 
 //Do Unfolding
-	bool useData = pt.get<bool>("general.useData");
-	Unfolder Unfolder;
-	Unfolder.ParseConfig();
-	TUnfoldDensity* unfold = Unfolder.SetUp(A, data);
-	//Subtract BackGrounds
-	if (useData) {
-		Unfolder.SubBkg(unfold, wjets, "Wjet");
-		Unfolder.SubBkg(unfold, zjets, "Zjet");
-	}
+	// bool useData = pt.get<bool>("general.useData");
+	// Unfolder Unfolder;
+	// Unfolder.ParseConfig();
+	// TUnfoldDensity* unfold = Unfolder.SetUp(A, data);
+	// //Subtract BackGrounds
+	// if (useData) {
+	// 	Unfolder.SubBkg(unfold, wjets, "Wjet");
+	// 	Unfolder.SubBkg(unfold, zjets, "Zjet");
+	// }
 
-	std::tuple<int , TSpline*, TGraph*> TauResult;
-	TauResult = Unfolder.FindBestTau(unfold);
-	Unfolder.VisualizeTau(TauResult);
-	Unfolder.DoUnfolding(unfold, data);
+	// std::tuple<int , TSpline*, TGraph*> TauResult;
+	// TauResult = Unfolder.FindBestTau(unfold);
+	// Unfolder.VisualizeTau(TauResult);
+	// Unfolder.DoUnfolding(unfold, data);
 
 
-	std::tuple<TH1*, TH1*> unfold_output;
-	unfold_output = Unfolder.GetOutput(unfold);
-	Unfolder.GetRegMatrix(unfold);
+	// std::tuple<TH1*, TH1*> unfold_output;
+	// unfold_output = Unfolder.GetOutput(unfold);
+	// Unfolder.GetRegMatrix(unfold);
 
 // Draw Distributions
 	HistDrawer Drawer;
@@ -69,11 +69,11 @@ int main()
 	Drawer.Draw1D(gen, genvar);
 	Drawer.Draw1D(data, "Data");
 
-	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "unfolded");
-	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "foldedback");
-	Drawer.Draw2D(A, "A");
-	Drawer.DrawRatio(std::get<0>(unfold_output), gen, "ratio_unfolded_Gen", "unfolded/Gen");
-	Drawer.DrawRatio(std::get<1>(unfold_output), data, "ratio_foldedback_data", "foldedback/data");
+	// Drawer.Draw1D(std::get<0>(unfold_output), recovar + "unfolded");
+	// Drawer.Draw1D(std::get<1>(unfold_output), recovar + "foldedback");
+	// Drawer.Draw2D(A, "A");
+	// Drawer.DrawRatio(std::get<0>(unfold_output), gen, "ratio_unfolded_Gen", "unfolded/Gen");
+	// Drawer.DrawRatio(std::get<1>(unfold_output), data, "ratio_foldedback_data", "foldedback/data");
 
 
 

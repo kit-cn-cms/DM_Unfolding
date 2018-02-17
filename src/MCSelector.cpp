@@ -25,21 +25,54 @@
 //
 
 
-#include "../interface/MCSelector.hpp"
+#include "MCSelector.hpp"
 #include <TH2.h>
+#include <TH1.h>
+
 #include <TStyle.h>
-#include "../interface/HistMaker.hpp"
+#include <TCanvas.h>
+
+// #include "../interface/HistMaker.hpp"
 
 
 
+void MCSelector::Init(TTree *tree)
+{
+   // The Init() function is called when the selector needs to initialize
+   // a new tree or chain. Typically here the reader is initialized.
+   // It is normally not necessary to make changes to the generated
+   // code, but the routine can be extended by the user if needed.
+   // Init() will be called many times when running on PROOF
+   // (once per file to be processed).
+   // tree->Print();
+
+
+   fReader.SetTree(tree);
+}
+
+Bool_t MCSelector::Notify()
+{
+   // The Notify() function is called when a new file is opened. This
+   // can be either for a new TTree in a TChain or when when a new TTree
+   // is started when using PROOF. It is normally not necessary to make changes
+   // to the generated code, but the routine can be extended by the
+   // user if needed. The return value is currently not used.
+
+   return kTRUE;
+}
+
+
+// #endif // #ifdef MCSelector_cxx
 
 void MCSelector::Begin(TTree * /*tree*/)
 {
    // The Begin() function is called at the start of the query.
    // When running with PROOF Begin() is only called on the client.
    // The tree argument is deprecated (on PROOF 0 is passed).
-
    TString option = GetOption();
+   file = new TFile("file.root","RECREATE");
+   // GetOutputList()->Add(file);
+
 }
 
 void MCSelector::SlaveBegin(TTree * /*tree*/)
@@ -50,16 +83,16 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
-   HistMaker histmaker;
-   histmaker.ParseConfig();
+   //file = new TFile("file.root","RECREATE");
+   h_GenMET = new TH1F("h_GenMET","h_GenMET",20,0.,1000.);
+   h_GenMET->Sumw2();
+   GetOutputList()->Add(h_GenMET);
 
-      TH1F* h_Gen = histmaker.Get1DHisto(genvar);
-   TH1F* h_Reco = histmaker.Get1DHisto(recovar);
-   TH1F* h_Data = histmaker.Get1DHisto("Data");
-   TH2F* A = histmaker.Get2DHisto("A");
+   h_RecoMET = new TH1F("h_RecoMET","h_RecoMET",20,0.,1000.);
+   h_RecoMET->Sumw2();
+   GetOutputList()->Add(h_RecoMET);   
 
-
-
+   GetOutputList()->Print();
 
 }
 
@@ -83,27 +116,12 @@ Bool_t MCSelector::Process(Long64_t entry)
    // Use fStatus to set the return value of TTree::Process().
    //
    // The return value is currently not used.
+   fReader.SetLocalEntry(entry);
 
-   fReader.SetEntry(entry);
-
-   // float var_gen;
-   // MCChain->SetBranchAddress(genvar, &var_gen);
-   // float var_reco;
-   // MCChain->SetBranchAddress(recovar, &var_reco);
-   std::vector<float> varweight (weights.size());
-   // for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
-   //    MCChain->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
-   // }
-   HistMaker histmaker;
-   
-   histmaker.ParseConfig();
+   h_GenMET->Fill(*Evt_Pt_GenMET);
+   h_RecoMET->Fill(*Evt_Pt_MET);
 
 
-   std::cout << "MC event: << entry" << std::endl;
-
-   std::cout << genvar << std::endl;
-
-   if(entry==10) Abort("End for now");
 
    return kTRUE;
 }
@@ -114,6 +132,8 @@ void MCSelector::SlaveTerminate()
    // have been processed. When running with PROOF SlaveTerminate() is called
    // on each slave server.
 
+   std::cout << " Slave finished" << std::endl;
+
 }
 
 void MCSelector::Terminate()
@@ -121,5 +141,28 @@ void MCSelector::Terminate()
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
+   
+
+   GetOutputList()->Print();
+
+   // fOutput->FindObject(h_GenMET)->Print();
+   // file->Close();
+
+   h_GenMET = dynamic_cast<TH1F*>(fOutput->FindObject("h_GenMET"));
+   h_RecoMET = dynamic_cast<TH1F*>(fOutput->FindObject("h_RecoMET"));
+   file->WriteTObject(h_RecoMET);
+
+   if (h_GenMET) {
+      // Play with the tree 
+      h_GenMET->Print();
+      file->WriteTObject(h_GenMET);
+      std::cout << "found histo"<< std::endl;
+      
+   } else {
+      Error("Terminate", "h_GenMET object missing");
+   }
+
+   std::cout << "Master finished" << std::endl;
+
 
 }

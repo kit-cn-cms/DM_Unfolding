@@ -23,7 +23,7 @@ include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/interface)
 add_definitions(${ROOT_CXX_FLAGS})
 
-ROOT_GENERATE_DICTIONARY(G__MCSelector ../interface/MCSelector.hpp LINKDEF ../interface/LinkDef.h)
+ROOT_GENERATE_DICTIONARY(G__MCSelector ../src/MCSelector.hpp LINKDEF ../interface/LinkDef.h)
 
 #---Create a shared library with geneated dictionary
 add_library(MCSelector SHARED ${PROJECT_SOURCE_DIR}/src/MCSelector.cpp G__MCSelector.cxx)
@@ -70,7 +70,7 @@ link_directories(${ROOT_LIBRARY_DIR})
 
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
-set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer" )
+set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer -lProof" )
 
 ###############################################################################
 ## packaging ##################################################################
