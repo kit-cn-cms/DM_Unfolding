@@ -36,3 +36,4 @@
 *.ROOT
 
 /build/*
+*.pcm
