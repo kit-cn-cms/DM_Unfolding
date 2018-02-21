@@ -9,6 +9,8 @@
 #include "TString.h"
 #include "TH2F.h"
 #include "../interface/PathHelper.hpp"
+#include "../interface/HistHelper.hpp"
+
 
 
 
@@ -18,7 +20,7 @@ public:
 	std::vector<TString> GetInputFileList(std::vector<std::string> paths , TString type);
 	void SetUpHistos();
 	void ParseConfig();
-	void FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains);
+	void FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
 	TH1F* Get1DHisto(TString name);
@@ -26,10 +28,12 @@ public:
 
 
 	PathHelper path;
+	HistHelper histhelper;
 	TFile* histos;
 	TString genvar;
 	TString recovar;
-	std::vector<std::string> MCPath;
+	std::string samplepath;
+	std::vector<std::string> SignalPath;
 	std::vector<std::string> DataPath;
 	std::vector<std::string> bkgnames;
 	std::map<std::string, std::vector<std::string>> BkgPaths;
@@ -45,7 +49,7 @@ public:
 	int xMax;
 	int split;
 	double nMax;
-	bool useData;
+	bool splitSignal;
 };
 
 #endif

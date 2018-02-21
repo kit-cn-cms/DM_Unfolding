@@ -1,6 +1,8 @@
 #include "../interface/HistMaker.hpp"
 
 #include <iostream>
+#include <TEnv.h>
+#include <TProofLog.h>
 #include "TCanvas.h"
 #include "TH2D.h"
 
@@ -11,6 +13,8 @@
 #include "boost/lexical_cast.hpp"
 #include "MCSelector.h"
 #include "TProof.h"
+#include <curses.h>
+#include <stdio.h>
 
 
 using namespace std;
@@ -21,8 +25,8 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 	std::vector<TString> filelist;
 	for (const TString& path : paths) {
 
-		DIR* dirFile = opendir( path );
-		cout << "opening" << path << endl;
+		DIR* dirFile = opendir( samplepath + path );
+		cout << "opening " << samplepath + path << endl;
 		if ( dirFile )
 		{
 			struct dirent* hFile;
@@ -42,7 +46,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 						printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
-						TString fullpath = path + fileName;
+						TString fullpath = samplepath + path + fileName;
 						filelist.push_back( fullpath );
 					}
 				}
@@ -51,7 +55,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 						printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
-						TString fullpath = path + fileName;
+						TString fullpath = samplepath + path + fileName;
 						filelist.push_back( fullpath );
 					}
 				}
@@ -60,7 +64,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 						printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
-						TString fullpath = path + fileName;
+						TString fullpath = samplepath + path + fileName;
 						filelist.push_back( fullpath );
 					}
 				}
@@ -69,7 +73,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 						printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
-						TString fullpath = path + fileName;
+						TString fullpath = samplepath + path + fileName;
 						filelist.push_back( fullpath );
 					}
 				}
@@ -78,7 +82,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 						printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
-						TString fullpath = path + fileName;
+						TString fullpath = samplepath + path + fileName;
 						filelist.push_back( fullpath );
 					}
 				}
@@ -142,10 +146,10 @@ std::vector<T> to_array(const std::string& s)
 void HistMaker::ParseConfig() {
 	cout << "Parsing Hist Config..." << endl;
 	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath("DMConfig")), pt);
-
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath()), pt);
+	samplepath = std::string(pt.get<std::string>("SamplePath.path"));
 	weights = to_array<std::string>(pt.get<std::string>("general.weights"));
-	MCPath = to_array<std::string>(pt.get<std::string>("MCSample.path"));
+	SignalPath = to_array<std::string>(pt.get<std::string>("SignalSample.path"));
 	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
 	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
 
@@ -168,10 +172,9 @@ void HistMaker::ParseConfig() {
 	xMin = pt.get<int>("Binning.xMin");
 	xMax = pt.get<int>("Binning.xMax");
 	nMax = pt.get<int>("general.maxEvents");
-	useData = pt.get<bool>("general.useData");
+	splitSignal = pt.get<bool>("general.splitSignal");
 	split = pt.get<int>("general.split");
 	cout << "Config parsed!" << endl;
-
 }
 
 TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
@@ -204,181 +207,82 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	return chain;
 }
 
-void HistMaker::FillHistos(TChain * MCChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains) {
-	TH1F* h_Gen = Get1DHisto(genvar);
-	TH1F* h_Reco = Get1DHisto(recovar);
-	TH1F* h_Data = Get1DHisto("Data");
-	TH2F* A = Get2DHisto("A");
+void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains) {
+	//Start Timer to measure Time in Selector
+	TStopwatch watch;
+	watch.Start();
+	//SetUp TProof
+	TProof *pl = TProof::Open("workers=10");
+	//Load necessary Macros
+	pl->Load(path.GetIncludePath() + "PathHelper.hpp+");
+	// pl->Load(path.GetSourcePath()+"MCSelector.h+");
+	pl->Load(path.GetSourcePath() + "PathHelper.cpp+");
+	pl->Load(path.GetSourcePath() + "MCSelector.C+");
 
-	//Loop over all MCEvents and Fill MCHistograms
-	float var_gen;
-	MCChain->SetBranchAddress(genvar, &var_gen);
-	float var_reco;
-	MCChain->SetBranchAddress(recovar, &var_reco);
-	std::vector<float> varweight (weights.size());
-	for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
-		MCChain->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
-	}
+	MCSelector *sel = new MCSelector(); // This is my custom selector class
+	//Set Custom InputParameter
+	pl->SetParameter("outputpath", (TString)path.GetOutputFilePath());
+	TH1F* h_Gen = histhelper.Get1DHisto(genvar);
+	pl->AddInput(h_Gen);
+	//Process Chains
+	std::remove(path.GetHistoFilePath()); // delete file
+	DataChain->SetProof();
+	DataChain->Process(sel, "data");
+	pl->ClearCache();
 
-	cout << "Filling MC Events..." << endl;
-	double nentries = MCChain->GetEntries();
-	cout << "total number of MC events: " << nentries << endl;
-
-	if (split > 50) {
-		cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << endl;
-		split = 50;
-	}
-	int split_ = 100 / split;
-	float weight_ = 1;
-	for (long iEntry = 0; iEntry < nentries; iEntry++) {
-		if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
-		if (iEntry > nMax && nMax > 0) break;
-		MCChain->GetEntry(iEntry);
-		weight_ = 1;
-		for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
-			weight_ *= *it;
-		}
-		if (!useData) {			// split MC Sample for studies
-			if (iEntry % split_ != 0) {
-				A->Fill(var_reco, var_gen, weight_);
-			}
-			else  {
-				h_Data->Fill(var_reco, weight_);
-				h_Gen->Fill(var_gen, weight_);
-				h_Reco->Fill(var_reco, weight_);
-			}
-		}
-		else {					// use full MC Sample
-			h_Gen->Fill(var_gen, weight_);
-			h_Reco->Fill(var_reco, weight_);
-			A->Fill(var_reco, var_gen, weight_);
-		}
-	}
+	SignalChain->SetProof();
+	SignalChain->Process(sel, "signal");
+	pl->ClearCache();
 
 
-	//Loop over all DataEvents to Fill DataHisto
-	if (useData) {
-		for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
-			DataChain->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
-		}
-		float var;
-		DataChain->SetBranchAddress(recovar, &var);
-		cout << "Filling Data Events..." << endl;
-		double nentries = DataChain->GetEntries();
-		cout << "total number of Data events: " << nentries << endl;
-		for (long iEntry = 0; iEntry < nentries; iEntry++) {
-			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
-			if (iEntry > nMax && nMax > 0) break;
-			DataChain->GetEntry(iEntry);
-			weight_ = 1;
-			for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
-				weight_ *= *it;
-			}
-
-			h_Data->Fill(var, weight_);
-		}
-	}
-
-	//Loop over all BkgEvents
-	std::vector<TH1F*> h_bkg_vec;
 	for (const std::string& name : bkgnames) {
-		cout << "Filling BkgHistos: " << name << endl;
-
-		TH1F* h_tmp = Get1DHisto(name);
 		TChain* chain_tmp = BkgChains.find(name)->second;
-		float var;
-		chain_tmp->SetBranchAddress(recovar, &var);
-
-		for (std::vector<std::string>::iterator it = weights.begin(); it != weights.end(); ++it) {
-			chain_tmp->SetBranchAddress(TString(*it), &varweight.at(it - weights.begin()));
-		}
-		nentries = chain_tmp->GetEntries();
-		cout << "total number of " << name << " events: " << nentries << endl;
-
-		for (long iEntry = 0; iEntry < nentries; iEntry++) {
-			if (iEntry % 10000 == 0) cout << "analyzing event " << iEntry << endl;
-			if (iEntry > nMax && nMax > 0) break;
-			chain_tmp->GetEntry(iEntry);
-			weight_ = 1;
-			for (std::vector<float>::iterator it = varweight.begin(); it != varweight.end(); ++it) {
-				weight_ *= *it;
-			}
-			h_tmp->Fill(var,weight_);
-		}
-		h_bkg_vec.push_back(h_tmp);
-		delete chain_tmp;
+		chain_tmp->SetProof();
+		chain_tmp->Process(sel, TString(name));
 	}
-	TFile *histos = new TFile(path.GetHistoFilePath(), "recreate");
 
-	cout << "All Histos filled!" << endl;
-	// Write Filled Histos to File
-	for (unsigned int i = 0; i < h_bkg_vec.size(); ++i)
-	{
-		h_bkg_vec.at(i)->Write();
-	}
-	h_Reco->Write();
-	h_Gen->Write();
-	A->Write();
-	h_Data->Write();
-	histos->Close();
+	//Log SlaveSessions
+	TProofLog *p = TProof::Mgr("lite://")->GetSessionLogs();
+	p->Save("*", "filewithlogs.txt");
+	pl->ClearCache();
+	pl->Close();
 
+	//Stop Timer
+	watch.Stop();
+	watch.Print();
+
+	// TH1F* h_Gen = histhelper.Get1DHisto(genvar);
+	TH1F* h_Reco = histhelper.Get1DHisto(recovar);
+	TH1F* h_Data = histhelper.Get1DHisto("Data");
+	TH2F* A = histhelper.Get2DHisto("A");
 }
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
-	MCSelector MCSelector_;
-	MCSelector_.Print();
-	std::vector<TString> MCFilelist = GetInputFileList(MCPath, variation);
-	TChain* MCChain = ChainFiles(MCFilelist);
+	cout << "Getting Signal Files:" << endl;
+	std::vector<TString> SignalFilelist = GetInputFileList(SignalPath, variation);
+	TChain* SignalChain = ChainFiles(SignalFilelist);
+	cout << "Getting Data Files:" << endl;
 	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
 	TChain* DataChain = ChainFiles(DataFilelist);
 	std::vector<TString> tmp;
 
-	gROOT->SetBatch();
-
-	TStopwatch watch;
-	watch.Start();
-	TProof *pl = TProof::Open("workers=4");
-	pl->Load("/afs/desy.de/user/s/swieland/dust/DM_Unfolding/src/MCSelector.C+");
-
-	MCSelector *sel = new MCSelector(); // This is my custom selector class
-	DataChain->SetProof();
-	DataChain->Process(sel);
-
-	pl->GetOutputList()->Print();
-	pl->GetStatistics(true);
-
-	watch.Stop();
-	watch.Print();
-	// for (const std::string& name : bkgnames) {
-	// 	BkgFilelists[name];
-	// 	tmp = GetInputFileList(BkgPaths[name], variation);
-	// 	for (const TString& file : tmp) {
-	// 		BkgFilelists[name].push_back(file);
-	// 	}
-	// }
-	// TChain* tmp_chain;
-	// for (const std::string& name : bkgnames) {
-	// 	tmp_chain = ChainFiles(BkgFilelists[name]);
-	// 	BkgChains.insert( std::make_pair( name, tmp_chain ));
-	// }
+	cout << "Getting BKG Files:" << endl;
+	for (const std::string& name : bkgnames) {
+		BkgFilelists[name];
+		tmp = GetInputFileList(BkgPaths[name], variation);
+		for (const TString& file : tmp) {
+			BkgFilelists[name].push_back(file);
+		}
+	}
+	TChain* tmp_chain;
+	for (const std::string& name : bkgnames) {
+		tmp_chain = ChainFiles(BkgFilelists[name]);
+		BkgChains.insert( std::make_pair( name, tmp_chain ));
+	}
+	// chain_tmp->Print();
 
 	// SetUpHistos();
-	// return FillHistos(MCChain, DataChain, BkgChains);
+	return FillHistos(SignalChain, DataChain, BkgChains);
 }
 
-
-
-TH1F* HistMaker::Get1DHisto(TString name) {
-	TFile *file = new TFile(path.GetHistoFilePath(), "open");
-	TH1F* hist = (TH1F*)file->Get(name);
-	// file ->Close();
-	return hist;
-}
-
-TH2F* HistMaker::Get2DHisto(TString name) {
-	TFile *file = new TFile(path.GetHistoFilePath(), "update");
-	TH2F* hist = (TH2F*)file->Get(name);
-	// file ->Close();
-	return hist;
-}

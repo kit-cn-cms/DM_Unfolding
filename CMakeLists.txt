@@ -23,10 +23,10 @@ include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/interface)
 add_definitions(${ROOT_CXX_FLAGS})
 
-ROOT_GENERATE_DICTIONARY(G__MCSelector ../src/MCSelector.hpp LINKDEF ../interface/LinkDef.h)
+ROOT_GENERATE_DICTIONARY(G__MCSelector ../src/MCSelector.h LINKDEF ../interface/LinkDef.h)
 
 #---Create a shared library with geneated dictionary
-add_library(MCSelector SHARED ${PROJECT_SOURCE_DIR}/src/MCSelector.cpp G__MCSelector.cxx)
+add_library(MCSelector SHARED ${PROJECT_SOURCE_DIR}/src/MCSelector.C G__MCSelector.cxx)
 target_link_libraries(MCSelector ${ROOT_LIBRARIES})
 
 
@@ -70,8 +70,13 @@ link_directories(${ROOT_LIBRARY_DIR})
 
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
-set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer -lProof" )
+set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options" )
 
+
+macro(install_symlink filepath sympath)
+    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
+    install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
+endmacro(install_symlink)
 ###############################################################################
 ## packaging ##################################################################
 ###############################################################################
@@ -84,6 +89,7 @@ install(TARGETS Unfold DESTINATION Unfold_destination)
 # in the package
 install(DIRECTORY resources DESTINATION Unfold_destination)
 
+
 # now comes everything we need, to create a package
 # there are a lot more variables you can set, and some
 # you need to set for some package types, but we want to
@@ -93,6 +99,10 @@ set(CPACK_PACKAGE_VERSION "1.0.0")
 
 # we don't want to split our program up into several things
 set(CPACK_MONOLITHIC_INSTALL 1)
+
+
+
+
 
 # This must be last
 include(CPack)

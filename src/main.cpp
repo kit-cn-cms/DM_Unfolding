@@ -8,45 +8,49 @@
 #include "../interface/HistMaker.hpp"
 #include "../interface/Unfolder.hpp"
 #include "../interface/HistDrawer.hpp"
-#include"../interface/PathHelper.hpp"
+#include "../interface/PathHelper.hpp"
+#include "../interface/HistHelper.hpp"
+
 
 using namespace std;
+#ifndef Main_CPP_
+#define Main_CPP_
+
+int main(int argc, char** argv) {
 
 
-int main()
-{	
 
 	char currentdir[1024];
 	getcwd(currentdir, sizeof(currentdir));
 	string workingdir(currentdir);
 	PathHelper path;
 	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath("DMConfig")), pt);
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath()), pt);
 
 // Fill Histos
 	bool fillhistos = pt.get<bool>("general.fillhistos");
 	HistMaker histomaker;
+	HistHelper histhelper;
 
 	if (fillhistos) {
 		histomaker.MakeHistos();
-	}
-//Return relevant Histos
+	}//Return relevant Histos
 	TString genvar = pt.get<string>("vars.gen");
 	TString recovar = pt.get<string>("vars.reco");
-	TH2F* A = histomaker.Get2DHisto("A");
-	TH1F* data = histomaker.Get1DHisto("Data");
-	TH1F* gen = histomaker.Get1DHisto(genvar);
-	TH1F* reco = histomaker.Get1DHisto(recovar);
-	TH1F* wjets = histomaker.Get1DHisto("Wjet");
-	TH1F* zjets = histomaker.Get1DHisto("Zjet");
+	TH2F* A = histhelper.Get2DHisto("A");
+	TH1F* data = histhelper.Get1DHisto("Data");
+	TH1F* gen = histhelper.Get1DHisto(genvar);
+	TH1F* reco = histhelper.Get1DHisto(recovar);
+	// TH1F* wjets = histhelper.Get1DHisto("Wjet");
+	// TH1F* zjets = histhelper.Get1DHisto("Zjet");
 
 //Do Unfolding
-	// bool useData = pt.get<bool>("general.useData");
+	// bool splitSignal = pt.get<bool>("general.splitSignal");
 	// Unfolder Unfolder;
 	// Unfolder.ParseConfig();
 	// TUnfoldDensity* unfold = Unfolder.SetUp(A, data);
 	// //Subtract BackGrounds
-	// if (useData) {
+	// if (splitSignal) {
 	// 	Unfolder.SubBkg(unfold, wjets, "Wjet");
 	// 	Unfolder.SubBkg(unfold, zjets, "Zjet");
 	// }
@@ -63,11 +67,11 @@ int main()
 
 // Draw Distributions
 	HistDrawer Drawer;
-	Drawer.Draw1D(reco, recovar);
-	Drawer.Draw1D(wjets, "Wjets_MET");
-	Drawer.Draw1D(zjets, "Zjets_MET");
-	Drawer.Draw1D(gen, genvar);
-	Drawer.Draw1D(data, "Data");
+	// Drawer.Draw1D(reco, recovar);
+	// Drawer.Draw1D(wjets, "Wjets_MET");
+	// Drawer.Draw1D(zjets, "Zjets_MET");
+	// Drawer.Draw1D(gen, genvar);
+	// Drawer.Draw1D(data, "Data");
 
 	// Drawer.Draw1D(std::get<0>(unfold_output), recovar + "unfolded");
 	// Drawer.Draw1D(std::get<1>(unfold_output), recovar + "foldedback");
@@ -78,4 +82,7 @@ int main()
 
 
 	return (0);
+
 }
+
+#endif
