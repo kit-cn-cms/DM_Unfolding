@@ -12,11 +12,10 @@
 class Unfolder
 {
 public:
-	TUnfoldDensity* Unfold(TH2F* A, TH1F* input);
 	void ParseConfig();
 	TUnfoldDensity* SetUp(TH2F* A, TH1F* input);
 	std::tuple<int, TSpline*, TGraph*>  FindBestTau(TUnfoldDensity* unfold);
-	void VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple);
+	void VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString name);
 	void DoUnfolding(TUnfoldDensity* unfold, TH1F* h_Data);
 	std::tuple<TH1*, TH1*> GetOutput(TUnfoldDensity* unfold);
 	void GetRegMatrix(TUnfoldDensity* unfold);

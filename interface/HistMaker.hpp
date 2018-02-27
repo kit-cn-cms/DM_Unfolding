@@ -18,7 +18,6 @@ class HistMaker
 {
 public:
 	std::vector<TString> GetInputFileList(std::vector<std::string> paths , TString type);
-	void SetUpHistos();
 	void ParseConfig();
 	void FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains);
 	void MakeHistos();
@@ -50,6 +49,7 @@ public:
 	int split;
 	double nMax;
 	bool splitSignal;
+	bool useBatch;
 };
 
 #endif

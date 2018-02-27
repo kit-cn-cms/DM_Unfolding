@@ -19,6 +19,65 @@
 
 using namespace std;
 
+void HistMaker::MakeHistos() {
+	ParseConfig();
+	cout << "Getting Signal Files:" << endl;
+	std::vector<TString> SignalFilelist = GetInputFileList(SignalPath, variation);
+	TChain* SignalChain = ChainFiles(SignalFilelist);
+	cout << "Getting Data Files:" << endl;
+	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
+	TChain* DataChain = ChainFiles(DataFilelist);
+	std::vector<TString> tmp;
+
+	cout << "Getting BKG Files:" << endl;
+	for (const std::string& name : bkgnames) {
+		BkgFilelists[name];
+		tmp = GetInputFileList(BkgPaths[name], variation);
+		for (const TString& file : tmp) {
+			BkgFilelists[name].push_back(file);
+		}
+	}
+	TChain* tmp_chain;
+	for (const std::string& name : bkgnames) {
+		tmp_chain = ChainFiles(BkgFilelists[name]);
+		BkgChains.insert( std::make_pair( name, tmp_chain ));
+	}
+	return FillHistos(SignalChain, DataChain, BkgChains);
+}
+
+template<typename T>
+std::vector<T> to_array(const std::string& s)
+{
+	std::vector<T> result;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, ',')) result.push_back(boost::lexical_cast<T>(item));
+	return result;
+}
+
+void HistMaker::ParseConfig() {
+	cout << "Parsing Hist Config..." << endl;
+	boost::property_tree::ptree pt;
+	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath()), pt);
+	samplepath = std::string(pt.get<std::string>("SamplePath.path"));
+	SignalPath = to_array<std::string>(pt.get<std::string>("SignalSample.path"));
+	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
+	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
+
+	for (const std::string& name : bkgnames) {
+		BkgPaths[name];
+		std::vector<std::string> tmp = to_array<std::string>(pt.get<std::string>(name + ".path"));
+		for (const std::string&  paths : tmp) {
+			BkgPaths[name].push_back(paths);
+		}
+	}
+	genvar = pt.get<string>("vars.gen");
+	recovar = pt.get<string>("vars.reco");
+	variation = pt.get<string>("general.variation");	
+	useBatch = pt.get<bool>("general.useBatch");
+
+	cout << "Config parsed!" << endl;
+}
 
 std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths , TString type)
 {
@@ -97,85 +156,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 
 
 
-void HistMaker::SetUpHistos() {
-	cout << "Setting up Histos..." << endl;
-	//create File to Save Histos
 
-	TFile *histos = new TFile(path.GetHistoFilePath(), "recreate");
-
-	// book histos
-	TH1F* h_Reco = new TH1F(recovar, recovar, nBins_Reco, xMin, xMax);
-	TH1F* h_Gen = new TH1F(genvar, genvar, nBins_Gen, xMin, xMax);
-	TH1F* h_Data = new TH1F("Data", "Data", nBins_Reco, xMin, xMax);
-
-	std::vector<TH1F*> h_bkg_vec;
-	for (const TString& name : bkgnames) {
-		TH1F* h_tmp = new TH1F(name, name, nBins_Reco, xMin, xMax);
-		h_tmp->Sumw2();
-		h_tmp->Write();
-		delete h_tmp;
-	}
-
-	TH2D* A = new TH2D("A", "A", nBins_Reco, xMin, xMax, nBins_Gen, xMin, xMax);
-
-	h_Gen->Sumw2();
-	h_Reco->Sumw2();
-	A->Sumw2();
-
-
-	h_Gen->Write();
-	h_Reco->Write();
-	h_Data->Write();
-	A->Write();
-
-	histos->Close();
-
-	cout << "All Histos SetUp!" << endl;
-}
-
-template<typename T>
-std::vector<T> to_array(const std::string& s)
-{
-	std::vector<T> result;
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, ',')) result.push_back(boost::lexical_cast<T>(item));
-	return result;
-}
-
-void HistMaker::ParseConfig() {
-	cout << "Parsing Hist Config..." << endl;
-	boost::property_tree::ptree pt;
-	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath()), pt);
-	samplepath = std::string(pt.get<std::string>("SamplePath.path"));
-	weights = to_array<std::string>(pt.get<std::string>("general.weights"));
-	SignalPath = to_array<std::string>(pt.get<std::string>("SignalSample.path"));
-	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
-	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
-
-	for (const std::string& name : bkgnames) {
-		BkgPaths[name];
-		std::vector<std::string> tmp = to_array<std::string>(pt.get<std::string>(name + ".path"));
-		for (const std::string&  paths : tmp) {
-			BkgPaths[name].push_back(paths);
-		}
-	}
-
-	// cout << BkgPaths[bkgnames.at(1)][0] << endl;
-	// cout << BkgPaths[bkgnames.at(1)][1] << endl;
-	// cout << BkgPaths[bkgnames.at(1)][2] << endl;
-	genvar = pt.get<string>("vars.gen");
-	recovar = pt.get<string>("vars.reco");
-	variation = pt.get<string>("general.variation");
-	nBins_Gen = pt.get<int>("Binning.nBins_Gen");
-	nBins_Reco = pt.get<int>("Binning.nBins_Reco");
-	xMin = pt.get<int>("Binning.xMin");
-	xMax = pt.get<int>("Binning.xMax");
-	nMax = pt.get<int>("general.maxEvents");
-	splitSignal = pt.get<bool>("general.splitSignal");
-	split = pt.get<int>("general.split");
-	cout << "Config parsed!" << endl;
-}
 
 TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	cout << "Setting up TChain" << endl;
@@ -209,18 +190,23 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 
 void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains) {
 	//Start Timer to measure Time in Selector
+	cout << "Start Timer for Filling Histo Procedure..." << endl;
 	TStopwatch watch;
 	watch.Start();
 	//SetUp TProof
 	TProof *pl = TProof::Open("workers=10");
+	if (useBatch) {
+		pl->Close();
+		TString connect = gSystem->GetFromPipe("pod-info -c");
+		TProof *pl = TProof::Open(connect);
+	}
 	//Load necessary Macros
 	pl->Load(path.GetIncludePath() + "PathHelper.hpp+");
-	// pl->Load(path.GetSourcePath()+"MCSelector.h+");
 	pl->Load(path.GetSourcePath() + "PathHelper.cpp+");
 	pl->Load(path.GetSourcePath() + "MCSelector.C+");
 
 	MCSelector *sel = new MCSelector(); // This is my custom selector class
-	//Set Custom InputParameter
+	//Set Custom InputParameter (not used for now)
 	pl->SetParameter("outputpath", (TString)path.GetOutputFilePath());
 	TH1F* h_Gen = histhelper.Get1DHisto(genvar);
 	pl->AddInput(h_Gen);
@@ -239,6 +225,7 @@ void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<st
 		TChain* chain_tmp = BkgChains.find(name)->second;
 		chain_tmp->SetProof();
 		chain_tmp->Process(sel, TString(name));
+		pl->ClearCache();
 	}
 
 	//Log SlaveSessions
@@ -248,41 +235,10 @@ void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<st
 	pl->Close();
 
 	//Stop Timer
+	cout << "Time for Filling Histo Procedure:" << endl;
 	watch.Stop();
 	watch.Print();
-
-	// TH1F* h_Gen = histhelper.Get1DHisto(genvar);
-	TH1F* h_Reco = histhelper.Get1DHisto(recovar);
-	TH1F* h_Data = histhelper.Get1DHisto("Data");
-	TH2F* A = histhelper.Get2DHisto("A");
 }
 
-void HistMaker::MakeHistos() {
-	ParseConfig();
-	cout << "Getting Signal Files:" << endl;
-	std::vector<TString> SignalFilelist = GetInputFileList(SignalPath, variation);
-	TChain* SignalChain = ChainFiles(SignalFilelist);
-	cout << "Getting Data Files:" << endl;
-	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
-	TChain* DataChain = ChainFiles(DataFilelist);
-	std::vector<TString> tmp;
 
-	cout << "Getting BKG Files:" << endl;
-	for (const std::string& name : bkgnames) {
-		BkgFilelists[name];
-		tmp = GetInputFileList(BkgPaths[name], variation);
-		for (const TString& file : tmp) {
-			BkgFilelists[name].push_back(file);
-		}
-	}
-	TChain* tmp_chain;
-	for (const std::string& name : bkgnames) {
-		tmp_chain = ChainFiles(BkgFilelists[name]);
-		BkgChains.insert( std::make_pair( name, tmp_chain ));
-	}
-	// chain_tmp->Print();
-
-	// SetUpHistos();
-	return FillHistos(SignalChain, DataChain, BkgChains);
-}
 

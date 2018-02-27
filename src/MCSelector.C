@@ -81,8 +81,6 @@ Bool_t MCSelector::Notify()
 
 
 
-
-
 void MCSelector::Begin(TTree * /*tree*/)
 {
    // The Begin() function is called at the start of the query.
@@ -119,44 +117,61 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    variation = pt.get<std::string>("general.variation");
    nBins_Gen = pt.get<int>("Binning.nBins_Gen");
    nBins_Reco = pt.get<int>("Binning.nBins_Reco");
-   xMin = pt.get<int>("Binning.xMin");
-   xMax = pt.get<int>("Binning.xMax");
+   xMin_Gen = pt.get<int>("Binning.xMin_Gen");
+   xMax_Gen = pt.get<int>("Binning.xMax_Gen");
+   xMin_Reco = pt.get<int>("Binning.xMin_Reco");
+   xMax_Reco = pt.get<int>("Binning.xMax_Reco");
    nMax = pt.get<int>("general.maxEvents");
-   splitSignal = pt.get<bool>("general.splitSignal");
-   split = pt.get<int>("general.split");
    std::cout << "Config parsed!" << std::endl;
 
-   // book histos
-   h_Gen = new TH1F(genvar, genvar, nBins_Gen, xMin, xMax);
+   // book histos for split distributions
+   h_GenSplit = new TH1F(genvar + "_" + option + "_Split", genvar, nBins_Gen, xMin_Gen, xMax_Gen);
+   h_GenSplit->Sumw2();
+   GetOutputList()->Add(h_GenSplit);
+   h_RecoSplit = new TH1F(recovar + "_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+   h_RecoSplit->Sumw2();
+   GetOutputList()->Add(h_RecoSplit);
+   h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split", "DummyData", nBins_Reco, xMin_Reco, xMax_Reco);
+   h_DummyDataSplit->Sumw2();
+   GetOutputList()->Add(h_DummyDataSplit);
+   ASplit = new TH2D("A_" + option + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, xMin_Gen, xMax_Gen);
+   ASplit->Sumw2();
+   GetOutputList()->Add(ASplit);
+
+
+   // book histos for full distributions
+   h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, xMin_Gen, xMax_Gen);
    h_Gen->Sumw2();
    GetOutputList()->Add(h_Gen);
-   h_Reco = new TH1F(recovar, recovar, nBins_Gen, xMin, xMax);
+   h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
    h_Reco->Sumw2();
    GetOutputList()->Add(h_Reco);
-   h_Data = new TH1F("Data", "Data", nBins_Reco, xMin, xMax);
-   h_Data->Sumw2();
-   GetOutputList()->Add(h_Data);
-   h_DummyData = new TH1F("DummyData", "DummyData", nBins_Reco, xMin, xMax);
-   h_DummyData->Sumw2();
-   GetOutputList()->Add(h_DummyData);
-   A = new TH2D("A", "A", nBins_Reco, xMin, xMax, nBins_Gen, xMin, xMax);
+   A = new TH2D("A_" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, xMin_Gen, xMax_Gen);
    A->Sumw2();
    GetOutputList()->Add(A);
 
-   bkgname = option;
-   // std::vector<TH1F*> h_bkg_vec;
-   h_bkg = new TH1F(bkgname, bkgname, nBins_Reco, xMin, xMax);
-   h_bkg->Sumw2();
-   GetOutputList()->Add(h_bkg);
+
+
+   //Additional Variables
+   h_N_Jets = new TH1F("N_Jets_" + option, "N_Jets", 15, 0, 15);
+   h_N_Jets->Sumw2();
+   GetOutputList()->Add(h_N_Jets);
+   h_Jet_Pt = new TH1F("Jet_Pt_" + option, "Jets_Pt", 80, 0, 800);
+   h_Jet_Pt->Sumw2();
+   GetOutputList()->Add(h_Jet_Pt);
+   h_Jet_Eta = new TH1F("Jet_Eta_" + option, "Jet_Eta", 40, -4, 4);
+   h_Jet_Eta->Sumw2();
+   GetOutputList()->Add(h_Jet_Eta);
+   h_Evt_Phi_MET = new TH1F("Evt_Phi_MET_" + option, "Evt_Phi_MET", 50, -3.2, 3.2);
+   h_Evt_Phi_MET->Sumw2();
+   GetOutputList()->Add(h_Evt_Phi_MET);
+   h_Evt_Phi_GenMET = new TH1F("Evt_Phi_GenMET_" + option, "Evt_Phi_GenMET", 50, -3.2, 3.2);
+   h_Evt_Phi_GenMET->Sumw2();
+   GetOutputList()->Add(h_Evt_Phi_GenMET);
+
 
 
    std::cout << "All Histos SetUp!" << std::endl;
-
-   //Working Stuff
-   h_GenMET = new TH1F("h_GenMET", "h_GenMET", 20, 0., 1000.);
-   GetOutputList()->Add(h_GenMET);
-
-
 
 }
 
@@ -186,66 +201,38 @@ Bool_t MCSelector::Process(Long64_t entry)
    //////////////////////
    //Add weights here!!//
    //////////////////////
-   weight_ =  (*Weight_XS) * (*Weight_GenValue) * (*Weight_PU);
+   // weight_ =  (*Weight_XS) * ((*Weight_GenValue) / (*Weight_GenValue));
+   weight_ = *Weight;
+   if (option != "data") weight_ *= 36 ;
+   if (option == "Zjet") weight_ *= 3;
 
-   //couts for debugging
-   // std::cout << weight_ << std::endl;
-   // std::cout << *var_reco << std::endl;
-   // std::cout << *var_gen << std::endl;
-
-
-   if (option == "signal") {
-
-      //Loop over all SignalEvents and Fill SignalHistograms
-
-      //Calculate split
-      if (split > 50) {
-         std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
-         split = 50;
-      }
-      int split_ = 100 / split;
-      //Fill Events
-      // std::cout << "Filling Signal Events..." << std::endl;
-
-      if (splitSignal) {         // split MC Sample for studies
-         std::cout << *var_reco << std::endl;
-         if (entry % split_ != 0) {
-            A->Fill(*var_reco, *var_gen, weight_);
-         }
-         else  {
-            h_DummyData->Fill(*var_reco, weight_);
-            h_Gen->Fill(*var_gen, weight_);
-            h_Reco->Fill(*var_reco, weight_);
-         }
-      }
-      else {               // use full MC Sample
-         h_Gen->Fill(*var_gen, weight_);
-         h_Reco->Fill(*var_reco, weight_);
-         A->Fill(*var_reco, *var_gen, weight_);
-         h_DummyData->Fill(*var_reco, weight_);
-      }
+   //Calculate split
+   // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
+   split = 50;
+   int split_ = 100 / split;
+   // split MC Sample for studies
+   if (entry % split_ != 0) {
+      ASplit->Fill(*var_reco, *var_gen, weight_);
+      h_GenSplit->Fill(*var_gen, weight_);
+      h_RecoSplit->Fill(*var_reco, weight_);
    }
-
-   if (option == "data") {
-
-      //Loop over all DataEvents to Fill DataHisto
-
-      // std::cout << "Filling Data Events..." << std::endl;
-      //Fill Events
-      h_Data->Fill(*var_reco, weight_);
+   else  {
+      h_DummyDataSplit->Fill(*var_reco, weight_);
    }
+   // use full MC Sample
+   h_Gen->Fill(*var_gen, weight_);
+   h_Reco->Fill(*var_reco, weight_);
+   A->Fill(*var_reco, *var_gen, weight_);
 
 
-   // if (std::find(bkgnames.begin(), bkgnames.end(), option) != bkgnames.end()) {
-   else {
-      // std::cout << "Filling BKG Events..." << std::endl;
-      //Fill Events
-      h_bkg->Fill(*var_reco, weight_);
-   }
+   //Additional Variables
+   h_N_Jets->Fill(*N_Jets, weight_);
+   h_Jet_Pt->Fill(*Jet_Pt, weight_);
+   h_Jet_Eta->Fill(*Jet_Eta, weight_);
+   h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
+   h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
 
-   //Working Stuff
-   h_GenMET->Fill(*Evt_Pt_GenMET);
-
+   weight_ = 0;
    return kTRUE;
 }
 
@@ -268,39 +255,38 @@ void MCSelector::Terminate()
    std::cout << "Output List:" << std::endl;
    GetOutputList()->ls();
    TString option = GetOption();
-   if (option == "signal")
-   {
-      h_Gen = dynamic_cast<TH1F*>(fOutput->FindObject(h_Gen));
-      histofile->WriteTObject(h_Gen);
-      h_Reco = dynamic_cast<TH1F*>(fOutput->FindObject(h_Reco));
-      histofile->WriteTObject(h_Reco);
-      A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
-      histofile->WriteTObject(A);
-      h_DummyData = dynamic_cast<TH1F*>(fOutput->FindObject(h_DummyData));
-      histofile->WriteTObject(h_DummyData);
-   }
-   if (option == "data") {
-      h_Data = dynamic_cast<TH1F*>(fOutput->FindObject(h_Data));
-      histofile->WriteTObject(h_Data);
-   }
-   // if (std::find(bkgnames.begin(), bkgnames.end(), option) != bkgnames.end()) {
-   // if(option=="Zjet"){
-   else {
-      std::cout << "WRiting Bkg" << std::endl;
-      h_bkg = dynamic_cast<TH1F*>(fOutput->FindObject(h_bkg));
-      h_bkg->Print();
-      if (h_bkg) std::cout << "found h_bkg" << std::endl;
-      else  Error("Terminate", "h_GenMET object missing");
-      histofile->WriteTObject(h_bkg);
-   }
 
-   // for (const TString& name : bkgnames) {
-   //    h_tmp = dynamic_cast<TH1F*>(fOutput->FindObject(name));
-   //    GetOutputList()->Add(h_tmp);
-   // }
+   //Full Sample
+   A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
+   histofile->WriteTObject(A);
+   h_Gen = dynamic_cast<TH1F*>(fOutput->FindObject(h_Gen));
+   histofile->WriteTObject(h_Gen);
+   h_Reco = dynamic_cast<TH1F*>(fOutput->FindObject(h_Reco));
+   histofile->WriteTObject(h_Reco);
+
+   //Split Sample
+   h_DummyDataSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_DummyDataSplit));
+   histofile->WriteTObject(h_DummyDataSplit);
+   ASplit = dynamic_cast<TH2D*>(fOutput->FindObject(ASplit));
+   histofile->WriteTObject(ASplit);
+   h_GenSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_GenSplit));
+   histofile->WriteTObject(h_GenSplit);
+   h_RecoSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_RecoSplit));
+   histofile->WriteTObject(h_RecoSplit);
+
+   //Additional Variables
+   h_N_Jets = dynamic_cast<TH1F*>(fOutput->FindObject(h_N_Jets));
+   histofile->WriteTObject(h_N_Jets);
+   h_Jet_Pt = dynamic_cast<TH1F*>(fOutput->FindObject(h_Jet_Pt));
+   histofile->WriteTObject(h_Jet_Pt);
+   h_Jet_Eta = dynamic_cast<TH1F*>(fOutput->FindObject(h_Jet_Eta));
+   histofile->WriteTObject(h_Jet_Eta);
+   h_Evt_Phi_MET = dynamic_cast<TH1F*>(fOutput->FindObject(h_Evt_Phi_MET));
+   histofile->WriteTObject(h_Evt_Phi_MET);
+   h_Evt_Phi_GenMET = dynamic_cast<TH1F*>(fOutput->FindObject(h_Evt_Phi_GenMET));
+   histofile->WriteTObject(h_Evt_Phi_GenMET);
 
    histofile->Close();
    std::cout << "Master finished" << std::endl;
-
 
 }

@@ -44,7 +44,7 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 
 }
 
-void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple) {
+void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString name) {
 	int iBest = get<0>(tuple);
 	TSpline* scanResult = get<1>(tuple);
 	TGraph* lCurve = get<2>(tuple);
@@ -69,7 +69,7 @@ void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple) {
 	knots->Draw("*");
 	bestRhoLogTau->SetMarkerColor(kRed);
 	bestRhoLogTau->Draw("*");
-	tau->SaveAs("pdfs/tau.pdf");
+	tau->SaveAs(path.GetPdfPath()+"tau_"+name+".pdf");
 	tau->Write();
 	output->Close();
 }
@@ -90,17 +90,6 @@ std::tuple<TH1*, TH1*> Unfolder::GetOutput(TUnfoldDensity* unfold) {
 	output->Close();
 
 	return std::make_tuple(h_unfolded, h_unfoldedback);
-}
-
-TUnfoldDensity* Unfolder::Unfold(TH2F* A, TH1F* input) {
-	ParseConfig();
-	TUnfoldDensity* unfold = SetUp(A, input);
-	std::tuple<int , TSpline*, TGraph*> TauResult;
-	TauResult = FindBestTau(unfold);
-	VisualizeTau(TauResult);
-	DoUnfolding(unfold, input);
-	std::tuple<TH1*, TH1*> output;
-	return unfold;
 }
 
 void Unfolder::GetRegMatrix(TUnfoldDensity* unfold) {

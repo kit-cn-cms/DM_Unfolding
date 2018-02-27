@@ -42,24 +42,35 @@ public :
    TString variation;
    int nBins_Gen;
    int nBins_Reco;
-   int xMin;
-   int xMax;
+   int xMin_Gen;
+   int xMax_Gen;
+   int xMin_Reco;
+   int xMax_Reco;
    int split;
    double nMax;
    bool splitSignal;
    TString genvar;
    TString recovar;
    std::vector<std::string> bkgnames;
-   TString bkgname;
 
-   std::vector<TH1F*> h_bkg_vec;
    // book histos
+   //Full Sample
    TH1F* h_Reco = 0;
    TH1F* h_Gen = 0;
    TH1F* h_Data = 0;
-   TH1F* h_DummyData = 0;
-   TH1F* h_bkg = 0;
    TH2D* A = 0;
+   //Split Sample
+   TH1F* h_DummyDataSplit = 0;
+   TH1F* h_RecoSplit = 0;
+   TH1F* h_GenSplit = 0;
+   TH2D* ASplit = 0;
+
+   //Additional Histos
+   TH1F* h_N_Jets = 0;
+   TH1F* h_Jet_Pt = 0;
+   TH1F* h_Jet_Eta = 0;
+   TH1F* h_Evt_Phi_MET = 0;
+   TH1F* h_Evt_Phi_GenMET = 0;
    /////////////////////////
    //Choose/Add Variables here//
    /////////////////////////
@@ -69,23 +80,22 @@ public :
    TTreeReaderValue<Float_t> Weight_XS = {fReader, "Weight_XS"};
    TTreeReaderValue<Float_t> Weight_GenValue = {fReader, "Weight_GenValue"};
    TTreeReaderValue<Float_t> Weight_PU = {fReader, "Weight_PU"};
+   TTreeReaderValue<Float_t> Weight = {fReader, "Weight"};
+
+
    float weight_ = 1;
-   std::vector<float> varweight;
 
+   // Additional Variables
+   TTreeReaderValue<Long64_t> N_Jets = {fReader, "N_Jets"};
+   TTreeReaderValue<Float_t> Jet_Pt = {fReader, "Jet_Pt"};
+   TTreeReaderValue<Float_t> Jet_Eta = {fReader, "Jet_Eta"};
 
-   // Working Stuff
-   TTreeReaderValue<Float_t> Evt_Pt_GenMET = {fReader, "Evt_Pt_GenMET"};
-
+   TTreeReaderValue<Float_t> Evt_Phi_MET = {fReader, "Evt_Phi_MET"};
+   TTreeReaderValue<Float_t> Evt_Phi_GenMET = {fReader, "Evt_Phi_GenMET"};
 
    TFile* histofile = 0;
 
-   MCSelector(TTree * /*tree*/ = 0):
-      h_Reco(0),
-      // h_Gen = 0;
-      // h_Data = 0;
-      // h_DummyData = 0;
-      // h_bkg = 0;
-      A(0) {}
+   MCSelector(TTree * /*tree*/ = 0) {}
    virtual ~MCSelector() { }
    virtual Int_t   Version() const { return 2; }
    virtual void    Begin(TTree *tree);
