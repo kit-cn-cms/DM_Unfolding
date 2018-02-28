@@ -80,7 +80,7 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 	output->Close();
 }
 
-void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool normalize, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true);
 	TLegend* legend = getLegend();
@@ -93,14 +93,17 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	for (auto const& mc : MC) {
 		SetHistoStyle(mc, fillcolor, true);
 		mc->SetFillColor(fillcolor);
+		if (normalize) mc ->Scale(1 / (MC.size()* mc->Integral()));
 		stack->Add(mc);
 		legend->AddEntry(mc, TString(names.at(index)), "F");
 		index += 1;
 		fillcolor += 1;
 	}
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
-	int max_data = data->GetMaximum();
-	int max_Stack = lastStack->GetMaximum();
+	if (normalize) 	data->Scale(1 / data->Integral());
+	
+	float max_data = data->GetMaximum();
+	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
 

@@ -192,11 +192,12 @@ int main(int argc, char** argv) {
 //split Input
 	Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
 	Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
-	
+
 	Drawer.DrawRatio(std::get<0>(unfold_output_Split), GenMET_all_Split, "ratio_unfolded_Gen_Split", "unfolded/Gen");
 	Drawer.DrawRatio(std::get<1>(unfold_output_Split), MET_DummyData_all, "ratio_foldedback_DummyData_Split", "foldedback/data");
 
 	Drawer.DrawDataMC(std::get<0>(unfold_output_Split), v_GenMET_bkg_Split, GenBkgNames, "MET_UnfoldedvsGen_Split");
+	Drawer.DrawDataMC(std::get<0>(unfold_output_Split), v_GenMET_bkg_Split, GenBkgNames, "MET_UnfoldedvsGen_normalized_Split",true);
 	Drawer.DrawDataMC(MET_DummyData_all, {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
 
 //Using Data
@@ -206,6 +207,7 @@ int main(int argc, char** argv) {
 	Drawer.DrawRatio(std::get<1>(unfold_output), MET_data, "ratio_foldedback_data", "foldedback/data");
 
 	Drawer.DrawDataMC(std::get<0>(unfold_output), v_GenMET_bkg, GenBkgNames, "MET_UnfoldedvsGen");
+	Drawer.DrawDataMC(std::get<0>(unfold_output), v_GenMET_bkg, GenBkgNames, "MET_UnfoldedvsGen_normalized", true);
 	Drawer.DrawDataMC(MET_data, {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack");
 
 
