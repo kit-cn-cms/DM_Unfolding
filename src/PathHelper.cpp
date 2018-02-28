@@ -84,5 +84,14 @@ TString PathHelper::GetIncludePath() {
 	return filepath;
 }
 
+TString PathHelper::GetRootFilesPath() {
+	char currentdir[1024];
+	getcwd(currentdir, sizeof(currentdir));
+	string workingdir(currentdir);
+
+	TString filepath = workingdir + "/.." + "/rootfiles/";
+	return filepath;
+}
+
 
 

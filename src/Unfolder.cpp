@@ -61,9 +61,9 @@ void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString 
 	}
 	TGraph *knots = new TGraph(nScan, tAll, rhoAll);
 
-	TFile *output = new TFile(path.GetOutputFilePath(), "recreate");
+	TFile *output = new TFile(path.GetOutputFilePath(), "UPDATE");
 	//Draw Tau Graphs
-	TCanvas* tau = new TCanvas("tau", "tau");
+	TCanvas* tau = new TCanvas("tau_"+name, "tau_"+name);
 	tau->cd();
 	scanResult->Draw();
 	knots->Draw("*");

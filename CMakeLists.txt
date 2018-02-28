@@ -70,7 +70,7 @@ link_directories(${ROOT_LIBRARY_DIR})
 
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
-set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++17 -lstdc++ -lTreePlayer -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options" )
+set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++0x -std=c++17 -lstdc++ -lTreePlayer -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options" )
 
 
 macro(install_symlink filepath sympath)

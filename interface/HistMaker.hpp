@@ -22,6 +22,9 @@ public:
 	void FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
+	TTree* CreateFriendTree(std::vector<std::string> BranchNames, long n_Events);
+
+
 	TH1F* Get1DHisto(TString name);
 	TH2F* Get2DHisto(TString name);
 
@@ -39,6 +42,7 @@ public:
 	std::map<std::string, std::vector<TString>> BkgFilelists;
 	std::map<std::string, TChain*> BkgChains;
 	std::vector<std::string> weights;
+	std::vector<std::string> additionalBranchNames;
 
 
 	TString variation;

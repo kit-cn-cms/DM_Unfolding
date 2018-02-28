@@ -210,20 +210,24 @@ Bool_t MCSelector::Process(Long64_t entry)
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
    split = 50;
    int split_ = 100 / split;
-   // split MC Sample for studies
-   if (entry % split_ != 0) {
-      ASplit->Fill(*var_reco, *var_gen, weight_);
-      h_GenSplit->Fill(*var_gen, weight_);
-      h_RecoSplit->Fill(*var_reco, weight_);
+   if ((*GenMETSelection == 1 && *GenBTagVetoSelection == 1 && *GenMonoJetSelection == 1 && *GenLeptonVetoSelection == 1) || option == "data") {
+      // split MC Sample for studies
+      if (entry % split_ != 0) {
+         ASplit->Fill(*var_reco, *var_gen, weight_);
+      }
+      else  {
+         h_GenSplit->Fill(*var_gen, weight_);
+      }
+      // use full MC Sample
+      A->Fill(*var_reco, *var_gen, weight_);
+      h_Gen->Fill(*var_gen, weight_);
    }
-   else  {
+
+   if (entry % split_ == 0) {
+      h_RecoSplit->Fill(*var_reco, weight_);
       h_DummyDataSplit->Fill(*var_reco, weight_);
    }
-   // use full MC Sample
-   h_Gen->Fill(*var_gen, weight_);
    h_Reco->Fill(*var_reco, weight_);
-   A->Fill(*var_reco, *var_gen, weight_);
-
 
    //Additional Variables
    h_N_Jets->Fill(*N_Jets, weight_);

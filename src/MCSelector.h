@@ -82,6 +82,13 @@ public :
    TTreeReaderValue<Float_t> Weight_PU = {fReader, "Weight_PU"};
    TTreeReaderValue<Float_t> Weight = {fReader, "Weight"};
 
+   TTreeReaderValue<Long64_t> GenMETSelection = {fReader, "GenMETSelection"};
+   TTreeReaderValue<Long64_t> GenBTagVetoSelection = {fReader, "GenBTagVetoSelection"};
+   TTreeReaderValue<Long64_t> GenMonoJetSelection = {fReader, "GenMonoJetSelection"};
+   TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {fReader, "GenLeptonVetoSelection"};
+
+
+
 
    float weight_ = 1;
 

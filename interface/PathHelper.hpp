@@ -15,6 +15,8 @@ public:
 	TString GetPdfPath();
 	TString GetSourcePath() ;
 	TString GetIncludePath() ;
+	TString GetRootFilesPath();
+
 
 
 

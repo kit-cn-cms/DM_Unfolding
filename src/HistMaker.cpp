@@ -27,9 +27,14 @@ void HistMaker::MakeHistos() {
 	cout << "Getting Data Files:" << endl;
 	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
 	TChain* DataChain = ChainFiles(DataFilelist);
-	std::vector<TString> tmp;
+	long data_events = DataChain->GetEntries();
+	TTree* FriendTree = CreateFriendTree(additionalBranchNames, data_events);
+	TChain* FriendChain = new TChain("TreeFriend");
+	FriendChain->Add(path.GetRootFilesPath() + "TreeFriend.root");
+	DataChain->AddFriend(FriendChain);
 
 	cout << "Getting BKG Files:" << endl;
+	std::vector<TString> tmp;
 	for (const std::string& name : bkgnames) {
 		BkgFilelists[name];
 		tmp = GetInputFileList(BkgPaths[name], variation);
@@ -42,7 +47,11 @@ void HistMaker::MakeHistos() {
 		tmp_chain = ChainFiles(BkgFilelists[name]);
 		BkgChains.insert( std::make_pair( name, tmp_chain ));
 	}
-	return FillHistos(SignalChain, DataChain, BkgChains);
+	//Reset Histofile
+	// std::remove(path.GetHistoFilePath());
+	TFile* histofile = new TFile(path.GetHistoFilePath(),"RECREATE");
+	histofile->Close();
+	FillHistos(SignalChain, DataChain, BkgChains);
 }
 
 template<typename T>
@@ -63,6 +72,7 @@ void HistMaker::ParseConfig() {
 	SignalPath = to_array<std::string>(pt.get<std::string>("SignalSample.path"));
 	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
 	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
+	additionalBranchNames = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNames"));
 
 	for (const std::string& name : bkgnames) {
 		BkgPaths[name];
@@ -73,7 +83,7 @@ void HistMaker::ParseConfig() {
 	}
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
-	variation = pt.get<string>("general.variation");	
+	variation = pt.get<string>("general.variation");
 	useBatch = pt.get<bool>("general.useBatch");
 
 	cout << "Config parsed!" << endl;
@@ -188,7 +198,26 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	return chain;
 }
 
-void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<std::string, TChain*> BkgChains) {
+TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNames, long n_Events) {
+	TFile* friendfile = new TFile(path.GetRootFilesPath() + "TreeFriend.root", "RECREATE");
+	TTree* TreeFriend = new TTree("TreeFriend", "TreeFriend");
+	TreeFriend->SetEntries(n_Events);
+	Long64_t dummyval = 1;
+	for (auto const& name : BranchNames) {
+		TBranch *branch = TreeFriend->Branch(name.c_str(), &dummyval, (name + "/L").c_str());
+	}
+	for (int j = 0; j < n_Events; j++) {
+		dummyval = 1;
+		TreeFriend->Fill();
+	}
+
+	TreeFriend->Write();
+	friendfile->Close();
+	return TreeFriend;
+}
+
+
+void HistMaker::FillHistos(TChain* SignalChain, TChain* DataChain, std::map<std::string, TChain*> BkgChains) {
 	//Start Timer to measure Time in Selector
 	cout << "Start Timer for Filling Histo Procedure..." << endl;
 	TStopwatch watch;
@@ -211,7 +240,6 @@ void HistMaker::FillHistos(TChain * SignalChain, TChain * DataChain, std::map<st
 	TH1F* h_Gen = histhelper.Get1DHisto(genvar);
 	pl->AddInput(h_Gen);
 	//Process Chains
-	std::remove(path.GetHistoFilePath()); // delete file
 	DataChain->SetProof();
 	DataChain->Process(sel, "data");
 	pl->ClearCache();

@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include "boost/lexical_cast.hpp"
+
 
 
 #include "../interface/HistMaker.hpp"
@@ -16,9 +18,18 @@ using namespace std;
 #ifndef Main_CPP_
 #define Main_CPP_
 
+
+template<typename T>
+std::vector<T> to_array(const std::string & s)
+{
+	std::vector<T> result;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, ',')) result.push_back(boost::lexical_cast<T>(item));
+	return result;
+}
+
 int main(int argc, char** argv) {
-
-
 
 	char currentdir[1024];
 	getcwd(currentdir, sizeof(currentdir));
@@ -29,6 +40,7 @@ int main(int argc, char** argv) {
 	TString genvar = pt.get<string>("vars.gen");
 	TString recovar = pt.get<string>("vars.reco");
 	int split = pt.get<int>("general.split");
+	std::vector<string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
 	// pt.put("general.fillhistos",false);
 	bool fillhistos = true;
 
@@ -43,17 +55,19 @@ int main(int argc, char** argv) {
 		if (c == 'y') fillhistos = true;
 		else fillhistos = false;
 	}
-
-
 	HistMaker histomaker;
-	HistHelper histhelper;
 	if (fillhistos) {
+		//Fill Histos
 		histomaker.MakeHistos();
 	}
+	//Reset Output ROOTFILE
+	std::remove(path.GetOutputFilePath());
 
 //Return relevant Histos
 
 //Full Sample
+	HistHelper histhelper;
+
 	TH1F* MET_data = histhelper.Get1DHisto("Evt_Pt_MET_data");
 	TH1F* MET_DummyData_Wjet = histhelper.Get1DHisto("DummyData_Wjet_Split");
 	TH1F* MET_DummyData_Zjet = histhelper.Get1DHisto("DummyData_Zjet_Split");
@@ -93,6 +107,22 @@ int main(int argc, char** argv) {
 	A_all->Add(A_Zjet);
 	TH2F* A_all_Split = (TH2F*)A_Wjet_Split->Clone();
 	A_all_Split->Add(A_Zjet_Split);
+
+	std::vector<TH1*> v_MET_bkg_Split;
+	v_MET_bkg_Split.push_back(MET_Zjet_Split);
+	v_MET_bkg_Split.push_back(MET_Wjet_Split);
+
+	std::vector<TH1*> v_MET_bkg;
+	v_MET_bkg.push_back(MET_Zjet);
+	v_MET_bkg.push_back(MET_Wjet);
+
+	std::vector<TH1*> v_GenMET_bkg_Split;
+	v_GenMET_bkg_Split.push_back(GenMET_Zjet_Split);
+	v_GenMET_bkg_Split.push_back(GenMET_Wjet_Split);
+
+	std::vector<TH1*> v_GenMET_bkg;
+	v_GenMET_bkg.push_back(GenMET_Zjet);
+	v_GenMET_bkg.push_back(GenMET_Wjet);
 //Do Unfolding
 //Split Input (e.g. only on MC)
 	cout << "Unfolding using only MC with a split of " <<  split << ":" << endl;
@@ -120,6 +150,7 @@ int main(int argc, char** argv) {
 	Unfolder.VisualizeTau(TauResult, "data");
 	Unfolder.DoUnfolding(unfold, MET_data);
 
+	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
 	Unfolder.GetRegMatrix(unfold);
@@ -150,22 +181,37 @@ int main(int argc, char** argv) {
 	Drawer.Draw2D(A_all, "A_all");
 	Drawer.Draw2D(A_all_Split, "A_all_Split");
 
-	std::vector<TH1F*> MET_bkg;
-	MET_bkg.push_back(MET_Wjet);
-	MET_bkg.push_back(MET_Zjet);
-	Drawer.DrawDataMC(MET_data, MET_bkg, "MET");
+	Drawer.DrawDataMC(MET_data, v_MET_bkg, bkgnames, "MET");
+	Drawer.DrawDataMC(MET_DummyData_all, v_MET_bkg_Split, bkgnames, "MET_Split");
 
 //Output of Unfolding
+	std::vector<string> GenBkgNames;
+	for (const std::string& name : bkgnames) {
+		GenBkgNames.push_back("Gen_" + name);
+	}
 //split Input
 	Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
 	Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
+	
 	Drawer.DrawRatio(std::get<0>(unfold_output_Split), GenMET_all_Split, "ratio_unfolded_Gen_Split", "unfolded/Gen");
 	Drawer.DrawRatio(std::get<1>(unfold_output_Split), MET_DummyData_all, "ratio_foldedback_DummyData_Split", "foldedback/data");
+
+	Drawer.DrawDataMC(std::get<0>(unfold_output_Split), v_GenMET_bkg_Split, GenBkgNames, "MET_UnfoldedvsGen_Split");
+	Drawer.DrawDataMC(MET_DummyData_all, {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
+
 //Using Data
 	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded");
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback");
 	Drawer.DrawRatio(std::get<0>(unfold_output), GenMET_all, "ratio_unfolded_Gen", "unfolded/Gen");
 	Drawer.DrawRatio(std::get<1>(unfold_output), MET_data, "ratio_foldedback_data", "foldedback/data");
+
+	Drawer.DrawDataMC(std::get<0>(unfold_output), v_GenMET_bkg, GenBkgNames, "MET_UnfoldedvsGen");
+	Drawer.DrawDataMC(MET_data, {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack");
+
+
+
+
+
 
 
 
