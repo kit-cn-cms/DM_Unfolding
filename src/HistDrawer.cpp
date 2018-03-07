@@ -32,14 +32,15 @@ void HistDrawer::Draw1D(TH1* hist, TString name, TString xlabel, TString ylabel)
 	output->Close();
 }
 
-void HistDrawer::Draw2D(TH2* hist, TString name, TString xlabel, TString ylabel) {
+void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
 	gStyle->SetStatY(0.9);
 	gStyle->SetStatX(0.9);
 
-	hist->Draw("COLZ");
+	hist->Draw("COLZ1");
 	hist->SetTitle(name);
+	if (log) gPad->SetLogz();
 
 	if (xlabel == "none") {
 		hist->SetXTitle(name + "_Reco");
@@ -80,12 +81,13 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 	output->Close();
 }
 
-void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool normalize, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true);
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
+	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
 	int fillcolor = 2;
@@ -101,7 +103,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	}
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
 	if (normalize) 	data->Scale(1 / data->Integral());
-	
+
 	float max_data = data->GetMaximum();
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);

@@ -111,12 +111,17 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    boost::property_tree::ini_parser::read_ini(std::string(ConfigPath), pt);
 
    bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
+   BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
+   BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
+   nBins_Reco = BinEdgesReco.size() - 1;
+   nBins_Gen = BinEdgesGen.size() - 1;
+
 
    genvar = pt.get<std::string>("vars.gen");
    recovar = pt.get<std::string>("vars.reco");
    variation = pt.get<std::string>("general.variation");
-   nBins_Gen = pt.get<int>("Binning.nBins_Gen");
-   nBins_Reco = pt.get<int>("Binning.nBins_Reco");
+   // nBins_Gen = pt.get<int>("Binning.nBins_Gen");
+   // nBins_Reco = pt.get<int>("Binning.nBins_Reco");
    xMin_Gen = pt.get<int>("Binning.xMin_Gen");
    xMax_Gen = pt.get<int>("Binning.xMax_Gen");
    xMin_Reco = pt.get<int>("Binning.xMin_Reco");
@@ -125,32 +130,46 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    std::cout << "Config parsed!" << std::endl;
 
    // book histos for split distributions
-   h_GenSplit = new TH1F(genvar + "_" + option + "_Split", genvar, nBins_Gen, xMin_Gen, xMax_Gen);
+   h_GenSplit = new TH1F(genvar + "_" + option + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
    h_GenSplit->Sumw2();
    GetOutputList()->Add(h_GenSplit);
-   h_RecoSplit = new TH1F(recovar + "_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+   h_RecoSplit = new TH1F(recovar + "_" + option + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
    h_RecoSplit->Sumw2();
    GetOutputList()->Add(h_RecoSplit);
-   h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split", "DummyData", nBins_Reco, xMin_Reco, xMax_Reco);
+   h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split", "DummyData", nBins_Reco, BinEdgesReco.data());
    h_DummyDataSplit->Sumw2();
    GetOutputList()->Add(h_DummyDataSplit);
-   ASplit = new TH2D("A_" + option + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, xMin_Gen, xMax_Gen);
+   ASplit = new TH2D("A_" + option + "_Split", "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
    ASplit->Sumw2();
    GetOutputList()->Add(ASplit);
 
 
    // book histos for full distributions
-   h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, xMin_Gen, xMax_Gen);
+   h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
    h_Gen->Sumw2();
    GetOutputList()->Add(h_Gen);
-   h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+   h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, BinEdgesReco.data());
    h_Reco->Sumw2();
    GetOutputList()->Add(h_Reco);
-   A = new TH2D("A_" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, xMin_Gen, xMax_Gen);
+   A = new TH2D("A_" + option, "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
    A->Sumw2();
    GetOutputList()->Add(A);
 
+   h_testMET = new TH1F("TestMET" + option, "TESTMET",  nBins_Reco, BinEdgesReco.data());
+   h_testMET->Sumw2();
+   GetOutputList()->Add(h_testMET);
 
+   h_testMET_Split = new TH1F("TestMET" + option + "_Split", "TESTMET",  nBins_Reco, BinEdgesReco.data());
+   h_testMET_Split->Sumw2();
+   GetOutputList()->Add(h_testMET_Split);
+
+   h_fake = new TH1F("fakes_" + option, recovar, nBins_Reco, BinEdgesReco.data());
+   h_fake->Sumw2();
+   GetOutputList()->Add(h_fake);
+
+   h_fake_Split = new TH1F("fakes_" + option + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
+   h_fake_Split->Sumw2();
+   GetOutputList()->Add(h_fake_Split);
 
    //Additional Variables
    h_N_Jets = new TH1F("N_Jets_" + option, "N_Jets", 15, 0, 15);
@@ -201,26 +220,31 @@ Bool_t MCSelector::Process(Long64_t entry)
    //////////////////////
    //Add weights here!!//
    //////////////////////
-   // weight_ =  (*Weight_XS) * ((*Weight_GenValue) / (*Weight_GenValue));
-   weight_ = *Weight;
-   if (option != "data") weight_ *= 36 ;
+   weight_ =  (*Weight_XS);
+   if (*Weight_GenValue > 0)weight_ *= 1;
+   else weight_ *= -1;
+   // weight_ = *Weight;
+   if (option != "data") weight_ *= 35.9 ;
    if (option == "Zjet") weight_ *= 3;
 
    //Calculate split
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
    split = 50;
    int split_ = 100 / split;
-   if ((*GenMETSelection == 1 && *GenBTagVetoSelection == 1 && *GenMonoJetSelection == 1 && *GenLeptonVetoSelection == 1) || option == "data") {
-      // split MC Sample for studies
+
+   if ( (!*GenLeptonVetoSelection  || !*GenBTagVetoSelection || !*GenMonoJetSelection || !*GenLeptonVetoSelection ) && *var_gen >= 250) {
+      if (entry % split_ != 0) h_fake_Split->Fill(*var_reco, weight_);
+      h_fake->Fill(*var_reco, weight_);
+   }
+   else {
       if (entry % split_ != 0) {
+         h_GenSplit->Fill(*var_gen, weight_);
+         h_testMET_Split->Fill(*var_reco, weight_);
          ASplit->Fill(*var_reco, *var_gen, weight_);
       }
-      else  {
-         h_GenSplit->Fill(*var_gen, weight_);
-      }
-      // use full MC Sample
-      A->Fill(*var_reco, *var_gen, weight_);
       h_Gen->Fill(*var_gen, weight_);
+      h_testMET->Fill(*var_reco, weight_);
+      A->Fill(*var_reco, *var_gen, weight_);
    }
 
    if (entry % split_ == 0) {
@@ -228,6 +252,8 @@ Bool_t MCSelector::Process(Long64_t entry)
       h_DummyDataSplit->Fill(*var_reco, weight_);
    }
    h_Reco->Fill(*var_reco, weight_);
+   // }
+
 
    //Additional Variables
    h_N_Jets->Fill(*N_Jets, weight_);
@@ -267,7 +293,6 @@ void MCSelector::Terminate()
    histofile->WriteTObject(h_Gen);
    h_Reco = dynamic_cast<TH1F*>(fOutput->FindObject(h_Reco));
    histofile->WriteTObject(h_Reco);
-
    //Split Sample
    h_DummyDataSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_DummyDataSplit));
    histofile->WriteTObject(h_DummyDataSplit);
@@ -277,6 +302,14 @@ void MCSelector::Terminate()
    histofile->WriteTObject(h_GenSplit);
    h_RecoSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_RecoSplit));
    histofile->WriteTObject(h_RecoSplit);
+   h_testMET = dynamic_cast<TH1F*>(fOutput->FindObject(h_testMET));
+   histofile->WriteTObject(h_testMET);
+   h_testMET_Split = dynamic_cast<TH1F*>(fOutput->FindObject(h_testMET_Split));
+   histofile->WriteTObject(h_testMET_Split);
+   h_fake = dynamic_cast<TH1F*>(fOutput->FindObject(h_fake));
+   histofile->WriteTObject(h_fake);
+   h_fake_Split = dynamic_cast<TH1F*>(fOutput->FindObject(h_fake_Split));
+   histofile->WriteTObject(h_fake_Split);
 
    //Additional Variables
    h_N_Jets = dynamic_cast<TH1F*>(fOutput->FindObject(h_N_Jets));

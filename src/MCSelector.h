@@ -52,6 +52,8 @@ public :
    TString genvar;
    TString recovar;
    std::vector<std::string> bkgnames;
+   std::vector<double> BinEdgesGen;
+   std::vector<double> BinEdgesReco;
 
    // book histos
    //Full Sample
@@ -64,6 +66,10 @@ public :
    TH1F* h_RecoSplit = 0;
    TH1F* h_GenSplit = 0;
    TH2D* ASplit = 0;
+   TH1F* h_testMET = 0;
+   TH1F* h_testMET_Split=0;
+   TH1F* h_fake=0;
+   TH1F* h_fake_Split=0;
 
    //Additional Histos
    TH1F* h_N_Jets = 0;
