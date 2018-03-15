@@ -14,8 +14,8 @@ using namespace std;
 
 TUnfoldDensity* Unfolder::SetUp(TH2F* A, TH1F* input) {
 	cout << "Setting Up Unfolder.." << endl;
-	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfold::kHistMapOutputVert,TUnfold::kRegModeCurvature,
-												TUnfold::kEConstraintArea,TUnfoldDensity::kDensityModeBinWidthAndUser,0,0,0,"*[UOB]" );
+	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature,
+	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidthAndUser, 0, 0, 0, "*[UOB]" );
 	float n_input = unfold->SetInput(input);
 	if (n_input >= 1) {
 		std::cout << "Unfolding result may be wrong\n";
@@ -35,13 +35,13 @@ void Unfolder::ParseConfig() {
 	tauMax = pt.get<double>("Unfolding.tauMax");
 }
 
-std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold) {
+std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold, const char * distribution, const char * axisSteering ) {
 	cout << "Finding BestTau" << endl;
 	int iBest;
 	TSpline *scanResult = 0;
 	TGraph *lCurve = 0;
 
-	iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoMaxSys, 0, 0, &lCurve);
+	iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoMaxSys, distribution, axisSteering, &lCurve);
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";

@@ -19,6 +19,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include "boost/lexical_cast.hpp"
+#include "TRandom3.h"
+
 
 
 // Headers needed by this particular selector
@@ -48,6 +50,7 @@ public :
    int xMax_Reco;
    int split;
    double nMax;
+   TRandom rand;
    bool splitSignal;
    TString genvar;
    TString recovar;

@@ -78,105 +78,114 @@ int main(int argc, char** argv) {
 
 //Full Sample
 	HistHelper histhelper;
-
+	//Data
 	TH1F* MET_data = histhelper.Get1DHisto("Evt_Pt_MET_data");
-	TH1F* MET_DummyData_Wjet = histhelper.Get1DHisto("DummyData_Wjet_Split");
-	TH1F* MET_DummyData_Zjet = histhelper.Get1DHisto("DummyData_Zjet_Split");
-	TH1F* MET_DummyData_all = (TH1F*) MET_DummyData_Wjet->Clone();
-	MET_DummyData_all->Add(MET_DummyData_Zjet);
+	//Backgrounds
+	std::vector<TH1*> v_MET_bkgs;
+	TH1F* MET_all = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0))->Clone();
+	MET_all->Reset();
 
+	std::vector<TH1*> v_GenMET_bkgs;
+	TH1F* GenMET_all = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0))->Clone();
+	GenMET_all->Reset();
+
+	std::vector<TH1*> v_fakes_bkgs;
+	TH1F* fakes_all = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0));
+	fakes_all->Reset();
+
+	std::vector<TH1*> v_testmet_bkgs;
+	TH1F* TestMET_all = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0))->Clone();
+	TestMET_all->Reset();
+
+	std::vector<TH2F*> v_A_bkgs;
+	TH2F* A_all = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0))->Clone();
+	A_all->Reset();
+
+
+	//PseudoData
+	std::vector<TH1*> v_MET_DummyDatas;
+	TH1F* MET_DummyData_all = (TH1F*) histhelper.Get1DHisto("DummyData_" + bkgnames.at(0) + "_Split")->Clone();
+	MET_DummyData_all->Reset();
+
+	std::vector<TH1*> v_MET_bkgs_Split;
+	TH1F* MET_all_Split = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_Split")->Clone();
+	MET_all_Split->Reset();
+
+	std::vector<TH1*> v_GenMET_bkgs_Split;
+	TH1F* GenMET_all_Split = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_Split")->Clone();
+	GenMET_all_Split->Reset();
+
+	std::vector<TH1*> v_fakes_bkgs_Split;
+	TH1F* fakes_all_Split = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_Split");
+	fakes_all_Split->Reset();
+
+	std::vector<TH1*> v_testmet_bkgs_Split;
+	TH1F* TestMET_all_Split = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0) + "_Split")->Clone();
+	TestMET_all_Split->Reset();
+
+	std::vector<TH2F*> v_A_bkgs_Split;
+	TH2F* A_all_Split = (TH2F*)histhelper.Get2DHisto("A_"+ bkgnames.at(0) + "_Split")->Clone();
+	A_all_Split->Reset();
+
+	for (const auto& name : bkgnames) {
+		v_MET_bkgs.push_back(histhelper.Get1DHisto(recovar + "_" + name));
+
+		v_GenMET_bkgs.push_back(histhelper.Get1DHisto(genvar + "_" + name));
+		GenMET_all->Add(histhelper.Get1DHisto(recovar + "_" + name));
+
+		v_fakes_bkgs.push_back(histhelper.Get1DHisto("fakes_" + name));
+		fakes_all->Add(histhelper.Get1DHisto("fakes_" + name));
+
+		v_testmet_bkgs.push_back(histhelper.Get1DHisto("TestMET" + name));
+		TestMET_all->Add(histhelper.Get1DHisto("TestMET" + name));
+
+		v_A_bkgs.push_back(histhelper.Get2DHisto("A_" + name));
+		A_all->Add(histhelper.Get2DHisto("A_" + name));
+
+
+
+		v_MET_DummyDatas.push_back(histhelper.Get1DHisto("DummyData_" + name + "_Split"));
+		MET_DummyData_all->Add(histhelper.Get1DHisto("DummyData_" + name + "_Split"));
+
+		v_MET_bkgs_Split.push_back(histhelper.Get1DHisto(recovar + "_" + name + "_Split"));
+		MET_all_Split->Add(histhelper.Get1DHisto(recovar + "_" + name + "_Split"));
+
+		v_GenMET_bkgs_Split.push_back(histhelper.Get1DHisto(genvar + "_" + name + "_Split"));
+		GenMET_all_Split->Add(histhelper.Get1DHisto(genvar + "_" + name + "_Split"));
+
+		v_fakes_bkgs_Split.push_back(histhelper.Get1DHisto("fakes_" + name + "_Split"));
+		fakes_all_Split->Add(histhelper.Get1DHisto("fakes_" + name + "_Split"));
+
+		v_testmet_bkgs_Split.push_back(histhelper.Get1DHisto("TestMET" + name + "_Split"));
+		TestMET_all_Split->Add(histhelper.Get1DHisto("TestMET" + name + "_Split"));
+
+		v_A_bkgs_Split.push_back(histhelper.Get2DHisto("A_" + name + "_Split"));
+		A_all_Split->Add(histhelper.Get2DHisto("A_" + name + "_Split"));
+
+	}
+
+	//Signal
 	TH1F* GenMET_signal = histhelper.Get1DHisto("Evt_Pt_GenMET_signal");
 	TH1F* MET_signal = histhelper.Get1DHisto("Evt_Pt_MET_signal");
-
-	TH1F* MET_Wjet = histhelper.Get1DHisto("Evt_Pt_MET_Wjet");
-	TH1F* GenMET_Wjet = histhelper.Get1DHisto("Evt_Pt_GenMET_Wjet");
-	TH1F* MET_Wjet_Split = histhelper.Get1DHisto("Evt_Pt_MET_Wjet_Split");
-	TH1F* GenMET_Wjet_Split = histhelper.Get1DHisto("Evt_Pt_GenMET_Wjet_Split");
-
-	TH1F* MET_Zjet = histhelper.Get1DHisto("Evt_Pt_MET_Zjet");
-	TH1F* GenMET_Zjet = histhelper.Get1DHisto("Evt_Pt_GenMET_Zjet");
-	TH1F* MET_Zjet_Split = histhelper.Get1DHisto("Evt_Pt_MET_Zjet_Split");
-	TH1F* GenMET_Zjet_Split = histhelper.Get1DHisto("Evt_Pt_GenMET_Zjet_Split");
-
-	TH1F* fakes_Zjet = histhelper.Get1DHisto("fakes_Zjet");
-	TH1F* fakes_Wjet = histhelper.Get1DHisto("fakes_Wjet");
-
-	TH1F* fakes_Zjet_Split = histhelper.Get1DHisto("fakes_Zjet_Split");
-	TH1F* fakes_Wjet_Split = histhelper.Get1DHisto("fakes_Wjet_Split");
-
-	TH1F* TestMET_Zjet = histhelper.Get1DHisto("TestMETZjet");
-	TH1F* TestMET_Wjet = histhelper.Get1DHisto("TestMETWjet");
-
-	TH1F* TestMET_Zjet_Split = histhelper.Get1DHisto("TestMETZjet_Split");
-	TH1F* TestMET_Wjet_Split = histhelper.Get1DHisto("TestMETWjet_Split");
-
-	TH1F* SubTest_Zjet = histhelper.Get1DHisto("h_subTest_Zjet");
-	TH1F* SubTest_Wjet = histhelper.Get1DHisto("h_subTest_Wjet");
-
-
-	TH2F* A_Wjet = histhelper.Get2DHisto("A_Wjet");
-	TH2F* A_Zjet = histhelper.Get2DHisto("A_Zjet");
-	TH2F* A_Wjet_Split = histhelper.Get2DHisto("A_Wjet_Split");
-	TH2F* A_Zjet_Split = histhelper.Get2DHisto("A_Zjet_Split");
-
-	TH1F* GenMET_all = (TH1F*)GenMET_Zjet->Clone();
-	GenMET_all->Add(GenMET_Wjet);
-
-	TH1F* GenMET_all_Split = (TH1F*)GenMET_Zjet_Split->Clone();
-	GenMET_all_Split->Add(GenMET_Wjet_Split);
-
-	TH1F* MET_all = (TH1F*)MET_Zjet->Clone();
-	MET_all->Add(MET_Wjet);
-
-	TH1F* TestMET_all = (TH1F*)TestMET_Zjet->Clone();
-	TestMET_all->Add(TestMET_Wjet);
 
 	cout << "Gen integral: " << GenMET_all->Integral() << endl;
 	cout << "Reco (passes GenSelection) integral: " << TestMET_all->Integral() << endl;
 
-	TH1F* MET_all_Split = (TH1F*)MET_Wjet_Split->Clone();
-	MET_all_Split->Add(MET_Zjet_Split);
-
-	TH2F* A_all = (TH2F*)A_Zjet->Clone();
-	A_all->Add(A_Wjet);
 	float GenIntegral = 0;
 	for (int i = 0; i < 25 ; i++) {
 		GenIntegral += A_all->GetBinContent(0, i);
 	}
 	cout << "A underflow (0,all): " << GenIntegral << endl;
-	TH2F* A_all_Split = (TH2F*)A_Zjet_Split->Clone();
-	A_all_Split->Add(A_Wjet_Split);
-
-	TH1F* fakes_all = (TH1F*) fakes_Zjet->Clone();
-	fakes_all->Add(fakes_Wjet);
 	cout << "Fake integral: " << fakes_all->Integral() << endl;
 
-	TH1F* fakes_Split_all = (TH1F*) fakes_Zjet_Split->Clone();
-	fakes_Split_all->Add(fakes_Wjet_Split);
-
 	TH1F* h_DummyDataMinFakes = (TH1F*) MET_DummyData_all->Clone();
-	h_DummyDataMinFakes->Add(fakes_Split_all, -1);
+	h_DummyDataMinFakes->Add(fakes_all_Split, -1);
 
 	TH1F* h_DataMinFakes = (TH1F*) MET_data->Clone();
 	h_DataMinFakes->Add(fakes_all, -1);
 	cout << "Data integral: " << MET_data->Integral() << endl;
 	cout << "Data-Fake integral: " << h_DataMinFakes->Integral(h_DataMinFakes->GetXaxis()->FindBin(250), 25) << endl;
 
-	std::vector<TH1*> v_MET_bkg_Split;
-	v_MET_bkg_Split.push_back(MET_Zjet_Split);
-	v_MET_bkg_Split.push_back(MET_Wjet_Split);
-
-	std::vector<TH1*> v_MET_bkg;
-	v_MET_bkg.push_back(MET_Zjet);
-	v_MET_bkg.push_back(MET_Wjet);
-
-	std::vector<TH1*> v_GenMET_bkg_Split;
-	v_GenMET_bkg_Split.push_back(GenMET_Zjet_Split);
-	v_GenMET_bkg_Split.push_back(GenMET_Wjet_Split);
-
-	std::vector<TH1*> v_GenMET_bkg;
-	v_GenMET_bkg.push_back(GenMET_Zjet);
-	v_GenMET_bkg.push_back(GenMET_Wjet);
 //Do Unfolding
 //Split Input (e.g. only on MC)
 	cout << "Unfolding using only MC with a split of " <<  split << ":" << endl;
@@ -184,7 +193,7 @@ int main(int argc, char** argv) {
 	Unfolder_Split.ParseConfig();
 	TUnfoldDensity* unfold_Split = Unfolder_Split.SetUp(A_all_Split, MET_DummyData_all);
 
-	Unfolder_Split.SubBkg(unfold_Split, fakes_Split_all, "fakes_Split"); //subtract fakes
+	Unfolder_Split.SubBkg(unfold_Split, fakes_all_Split, "fakes_Split"); //subtract fakes
 
 	unfold_Split->SetBias(GenMET_all_Split);
 
@@ -192,9 +201,10 @@ int main(int argc, char** argv) {
 	TauResult_Split = Unfolder_Split.FindBestTau(unfold_Split);
 	Unfolder_Split.VisualizeTau(TauResult_Split, "Split");
 
+	// unfold_Split->DoUnfold(10.0);
+
 	std::tuple<TH1*, TH1*> unfold_output_Split;
 	unfold_output_Split = Unfolder_Split.GetOutput(unfold_Split);
-	// Unfolder_Split.GetRegMatrix(unfold_Split);
 
 	TH2* ErrorMatrix_Split = unfold_Split->GetEmatrixTotal("ErrorMatrix_Split");
 	TH1D* METTotalError_Split = new TH1D("TotalError_Split", ";MET", nBins_Gen, BinEdgesGen.data());
@@ -221,7 +231,6 @@ int main(int argc, char** argv) {
 	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
-	// Unfolder.GetRegMatrix(unfold);
 	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
 	TH1D* METTotalError = new TH1D("TotalError", ";MET", nBins_Gen, BinEdgesGen.data());
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
@@ -237,15 +246,15 @@ int main(int argc, char** argv) {
 // Draw Distributions
 //General Distributions
 	HistDrawer Drawer;
-	Drawer.Draw1D(MET_Wjet, "MET_Wjet");
-	Drawer.Draw1D(GenMET_Wjet, "GenMET_Wjet");
-	Drawer.Draw1D(MET_Wjet_Split, "MET_Wjet_Split");
-	Drawer.Draw1D(GenMET_Wjet_Split, "GenMET_Wjet_Split");
+	// Drawer.Draw1D(MET_Wjet, "MET_Wjet");
+	// Drawer.Draw1D(GenMET_Wjet, "GenMET_Wjet");
+	// Drawer.Draw1D(MET_Wjet_Split, "MET_Wjet_Split");
+	// Drawer.Draw1D(GenMET_Wjet_Split, "GenMET_Wjet_Split");
 
-	Drawer.Draw1D(MET_Zjet, "MET_Zjet");
-	Drawer.Draw1D(GenMET_Zjet, "GenMET_Zjet");
-	Drawer.Draw1D(MET_Zjet_Split, "MET_Zjet_Split");
-	Drawer.Draw1D(GenMET_Zjet_Split, "GenMET_Zjet_Split");
+	// Drawer.Draw1D(MET_Zjet, "MET_Zjet");
+	// Drawer.Draw1D(GenMET_Zjet, "GenMET_Zjet");
+	// Drawer.Draw1D(MET_Zjet_Split, "MET_Zjet_Split");
+	// Drawer.Draw1D(GenMET_Zjet_Split, "GenMET_Zjet_Split");
 
 	Drawer.Draw1D(MET_all, "MET_all");
 	Drawer.Draw1D(MET_all_Split, "MET_all_Split");
@@ -253,17 +262,15 @@ int main(int argc, char** argv) {
 	Drawer.Draw1D(GenMET_all_Split, "GenMET_all_Split");
 	Drawer.Draw1D(MET_data, "MET_data");
 	Drawer.Draw1D(fakes_all, "fakes_all");
-	Drawer.Draw1D(fakes_Split_all, "fakes_Split_all");
+	Drawer.Draw1D(fakes_all_Split, "fakes_all_Split");
 	Drawer.Draw1D(METTotalError, "MET_unfolded_errors");
 	Drawer.Draw1D(METTotalError_Split, "MET_unfolded_errors_Split");
 
 
-
-
-	Drawer.Draw2D(A_Wjet, "A_Wjet", true);
-	Drawer.Draw2D(A_Zjet, "A_Zjet", true);
-	Drawer.Draw2D(A_Wjet_Split, "A_Wjet_Split", true);
-	Drawer.Draw2D(A_Zjet_Split, "A_Zjet_Split", true);
+	// Drawer.Draw2D(A_Wjet, "A_Wjet", true);
+	// Drawer.Draw2D(A_Zjet, "A_Zjet", true);
+	// Drawer.Draw2D(A_Wjet_Split, "A_Wjet_Split", true);
+	// Drawer.Draw2D(A_Zjet_Split, "A_Zjet_Split", true);
 	Drawer.Draw2D(A_all, "A_all", true);
 	Drawer.Draw2D(A_all_Split, "A_all_Split", true);
 	Drawer.Draw2D(ErrorMatrix, "ErrorMatrix");
@@ -274,11 +281,9 @@ int main(int argc, char** argv) {
 	Drawer.Draw2D(RhoTotal_Split, "RhoTotal_Split");
 
 
-
-
 	bool log = true;
-	Drawer.DrawDataMC(MET_data, v_MET_bkg, bkgnames, "MET", log);
-	Drawer.DrawDataMC(MET_DummyData_all, v_MET_bkg_Split, bkgnames, "MET_Split", log);
+	Drawer.DrawDataMC(MET_data, v_MET_bkgs, bkgnames, "MET", log);
+	Drawer.DrawDataMC(MET_DummyData_all, v_MET_bkgs_Split, bkgnames, "MET_Split", log);
 
 //Output of Unfolding
 	std::vector<string> GenBkgNames;
@@ -289,29 +294,22 @@ int main(int argc, char** argv) {
 	Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
 	Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
 
-	Drawer.DrawRatio(std::get<0>(unfold_output_Split), GenMET_all_Split, "ratio_unfolded_Gen_Split", "unfolded/Gen");
-	Drawer.DrawRatio(std::get<1>(unfold_output_Split), MET_DummyData_all, "ratio_foldedback_DummyData_Split", "foldedback/data");
-
-	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkg_Split, GenBkgNames, "MET_UnfoldedvsGen_Split", log);
-	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkg_Split, GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
+	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_Split", log);
+	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
 	Drawer.DrawDataMC(h_DummyDataMinFakes, {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
 
-	Drawer.DrawDataMC(h_DummyDataMinFakes, {TestMET_Zjet_Split, TestMET_Wjet_Split}, bkgnames, "DummyDataMinFakesvsSubtestMET" , log);
-
+	Drawer.DrawDataMC(h_DummyDataMinFakes, v_testmet_bkgs_Split, bkgnames, "DummyDataMinFakesvsTestMET" , log);
 
 //Using Data
-	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded");
-	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback");
-	Drawer.DrawRatio(std::get<0>(unfold_output), GenMET_all, "ratio_unfolded_Gen", "unfolded/Gen");
-	Drawer.DrawRatio(std::get<1>(unfold_output), MET_data, "ratio_foldedback_data", "foldedback/data");
+	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded", log);
+	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
 
-	Drawer.DrawDataMC(std::get<0>(unfold_output), v_GenMET_bkg, GenBkgNames, "MET_UnfoldedvsGen", log);
-	Drawer.DrawDataMC(METTotalError, v_GenMET_bkg, GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
+	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen", log);
+	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
 	Drawer.DrawDataMC(h_DataMinFakes, {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack", log);
 
-
 	Drawer.Draw1D(h_DataMinFakes, "DataMinFakes");
-	Drawer.DrawDataMC(h_DataMinFakes, {TestMET_Zjet, TestMET_Wjet}, bkgnames, "DataMinFakesvsSubtestMET", log);
+	Drawer.DrawDataMC(h_DataMinFakes, v_testmet_bkgs, bkgnames, "DataMinFakesvsTestMET", log);
 
 
 

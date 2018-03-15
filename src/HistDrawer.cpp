@@ -14,10 +14,10 @@ inline bool instanceof(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != nullptr;
 }
 
-void HistDrawer::Draw1D(TH1* hist, TString name, TString xlabel, TString ylabel) {
+void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name);
-
+	if (log) gPad->SetLogy();
 	hist->Draw("histe");
 	hist->SetTitle(name);
 
@@ -28,6 +28,7 @@ void HistDrawer::Draw1D(TH1* hist, TString name, TString xlabel, TString ylabel)
 	hist->SetYTitle(ylabel);
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
+	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
 	c->Write();
 	output->Close();
 }
@@ -53,6 +54,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	else hist-> SetYTitle(ylabel);
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
+	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
 	c->Write();
 	output->Close();
 }
@@ -77,6 +79,8 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 	line->Draw();
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
+	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
+
 	c->Write();
 	output->Close();
 }
@@ -108,8 +112,8 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
-
-	stack->Draw("histe");
+	stack->SetMinimum(1);
+	stack->Draw("hist");
 	data->Draw("samee");
 	legend->Draw("same");
 	data->SetStats(false);
@@ -145,6 +149,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
+	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + "_stacked.png");
 	c->Write();
 	output->Close();
 }

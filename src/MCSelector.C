@@ -35,6 +35,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include "boost/lexical_cast.hpp"
+#include "TRandom3.h"
 
 // #include "../interface/HistMaker.hpp"
 // #include "PathHelper.hpp"
@@ -127,8 +128,11 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    xMin_Reco = pt.get<int>("Binning.xMin_Reco");
    xMax_Reco = pt.get<int>("Binning.xMax_Reco");
    nMax = pt.get<int>("general.maxEvents");
+   split = pt.get<int>("general.split");
+
    std::cout << "Config parsed!" << std::endl;
 
+   TRandom* rand = new TRandom();
    // book histos for split distributions
    h_GenSplit = new TH1F(genvar + "_" + option + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
    h_GenSplit->Sumw2();
@@ -189,7 +193,6 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    GetOutputList()->Add(h_Evt_Phi_GenMET);
 
 
-
    std::cout << "All Histos SetUp!" << std::endl;
 
 }
@@ -225,19 +228,23 @@ Bool_t MCSelector::Process(Long64_t entry)
    else weight_ *= -1;
    // weight_ = *Weight;
    if (option != "data") weight_ *= 35.9 ;
-   if (option == "Zjet") weight_ *= 3;
+   if (option == "Zjet") weight_ *= 3*0.971;
 
    //Calculate split
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
-   split = 50;
-   int split_ = 100 / split;
+   float split_ = split / 100.;
+   std::cout << split_ << std::endl;
+   double random = rand.Rndm();
 
-   if ( (!*GenLeptonVetoSelection  || !*GenBTagVetoSelection || !*GenMonoJetSelection || !*GenLeptonVetoSelection ) && *var_gen >= 250) {
-      if (entry % split_ != 0) h_fake_Split->Fill(*var_reco, weight_);
+
+   if ( (!*GenLeptonVetoSelection  || !*GenBTagVetoSelection || !*GenMonoJetSelection || !*GenLeptonVetoSelection ) && *var_gen > 250) {
+      if (random >= split_ ) {
+         h_fake_Split->Fill(*var_reco, weight_);
+      }
       h_fake->Fill(*var_reco, weight_);
    }
    else {
-      if (entry % split_ != 0) {
+      if (random >= split_) {
          h_GenSplit->Fill(*var_gen, weight_);
          h_testMET_Split->Fill(*var_reco, weight_);
          ASplit->Fill(*var_reco, *var_gen, weight_);
@@ -247,12 +254,12 @@ Bool_t MCSelector::Process(Long64_t entry)
       A->Fill(*var_reco, *var_gen, weight_);
    }
 
-   if (entry % split_ == 0) {
+   if (random >= split_) {
       h_RecoSplit->Fill(*var_reco, weight_);
       h_DummyDataSplit->Fill(*var_reco, weight_);
    }
    h_Reco->Fill(*var_reco, weight_);
-   // }
+
 
 
    //Additional Variables
