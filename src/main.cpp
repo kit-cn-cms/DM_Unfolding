@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 
 //Return relevant Histos
 
-//Full Sample
+	//Full Sample
 	HistHelper histhelper;
 	//Data
 	TH1F* MET_data = histhelper.Get1DHisto("Evt_Pt_MET_data");
@@ -124,14 +124,14 @@ int main(int argc, char** argv) {
 	TestMET_all_Split->Reset();
 
 	std::vector<TH2F*> v_A_bkgs_Split;
-	TH2F* A_all_Split = (TH2F*)histhelper.Get2DHisto("A_"+ bkgnames.at(0) + "_Split")->Clone();
+	TH2F* A_all_Split = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_Split")->Clone();
 	A_all_Split->Reset();
 
 	for (const auto& name : bkgnames) {
 		v_MET_bkgs.push_back(histhelper.Get1DHisto(recovar + "_" + name));
 
 		v_GenMET_bkgs.push_back(histhelper.Get1DHisto(genvar + "_" + name));
-		GenMET_all->Add(histhelper.Get1DHisto(recovar + "_" + name));
+		GenMET_all->Add(histhelper.Get1DHisto(genvar + "_" + name));
 
 		v_fakes_bkgs.push_back(histhelper.Get1DHisto("fakes_" + name));
 		fakes_all->Add(histhelper.Get1DHisto("fakes_" + name));
@@ -168,9 +168,14 @@ int main(int argc, char** argv) {
 	TH1F* GenMET_signal = histhelper.Get1DHisto("Evt_Pt_GenMET_signal");
 	TH1F* MET_signal = histhelper.Get1DHisto("Evt_Pt_MET_signal");
 
-	cout << "Gen integral: " << GenMET_all->Integral() << endl;
-	cout << "Reco (passes GenSelection) integral: " << TestMET_all->Integral() << endl;
+	//Subtract Fakes from Data
+	TH1F* h_DataMinFakes = (TH1F*) MET_data->Clone();
+	h_DataMinFakes->Add(fakes_all, -1);
 
+	TH1F* h_DummyDataMinFakes = (TH1F*) MET_DummyData_all->Clone();
+	h_DummyDataMinFakes->Add(fakes_all_Split, -1);
+
+	//calculate GenOverflow
 	float GenIntegral = 0;
 	for (int i = 0; i < 25 ; i++) {
 		GenIntegral += A_all->GetBinContent(0, i);
@@ -178,13 +183,11 @@ int main(int argc, char** argv) {
 	cout << "A underflow (0,all): " << GenIntegral << endl;
 	cout << "Fake integral: " << fakes_all->Integral() << endl;
 
-	TH1F* h_DummyDataMinFakes = (TH1F*) MET_DummyData_all->Clone();
-	h_DummyDataMinFakes->Add(fakes_all_Split, -1);
-
-	TH1F* h_DataMinFakes = (TH1F*) MET_data->Clone();
-	h_DataMinFakes->Add(fakes_all, -1);
 	cout << "Data integral: " << MET_data->Integral() << endl;
 	cout << "Data-Fake integral: " << h_DataMinFakes->Integral(h_DataMinFakes->GetXaxis()->FindBin(250), 25) << endl;
+
+	cout << "Gen integral: " << GenMET_all->Integral() << endl;
+	cout << "Reco (passes GenSelection) integral: " << TestMET_all->Integral() << endl;
 
 //Do Unfolding
 //Split Input (e.g. only on MC)
@@ -239,9 +242,6 @@ int main(int argc, char** argv) {
 	}
 	TH2* L = unfold->GetL("L");
 	TH2* RhoTotal = unfold_Split->GetRhoIJtotal("RhoTotal");
-
-
-
 
 // Draw Distributions
 //General Distributions

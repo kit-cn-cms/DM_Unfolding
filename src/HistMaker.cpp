@@ -230,9 +230,12 @@ void HistMaker::FillHistos(TChain* SignalChain, TChain* DataChain, std::map<std:
 		TProof *pl = TProof::Open(connect);
 	}
 	//Load necessary Macros
-	pl->Load(path.GetIncludePath() + "PathHelper.hpp+");
-	pl->Load(path.GetSourcePath() + "PathHelper.cpp+");
-	pl->Load(path.GetSourcePath() + "MCSelector.C+");
+	Bool_t notOnClient=kFALSE;
+	Bool_t uniqueWorkers = kTRUE;
+
+	pl->Load(path.GetIncludePath() + "PathHelper.hpp+",notOnClient,uniqueWorkers);
+	pl->Load(path.GetSourcePath() + "PathHelper.cpp+",notOnClient,uniqueWorkers);
+	pl->Load(path.GetSourcePath() + "MCSelector.C+",notOnClient,uniqueWorkers);
 
 	MCSelector *sel = new MCSelector(); // This is my custom selector class
 	//Set Custom InputParameter (not used for now)
