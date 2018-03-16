@@ -223,7 +223,7 @@ Bool_t MCSelector::Process(Long64_t entry)
    //////////////////////
    //Add weights here!!//
    //////////////////////
-   weight_ =  (*Weight_XS);
+   weight_ =  (*Weight_XS)*(*Weight_CSV)*(*Weight_PU);
    if (*Weight_GenValue > 0)weight_ *= 1;
    else weight_ *= -1;
    // weight_ = *Weight;

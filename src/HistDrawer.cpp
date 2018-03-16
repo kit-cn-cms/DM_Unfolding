@@ -28,7 +28,7 @@ void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TStri
 	hist->SetYTitle(ylabel);
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
-	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + ".png");
 	c->Write();
 	output->Close();
 }
@@ -38,6 +38,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	TCanvas* c = new TCanvas(name, name);
 	gStyle->SetStatY(0.9);
 	gStyle->SetStatX(0.9);
+	gStyle->SetOptStat(0);
 
 	hist->Draw("COLZ1");
 	hist->SetTitle(name);
@@ -54,7 +55,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	else hist-> SetYTitle(ylabel);
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
-	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + ".png");
 	c->Write();
 	output->Close();
 }
@@ -79,18 +80,19 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 	line->Draw();
 
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
-	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + ".png");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + ".png");
 
 	c->Write();
 	output->Close();
 }
 
-void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true);
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
+	gStyle->SetOptStat(0);
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
@@ -128,10 +130,27 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
-	ratio->Divide((TH1*)stack->GetStack()->Last());
-	ratio->Draw("E0");
-	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
-	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
+	if (!drawpull) {
+		ratio->Divide((TH1*)stack->GetStack()->Last());
+		ratio->Draw("E0");
+		ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
+		ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+	}
+	if (drawpull) {
+		// ratio->Add(lastStack, -1);
+		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
+			double sigma_d = data->GetBinError(bin);
+			double sigma_mc = lastStack->GetBinError(bin);
+			double error = sqrt(sigma_d*sigma_d-sigma_mc*sigma_mc);
+			double content = (lastStack->GetBinContent(bin)-data->GetBinContent(bin)) / sigma_d;
+			ratio->SetBinContent(bin, content);
+			ratio->SetBinError(bin, 0);
+		}
+		ratio->Draw("P");
+		ratio->GetYaxis()->SetTitle("#frac{MC-Data}{#sigma}");
+		ratio->GetYaxis()->SetRangeUser(-3.5, 3.5);
+	}
+
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
@@ -141,17 +160,26 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	ratio->SetTitle("");
 
 	c->Update();
-	TLine *line = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
-	line->SetLineColor(kBlack);
-	line->Draw();
-
+	if (!drawpull) {
+		TLine *line = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
+		line->SetLineColor(kBlack);
+		line->Draw();
+	}
+	if (drawpull) {
+		TLine *line = new TLine(c->cd(2)->GetUxmin(), 0.0, c->cd(2)->GetUxmax(), 0);
+		line->SetLineColor(kBlack);
+		line->Draw();
+		ratio->GetYaxis()->SetNdivisions(505);
+	}
 	c->cd(1);
 
 
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
-	c->SaveAs(path.GetPdfPath() +"../pngs/" + name + "_stacked.png");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
 	output->Close();
+	std::cout << name << ": ";
+	data->Chi2Test(lastStack, "WWP");
 }
 
 void HistDrawer::SetHistoStyle(TH1* histo, int color, bool filled) {
@@ -204,7 +232,9 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad) {
 }
 
 TLegend* HistDrawer::getLegend() {
-	TLegend* legend = new TLegend(0.7, 0.7, 0.92, 0.9);
+	TLegend* legend = new TLegend(0.5, 0.7, 0.92, 0.9);
+	legend->SetNColumns(2);
+	legend->SetColumnSeparation(0.2);
 	legend->SetBorderSize(0);
 	legend->SetLineStyle(0);
 	legend->SetTextFont(42);

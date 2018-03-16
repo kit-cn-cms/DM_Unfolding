@@ -80,15 +80,16 @@ public :
    TH1F* h_Jet_Eta = 0;
    TH1F* h_Evt_Phi_MET = 0;
    TH1F* h_Evt_Phi_GenMET = 0;
-   /////////////////////////
+   /////////////////////////////
    //Choose/Add Variables here//
-   /////////////////////////
+   /////////////////////////////
    // Readers to access the data (delete the ones you do not need).
    TTreeReaderValue<Float_t> var_reco = {fReader, "Evt_Pt_MET"};
    TTreeReaderValue<Float_t> var_gen = {fReader, "Evt_Pt_GenMET"};
    TTreeReaderValue<Float_t> Weight_XS = {fReader, "Weight_XS"};
    TTreeReaderValue<Float_t> Weight_GenValue = {fReader, "Weight_GenValue"};
    TTreeReaderValue<Float_t> Weight_PU = {fReader, "Weight_PU"};
+   TTreeReaderValue<Float_t> Weight_CSV = {fReader, "Weight_CSV"};
    TTreeReaderValue<Float_t> Weight = {fReader, "Weight"};
 
    TTreeReaderValue<Long64_t> GenMETSelection = {fReader, "GenMETSelection"};
