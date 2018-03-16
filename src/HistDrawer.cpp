@@ -137,25 +137,24 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 		ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
 	}
 	if (drawpull) {
-		// ratio->Add(lastStack, -1);
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
 			double sigma_d = data->GetBinError(bin);
 			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d*sigma_d-sigma_mc*sigma_mc);
-			double content = (lastStack->GetBinContent(bin)-data->GetBinContent(bin)) / sigma_d;
+			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
+			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
 			ratio->SetBinContent(bin, content);
 			ratio->SetBinError(bin, 0);
 		}
 		ratio->Draw("P");
-		ratio->GetYaxis()->SetTitle("#frac{MC-Data}{#sigma}");
+		ratio->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
 		ratio->GetYaxis()->SetRangeUser(-3.5, 3.5);
 	}
 
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
-	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.5);
-	ratio->GetYaxis()->SetTitleOffset(0.9);
+	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
+	ratio->GetYaxis()->SetTitleOffset(0.5);
 	ratio->GetYaxis()->SetNdivisions(505);
 	ratio->SetTitle("");
 
