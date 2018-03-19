@@ -116,7 +116,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	else stack->SetMaximum(max_Stack);
 	stack->SetMinimum(1);
 	stack->Draw("hist");
-	data->Draw("[]");
+	data->Draw("sameP");
 	legend->Draw("same");
 	data->SetStats(false);
 
@@ -182,7 +182,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 }
 
 
-void HistDrawer::DrawDataMC(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true);
 	TLegend* legend = getLegend();

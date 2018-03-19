@@ -355,7 +355,7 @@ int main(int argc, char** argv) {
 	Drawer.Draw2D(RhoTotal, "RhoTotal");
 	Drawer.Draw2D(RhoTotal_Split, "RhoTotal_Split");
 
-	Drawer.DrawDataMC(MET_data, v_MET_bkgs, bkgnames, "MET", log, false, drawpull);
+	Drawer.DrawDataMC(MET_data, v_MET_bkgs, bkgnames, "MET", log);
 	Drawer.DrawDataMC(MET_DummyData_all, v_MET_bkgs_Split, bkgnames, "MET_Split", log, false, drawpull);
 
 //Output of Unfolding
@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
 	Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
 
 	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_Split", log, false, drawpull);
-	Drawer.DrawDataMC(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGenErrors_Split", log, false, drawpull);
+	Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGenErrors_Split", log, false, drawpull);
 
 	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
 	Drawer.DrawDataMC(h_DummyDataMinFakes, {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
@@ -381,7 +381,7 @@ int main(int argc, char** argv) {
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
 
 	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen", log, false, drawpull);
-	Drawer.DrawDataMC(METTotalError, MET_Stat, MET_Syst, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGenErrors", log, false, drawpull);
+	Drawer.DrawDataMCerror(METTotalError, MET_Stat, MET_Syst, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGenErrors", log, false, drawpull);
 
 	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
 	Drawer.DrawDataMC(h_DataMinFakes, {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack", log);
