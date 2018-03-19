@@ -8,6 +8,7 @@
 // #include "TMath.h"
 #include <math.h>
 #include "TSortedList.h"
+#include "TGraphErrors.h"
 
 
 
@@ -34,6 +35,7 @@ std::vector<T> to_array(const std::string & s)
 }
 
 int main(int argc, char** argv) {
+	HistDrawer Drawer;
 
 	char currentdir[1024];
 	getcwd(currentdir, sizeof(currentdir));
@@ -197,7 +199,7 @@ int main(int argc, char** argv) {
 	Unfolder_Split.ParseConfig();
 	TUnfoldDensity* unfold_Split = Unfolder_Split.SetUp(A_all_Split, MET_DummyData_all);
 
-	Unfolder_Split.SubBkg(unfold_Split, fakes_all_Split, "fakes_Split"); //subtract fakes
+	unfold_Split->SubtractBackground(fakes_all_Split, "fakes_Split"); //subtract fakes
 
 	unfold_Split->SetBias(GenMET_all_Split);
 
@@ -210,16 +212,50 @@ int main(int argc, char** argv) {
 	std::tuple<TH1*, TH1*> unfold_output_Split;
 	unfold_output_Split = Unfolder_Split.GetOutput(unfold_Split);
 
+	//ERRORS
 	TH2* ErrorMatrix_Split = unfold_Split->GetEmatrixTotal("ErrorMatrix_Split");
+	//stat sources
 	TH2* ErrorMatrix_MCstat_Split = unfold_Split->GetEmatrixSysUncorr("ErrorMatrix_MCstat_Split");
+	Drawer.Draw2D(ErrorMatrix_MCstat_Split, "ErrorMatrix_MCstat_Split");
+	TH2* ErrorMatrix_input_Split = unfold_Split->GetEmatrixInput("ErrorMatrix_input_Split");
+	Drawer.Draw2D(ErrorMatrix_input_Split, "ErrorMatrix_input_Split");
+	//syst sources
+	//subtracted bkgs
+	TH2* ErrorMatrix_subBKGuncorr_Split = unfold_Split->GetEmatrixSysBackgroundUncorr("fakes_Split", "fakes__Split");
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr_Split, "ErrorMatrix_subBKGuncorr_Split");
+	// TH2* ErrorMatrix_subBKGscale_Split = unfold_Split->GetEmatrixSysBackgroundScale("ErrorMatrix_subBKGscale_Split", "fakes_Split");
 
-	TH1D* METTotalError_Split = new TH1D("TotalError_Split", ";MET", nBins_Gen, BinEdgesGen.data());
+	TH1D* METTotalError_Split = new TH1D("TotalError_Split", "MET", nBins_Gen, BinEdgesGen.data());
+	std::vector<double> EStat_split;
+	std::vector<double> ESyst_split;
+	std::vector<double> zeros;
+	std::vector<double> BinCenters_Split;
+	std::vector<double> BinContents_Split;
+	std::vector<double> TotalError_Split;
+
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
+		double staterror = sqrt(ErrorMatrix_MCstat_Split->GetBinContent(bin, bin)
+		                        + ErrorMatrix_input_Split->GetBinContent(bin, bin)
+		                       );
+		EStat_split.push_back(staterror);
+		double systerror = sqrt(ErrorMatrix_subBKGuncorr_Split->GetBinContent(bin, bin)
+		                        // + ErrorMatrix_subBKGscale_Split->GetBinContent(bin, bin)
+		                       );
+		ESyst_split.push_back(systerror);
+		zeros.push_back(0);
+		TotalError_Split.push_back(sqrt(pow(staterror,2)+pow(systerror,2)));
+		BinCenters_Split.push_back(std::get<0>(unfold_output_Split)->GetBinCenter(bin));
+		BinContents_Split.push_back(std::get<0>(unfold_output_Split)->GetBinContent(bin));
 		METTotalError_Split->SetBinContent(bin, std::get<0>(unfold_output_Split)->GetBinContent(bin));
 		METTotalError_Split->SetBinError(bin, sqrt(ErrorMatrix_Split->GetBinContent(bin, bin)));
 	}
+
+	TGraphErrors *MET_Split_Stat = new TGraphErrors(nBins_Gen, BinCenters_Split.data(), BinContents_Split.data(), zeros.data(), EStat_split.data());
+	TGraphErrors *MET_Split_Syst = new TGraphErrors(nBins_Gen, BinCenters_Split.data(), BinContents_Split.data(), zeros.data(), TotalError_Split.data());
+
 	TH2* L_Split = unfold_Split->GetL("L_Split");
 	TH2* RhoTotal_Split = unfold_Split->GetRhoIJtotal("RhoTotal_Split");
+
 
 //Data Input
 	cout << "Unfolding using real Data:" << endl;
@@ -237,13 +273,45 @@ int main(int argc, char** argv) {
 	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
+	
+	//ERRORS
 	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
-	TH2* ErrorMatrix_MCstat = unfold_Split->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	TH1D* METTotalError = new TH1D("TotalError", ";MET", nBins_Gen, BinEdgesGen.data());
+	//stat sources
+	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat");
+	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input");
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input");
+	//syst sources
+	//subtracted bkgs
+	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes", "fakes_all");
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr_Split");
+	// TH2* ErrorMatrix_subBKGscale_Split = unfold_Split->GetEmatrixSysBackgroundScale("ErrorMatrix_subBKGscale_Split", "fakes_Split");
+
+	TH1D* METTotalError = new TH1D("TotalError", "MET", nBins_Gen, BinEdgesGen.data());
+	std::vector<double> EStat;
+	std::vector<double> ESyst;
+	std::vector<double> BinCenters;
+	std::vector<double> BinContents;
+	std::vector<double> TotalError;
+
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
+		double staterror = sqrt(ErrorMatrix_MCstat->GetBinContent(bin, bin)
+		                        + ErrorMatrix_input->GetBinContent(bin, bin)
+		                       );
+		EStat.push_back(staterror);
+		double systerror = sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)
+		                        // + ErrorMatrix_subBKGscale_Split->GetBinContent(bin, bin)
+		                       );
+		ESyst.push_back(systerror);
+		TotalError.push_back(sqrt(pow(staterror,2)+pow(systerror,2)));
+		BinCenters.push_back(std::get<0>(unfold_output)->GetBinCenter(bin));
+		BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
 		METTotalError->SetBinContent(bin, std::get<0>(unfold_output)->GetBinContent(bin));
 		METTotalError->SetBinError(bin, sqrt(ErrorMatrix->GetBinContent(bin, bin)));
 	}
+
+	TGraphErrors *MET_Stat = new TGraphErrors(nBins_Gen, BinCenters.data(), BinContents.data(), zeros.data(), EStat.data());
+	TGraphErrors *MET_Syst = new TGraphErrors(nBins_Gen, BinCenters.data(), BinContents.data(), zeros.data(), TotalError.data());
 	TH2* L = unfold->GetL("L");
 	TH2* RhoTotal = unfold_Split->GetRhoIJtotal("RhoTotal");
 
@@ -251,7 +319,6 @@ int main(int argc, char** argv) {
 	bool log = true;
 	bool drawpull = true;
 //General Distributions
-	HistDrawer Drawer;
 	// Drawer.Draw1D(MET_Wjet, "MET_Wjet");
 	// Drawer.Draw1D(GenMET_Wjet, "GenMET_Wjet");
 	// Drawer.Draw1D(MET_Wjet_Split, "MET_Wjet_Split");
@@ -296,11 +363,14 @@ int main(int argc, char** argv) {
 	for (const std::string& name : bkgnames) {
 		GenBkgNames.push_back("Gen_" + name);
 	}
-//split Input
+
+	//split Input
 	Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
 	Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
 
 	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_Split", log, false, drawpull);
+	Drawer.DrawDataMC(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGenErrors_Split", log, false, drawpull);
+
 	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split, GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
 	Drawer.DrawDataMC(h_DummyDataMinFakes, {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
 
@@ -311,6 +381,8 @@ int main(int argc, char** argv) {
 	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
 
 	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen", log, false, drawpull);
+	Drawer.DrawDataMC(METTotalError, MET_Stat, MET_Syst, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGenErrors", log, false, drawpull);
+
 	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs, GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
 	Drawer.DrawDataMC(h_DataMinFakes, {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack", log);
 
