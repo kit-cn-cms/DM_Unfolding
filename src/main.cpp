@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
 	std::vector<double> BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
 	std::vector<double> BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
 	int nBins_Gen = BinEdgesGen.size() - 1;
-
+	std::vector<string>	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
 	std::vector<string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
 	// pt.put("general.fillhistos",false);
 	bool fillhistos = true;
@@ -60,7 +60,6 @@ int main(int argc, char** argv) {
 
 // Fill Histos?
 	char c;
-
 	std::ifstream histfile(path.GetHistoFilePath());
 	if (histfile.good()) {
 		cout << "Histo ROOT file found here: " << path.GetHistoFilePath() << endl;
@@ -82,94 +81,94 @@ int main(int argc, char** argv) {
 	//Full Sample
 	HistHelper histhelper;
 	//Data
-	TH1F* MET_data = histhelper.Get1DHisto("Evt_Pt_MET_data");
+	TH1F* MET_data = histhelper.Get1DHisto("Evt_Pt_MET_data_nominal");
 	//Backgrounds
 	std::vector<TH1*> v_MET_bkgs;
-	TH1F* MET_all = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0))->Clone();
+	TH1F* MET_all = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_nominal")->Clone();
 	MET_all->Reset();
 
 	std::vector<TH1*> v_GenMET_bkgs;
-	TH1F* GenMET_all = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0))->Clone();
+	TH1F* GenMET_all = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_nominal")->Clone();
 	GenMET_all->Reset();
 
 	std::vector<TH1*> v_fakes_bkgs;
-	TH1F* fakes_all = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0));
+	TH1F* fakes_all = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_nominal");
 	fakes_all->Reset();
 
 	std::vector<TH1*> v_testmet_bkgs;
-	TH1F* TestMET_all = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0))->Clone();
+	TH1F* TestMET_all = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0) + "_nominal")->Clone();
 	TestMET_all->Reset();
 
 	std::vector<TH2F*> v_A_bkgs;
-	TH2F* A_all = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0))->Clone();
+	TH2F* A_all = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_nominal")->Clone();
 	A_all->Reset();
 
 
 	//PseudoData
 	std::vector<TH1*> v_MET_DummyDatas;
-	TH1F* MET_DummyData_all = (TH1F*) histhelper.Get1DHisto("DummyData_" + bkgnames.at(0) + "_Split")->Clone();
+	TH1F* MET_DummyData_all = (TH1F*) histhelper.Get1DHisto("DummyData_" + bkgnames.at(0) + "_nominal" + "_Split")->Clone();
 	MET_DummyData_all->Reset();
 
 	std::vector<TH1*> v_MET_bkgs_Split;
-	TH1F* MET_all_Split = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_Split")->Clone();
+	TH1F* MET_all_Split = (TH1F*) histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_nominal" + "_Split")->Clone();
 	MET_all_Split->Reset();
 
 	std::vector<TH1*> v_GenMET_bkgs_Split;
-	TH1F* GenMET_all_Split = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_Split")->Clone();
+	TH1F* GenMET_all_Split = (TH1F*) histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_nominal" + "_Split")->Clone();
 	GenMET_all_Split->Reset();
 
 	std::vector<TH1*> v_fakes_bkgs_Split;
-	TH1F* fakes_all_Split = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_Split");
+	TH1F* fakes_all_Split = (TH1F*)histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_nominal" + "_Split");
 	fakes_all_Split->Reset();
 
 	std::vector<TH1*> v_testmet_bkgs_Split;
-	TH1F* TestMET_all_Split = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0) + "_Split")->Clone();
+	TH1F* TestMET_all_Split = (TH1F*) histhelper.Get1DHisto("TestMET" + bkgnames.at(0) + "_nominal" + "_Split")->Clone();
 	TestMET_all_Split->Reset();
 
 	std::vector<TH2F*> v_A_bkgs_Split;
-	TH2F* A_all_Split = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_Split")->Clone();
+	TH2F* A_all_Split = (TH2F*)histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_nominal" + "_Split")->Clone();
 	A_all_Split->Reset();
 
 	for (const auto& name : bkgnames) {
-		v_MET_bkgs.push_back(histhelper.Get1DHisto(recovar + "_" + name));
+		v_MET_bkgs.push_back(histhelper.Get1DHisto(recovar + "_" + name + "_nominal"));
 
-		v_GenMET_bkgs.push_back(histhelper.Get1DHisto(genvar + "_" + name));
-		GenMET_all->Add(histhelper.Get1DHisto(genvar + "_" + name));
+		v_GenMET_bkgs.push_back(histhelper.Get1DHisto(genvar + "_" + name + "_nominal"));
+		GenMET_all->Add(histhelper.Get1DHisto(genvar + "_" + name + "_nominal"));
 
-		v_fakes_bkgs.push_back(histhelper.Get1DHisto("fakes_" + name));
-		fakes_all->Add(histhelper.Get1DHisto("fakes_" + name));
+		v_fakes_bkgs.push_back(histhelper.Get1DHisto("fakes_" + name + "_nominal"));
+		fakes_all->Add(histhelper.Get1DHisto("fakes_" + name + "_nominal"));
 
-		v_testmet_bkgs.push_back(histhelper.Get1DHisto("TestMET" + name));
-		TestMET_all->Add(histhelper.Get1DHisto("TestMET" + name));
+		v_testmet_bkgs.push_back(histhelper.Get1DHisto("TestMET" + name + "_nominal"));
+		TestMET_all->Add(histhelper.Get1DHisto("TestMET" + name + "_nominal"));
 
-		v_A_bkgs.push_back(histhelper.Get2DHisto("A_" + name));
-		A_all->Add(histhelper.Get2DHisto("A_" + name));
+		v_A_bkgs.push_back(histhelper.Get2DHisto("A_" + name + "_nominal"));
+		A_all->Add(histhelper.Get2DHisto("A_" + name + "_nominal"));
 
 
 
-		v_MET_DummyDatas.push_back(histhelper.Get1DHisto("DummyData_" + name + "_Split"));
-		MET_DummyData_all->Add(histhelper.Get1DHisto("DummyData_" + name + "_Split"));
+		v_MET_DummyDatas.push_back(histhelper.Get1DHisto("DummyData_" + name + "_nominal" + "_Split"));
+		MET_DummyData_all->Add(histhelper.Get1DHisto("DummyData_" + name + "_nominal" + "_Split"));
 
-		v_MET_bkgs_Split.push_back(histhelper.Get1DHisto(recovar + "_" + name + "_Split"));
-		MET_all_Split->Add(histhelper.Get1DHisto(recovar + "_" + name + "_Split"));
+		v_MET_bkgs_Split.push_back(histhelper.Get1DHisto(recovar + "_" + name + "_nominal" + "_Split"));
+		MET_all_Split->Add(histhelper.Get1DHisto(recovar + "_" + name + "_nominal" + "_Split"));
 
-		v_GenMET_bkgs_Split.push_back(histhelper.Get1DHisto(genvar + "_" + name + "_Split"));
-		GenMET_all_Split->Add(histhelper.Get1DHisto(genvar + "_" + name + "_Split"));
+		v_GenMET_bkgs_Split.push_back(histhelper.Get1DHisto(genvar + "_" + name + "_nominal" + "_Split"));
+		GenMET_all_Split->Add(histhelper.Get1DHisto(genvar + "_" + name + "_nominal" + "_Split"));
 
-		v_fakes_bkgs_Split.push_back(histhelper.Get1DHisto("fakes_" + name + "_Split"));
-		fakes_all_Split->Add(histhelper.Get1DHisto("fakes_" + name + "_Split"));
+		v_fakes_bkgs_Split.push_back(histhelper.Get1DHisto("fakes_" + name + "_nominal" + "_Split"));
+		fakes_all_Split->Add(histhelper.Get1DHisto("fakes_" + name + "_nominal" + "_Split"));
 
-		v_testmet_bkgs_Split.push_back(histhelper.Get1DHisto("TestMET" + name + "_Split"));
-		TestMET_all_Split->Add(histhelper.Get1DHisto("TestMET" + name + "_Split"));
+		v_testmet_bkgs_Split.push_back(histhelper.Get1DHisto("TestMET" + name + "_nominal" + "_Split"));
+		TestMET_all_Split->Add(histhelper.Get1DHisto("TestMET" + name + "_nominal" + "_Split"));
 
-		v_A_bkgs_Split.push_back(histhelper.Get2DHisto("A_" + name + "_Split"));
-		A_all_Split->Add(histhelper.Get2DHisto("A_" + name + "_Split"));
+		v_A_bkgs_Split.push_back(histhelper.Get2DHisto("A_" + name + "_nominal" + "_Split"));
+		A_all_Split->Add(histhelper.Get2DHisto("A_" + name + "_nominal" + "_Split"));
 
 	}
 
 	//Signal
-	TH1F* GenMET_signal = histhelper.Get1DHisto("Evt_Pt_GenMET_signal");
-	TH1F* MET_signal = histhelper.Get1DHisto("Evt_Pt_MET_signal");
+	TH1F* GenMET_signal = histhelper.Get1DHisto("Evt_Pt_GenMET_signal_nominal");
+	TH1F* MET_signal = histhelper.Get1DHisto("Evt_Pt_MET_signal_nominal");
 
 	//Subtract Fakes from Data
 	TH1F* h_DataMinFakes = (TH1F*) MET_data->Clone();
@@ -243,7 +242,7 @@ int main(int argc, char** argv) {
 		                       );
 		ESyst_split.push_back(systerror);
 		zeros.push_back(0);
-		TotalError_Split.push_back(sqrt(pow(staterror,2)+pow(systerror,2)));
+		TotalError_Split.push_back(sqrt(pow(staterror, 2) + pow(systerror, 2)));
 		BinCenters_Split.push_back(std::get<0>(unfold_output_Split)->GetBinCenter(bin));
 		BinContents_Split.push_back(std::get<0>(unfold_output_Split)->GetBinContent(bin));
 		METTotalError_Split->SetBinContent(bin, std::get<0>(unfold_output_Split)->GetBinContent(bin));
@@ -273,7 +272,7 @@ int main(int argc, char** argv) {
 	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
-	
+
 	//ERRORS
 	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
 	//stat sources
@@ -286,7 +285,7 @@ int main(int argc, char** argv) {
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes", "fakes_all");
 	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr_Split");
 	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr");
-	
+
 	// TH2* ErrorMatrix_subBKGscale_Split = unfold_Split->GetEmatrixSysBackgroundScale("ErrorMatrix_subBKGscale_Split", "fakes_Split");
 
 	TH1D* METTotalError = new TH1D("TotalError", "MET", nBins_Gen, BinEdgesGen.data());
@@ -305,7 +304,7 @@ int main(int argc, char** argv) {
 		                        // + ErrorMatrix_subBKGscale_Split->GetBinContent(bin, bin)
 		                       );
 		ESyst.push_back(systerror);
-		TotalError.push_back(sqrt(pow(staterror,2)+pow(systerror,2)));
+		TotalError.push_back(sqrt(pow(staterror, 2) + pow(systerror, 2)));
 		BinCenters.push_back(std::get<0>(unfold_output)->GetBinCenter(bin));
 		BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
 		METTotalError->SetBinContent(bin, std::get<0>(unfold_output)->GetBinContent(bin));

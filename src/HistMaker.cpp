@@ -21,37 +21,49 @@ using namespace std;
 
 void HistMaker::MakeHistos() {
 	ParseConfig();
-	cout << "Getting Signal Files:" << endl;
-	std::vector<TString> SignalFilelist = GetInputFileList(SignalPath, variation);
-	TChain* SignalChain = ChainFiles(SignalFilelist);
-	cout << "Getting Data Files:" << endl;
-	std::vector<TString> DataFilelist = GetInputFileList(DataPath, variation);
-	TChain* DataChain = ChainFiles(DataFilelist);
-	long data_events = DataChain->GetEntries();
+	std::vector<TChain*> SignalChains;
+	std::vector<TChain*> DataChains;
+
+	for (auto& var : variation) {
+		cout << "chaining files for " << var << " variation" << endl;
+
+		cout << "Getting Signal Files:" << endl;
+		std::vector<TString> SignalFilelist = GetInputFileList(SignalPath, var);
+		SignalChains.push_back(ChainFiles(SignalFilelist));
+
+		cout << "Getting Data Files:" << endl;
+		std::vector<TString> DataFilelist = GetInputFileList(DataPath, var);
+		DataChains.push_back(ChainFiles(DataFilelist));
+
+		std::vector<TString> tmp;
+		for (auto& name : bkgnames) {
+			cout << "Getting BKG files for " << name << endl;
+			BkgFilelists[name];
+			tmp = GetInputFileList(BkgPaths[name], var);
+			for (const TString& file : tmp) {
+				BkgFilelists[name].push_back(file);
+			}
+		}
+		TChain* tmp_chain;
+		for (const std::string& name : bkgnames) {
+			tmp_chain = ChainFiles(BkgFilelists[name]);
+			BkgChains.insert( std::make_pair( name, tmp_chain ));
+		}
+		BkgChainsVariations.push_back(BkgChains);
+	}
+
+	long data_events = DataChains.at(0)->GetEntries();
 	TTree* FriendTree = CreateFriendTree(additionalBranchNames, data_events);
 	TChain* FriendChain = new TChain("TreeFriend");
 	FriendChain->Add(path.GetRootFilesPath() + "TreeFriend.root");
-	DataChain->AddFriend(FriendChain);
+	for (auto& chain : DataChains) chain->AddFriend(FriendChain);
 
-	cout << "Getting BKG Files:" << endl;
-	std::vector<TString> tmp;
-	for (const std::string& name : bkgnames) {
-		BkgFilelists[name];
-		tmp = GetInputFileList(BkgPaths[name], variation);
-		for (const TString& file : tmp) {
-			BkgFilelists[name].push_back(file);
-		}
-	}
-	TChain* tmp_chain;
-	for (const std::string& name : bkgnames) {
-		tmp_chain = ChainFiles(BkgFilelists[name]);
-		BkgChains.insert( std::make_pair( name, tmp_chain ));
-	}
 	//Reset Histofile
 	// std::remove(path.GetHistoFilePath());
-	TFile* histofile = new TFile(path.GetHistoFilePath(),"RECREATE");
+	TFile* histofile = new TFile(path.GetHistoFilePath(), "RECREATE");
 	histofile->Close();
-	FillHistos(SignalChain, DataChain, BkgChains);
+
+	FillHistos(SignalChains, DataChains, BkgChainsVariations);
 }
 
 template<typename T>
@@ -83,7 +95,7 @@ void HistMaker::ParseConfig() {
 	}
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
-	variation = pt.get<string>("general.variation");
+	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
 	useBatch = pt.get<bool>("general.useBatch");
 
 	cout << "Config parsed!" << endl;
@@ -169,7 +181,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 
 
 TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
-	cout << "Setting up TChain" << endl;
+	// cout << "Setting up TChain" << endl;
 	TChain* chain = new TChain("MVATree");
 	for (const TString& fileName : filelist) {
 		if ( fileName.EndsWith(".root") ) {
@@ -194,7 +206,7 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 			filelist.close();
 		}
 	}
-	cout << "TChain SetUp!" << endl;
+	// cout << "TChain SetUp!" << endl;
 	return chain;
 }
 
@@ -216,8 +228,7 @@ TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNames, long n_Event
 	return TreeFriend;
 }
 
-
-void HistMaker::FillHistos(TChain* SignalChain, TChain* DataChain, std::map<std::string, TChain*> BkgChains) {
+void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains, std::vector<std::map<std::string, TChain*>> BkgChainsVariations) {
 	//Start Timer to measure Time in Selector
 	cout << "Start Timer for Filling Histo Procedure..." << endl;
 	TStopwatch watch;
@@ -230,12 +241,11 @@ void HistMaker::FillHistos(TChain* SignalChain, TChain* DataChain, std::map<std:
 		TProof *pl = TProof::Open(connect);
 	}
 	//Load necessary Macros
-	Bool_t notOnClient=kFALSE;
+	Bool_t notOnClient = kFALSE;
 	Bool_t uniqueWorkers = kTRUE;
-
-	pl->Load(path.GetIncludePath() + "PathHelper.hpp+",notOnClient,uniqueWorkers);
-	pl->Load(path.GetSourcePath() + "PathHelper.cpp+",notOnClient,uniqueWorkers);
-	pl->Load(path.GetSourcePath() + "MCSelector.C+",notOnClient,uniqueWorkers);
+	pl->Load(path.GetIncludePath() + "PathHelper.hpp+", notOnClient, uniqueWorkers);
+	pl->Load(path.GetSourcePath() + "PathHelper.cpp+", notOnClient, uniqueWorkers);
+	pl->Load(path.GetSourcePath() + "MCSelector.C+", notOnClient, uniqueWorkers);
 
 	MCSelector *sel = new MCSelector(); // This is my custom selector class
 	//Set Custom InputParameter (not used for now)
@@ -243,20 +253,31 @@ void HistMaker::FillHistos(TChain* SignalChain, TChain* DataChain, std::map<std:
 	TH1F* h_Gen = histhelper.Get1DHisto(genvar);
 	pl->AddInput(h_Gen);
 	//Process Chains
-	DataChain->SetProof();
-	DataChain->Process(sel, "data");
-	pl->ClearCache();
-
-	SignalChain->SetProof();
-	SignalChain->Process(sel, "signal");
-	pl->ClearCache();
-
-
-	for (const std::string& name : bkgnames) {
-		TChain* chain_tmp = BkgChains.find(name)->second;
-		chain_tmp->SetProof();
-		chain_tmp->Process(sel, TString(name));
+	//Data
+	int nVariation = 0;
+	for (auto& chain : DataChains) {
+		chain->SetProof();
+		chain->Process(sel, "data_" + TString(variation.at(nVariation)));
 		pl->ClearCache();
+		nVariation += 1;
+	}
+	//Signal
+	nVariation = 0;
+	for (auto& chain : SignalChains) {
+		chain->SetProof();
+		chain->Process(sel, "signal_" + TString(variation.at(nVariation)));
+		pl->ClearCache();
+		nVariation += 1;
+	}
+	nVariation = 0;
+	for (auto& chain : BkgChainsVariations) {
+		for (const std::string& name : bkgnames) {
+			TChain* chain_tmp = chain.find(name)->second;
+			chain_tmp->SetProof();
+			chain_tmp->Process(sel, TString(name) + "_" + variation.at(nVariation));
+			pl->ClearCache();
+		}
+		nVariation += 1;
 	}
 
 	//Log SlaveSessions

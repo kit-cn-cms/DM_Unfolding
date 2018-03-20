@@ -233,7 +233,7 @@ Bool_t MCSelector::Process(Long64_t entry)
    //Calculate split
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
    float split_ = split / 100.;
-   std::cout << split_ << std::endl;
+   // std::cout << split_ << std::endl;
    double random = rand.Rndm();
 
 
