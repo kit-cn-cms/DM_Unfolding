@@ -227,8 +227,8 @@ Bool_t MCSelector::Process(Long64_t entry)
    if (*Weight_GenValue > 0)weight_ *= 1;
    else weight_ *= -1;
    // weight_ = *Weight;
-   if (option != "data") weight_ *= 35.9 ;
-   if (option == "Zjet") weight_ *= 3*0.971;
+   if (!option.Contains("data")) weight_ *= 35.9 ;
+   if (option.Contains("Zjet")) weight_ *= 3*0.971;
 
    //Calculate split
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;

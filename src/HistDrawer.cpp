@@ -92,7 +92,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
-	gStyle->SetOptStat(0);
+	// gStyle->SetOptStat(0);
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
@@ -178,7 +178,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	c->Write();
 	output->Close();
 	std::cout << name << ": ";
-	data->Chi2Test(lastStack, "WWP");
+	// data->Chi2Test(lastStack, "WWP");
 }
 
 
@@ -276,7 +276,7 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 	c->Write();
 	output->Close();
 	std::cout << name << ": ";
-	data->Chi2Test(lastStack, "WWP");
+	// data->Chi2Test(lastStack, "WWP");
 }
 
 

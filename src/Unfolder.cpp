@@ -12,9 +12,9 @@
 using namespace std;
 
 
-TUnfoldDensity* Unfolder::SetUp(TH2F* A, TH1F* input) {
+TUnfoldDensity* Unfolder::SetUp(TH2* A, TH1F* input) {
 	cout << "Setting Up Unfolder.." << endl;
-	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfold::kHistMapOutputVert, TUnfold::kRegModeCurvature,
+	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfoldDensity::kHistMapOutputVert, TUnfold::kRegModeCurvature,
 	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidthAndUser, 0, 0, 0, "*[UOB]" );
 	float n_input = unfold->SetInput(input);
 	if (n_input >= 1) {
@@ -75,6 +75,7 @@ void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString 
 	bestRhoLogTau->SetMarkerColor(kRed);
 	bestRhoLogTau->Draw("*");
 	tau->SaveAs(path.GetPdfPath() + "tau_" + name + ".pdf");
+	tau->SaveAs(path.GetPdfPath() + "../pngs/tau_" + name + ".png");
 	tau->Write();
 	output->Close();
 }
