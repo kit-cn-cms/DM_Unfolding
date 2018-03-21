@@ -20,7 +20,8 @@ public:
 	void DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log = false, bool normalize = false, bool drawpull = false, TString xlabel = "none", TString ylabel = "# Events");
 
 	void SetHistoStyle(TH1 * histo, int color, bool filled = false);
-	TCanvas* getCanvas(TString name, bool ratiopad = false);
+	TCanvas* getCanvas(TString name, bool ratiopad = false, bool pullpad = false);
+
 	TLegend* getLegend();
 
 	PathHelper path;

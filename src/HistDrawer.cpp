@@ -88,7 +88,7 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 
 void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
-	TCanvas* c = getCanvas(name, true);
+	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
@@ -130,49 +130,63 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
-	if (!drawpull) {
-		ratio->Divide((TH1*)stack->GetStack()->Last());
-		ratio->Draw("E0");
-		ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
-		ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
-	}
-	if (drawpull) {
-		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
-			double sigma_d = data->GetBinError(bin);
-			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			ratio->SetBinContent(bin, content);
-			ratio->SetBinError(bin, 0);
-		}
-		ratio->Draw("P");
-		ratio->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
-		ratio->GetYaxis()->SetRangeUser(-3.5, 3.5);
-	}
-
+	ratio->Divide((TH1*)stack->GetStack()->Last());
+	ratio->Draw("E0");
+	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
+	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleOffset(0.5);
-	ratio->GetYaxis()->SetNdivisions(505);
 	ratio->SetTitle("");
+	ratio->GetYaxis()->SetNdivisions(505);
 
 	c->Update();
-	if (!drawpull) {
-		TLine *line = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
-		line->SetLineColor(kBlack);
-		line->Draw();
-	}
+	TLine *lineratio = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
+	lineratio->SetLineColor(kBlack);
+	lineratio->Draw();
+	c->Update();
+
+
 	if (drawpull) {
-		TLine *line = new TLine(c->cd(2)->GetUxmin(), 0.0, c->cd(2)->GetUxmax(), 0);
-		line->SetLineColor(kBlack);
-		line->Draw();
-		ratio->GetYaxis()->SetNdivisions(505);
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleOffset(0.3);
+
+		c->Update();
+		c->cd(3);
+		TH1* pull = (TH1*) data->Clone();
+		pull->Reset();
+		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
+			double sigma_d = data->GetBinError(bin);
+			double sigma_mc = lastStack->GetBinError(bin);
+			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
+			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			pull->SetBinContent(bin, content);
+			pull->SetBinError(bin, 0);
+		}
+		pull->Draw("P");
+		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
+		pull->GetYaxis()->SetRangeUser(-3.5, 3.5);
+		pull->GetXaxis()->SetLabelSize(pull->GetXaxis()->GetLabelSize() * 3);
+		pull->GetYaxis()->SetLabelSize(pull->GetYaxis()->GetLabelSize() * 3);
+		pull->GetXaxis()->SetTitleSize(pull->GetXaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleSize(pull->GetYaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleOffset(0.5);
+		pull->GetYaxis()->SetNdivisions(505);
+		pull->SetTitle("");
+		c->Update();
+		TLine *linepull = new TLine(c->cd(3)->GetUxmin(), 0.0, c->cd(3)->GetUxmax(), 0);
+		linepull->SetLineColor(kBlack);
+		linepull->Draw();
 	}
+
+
+
 	c->cd(1);
-
-
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
@@ -184,7 +198,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
-	TCanvas* c = getCanvas(name, true);
+	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
@@ -226,49 +240,61 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 	}
 	else data-> SetXTitle(xlabel);
 
-	c->cd(2);
+c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
-	if (!drawpull) {
-		ratio->Divide((TH1*)stack->GetStack()->Last());
-		ratio->Draw("E0");
-		ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
-		ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
-	}
-	if (drawpull) {
-		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
-			double sigma_d = data->GetBinError(bin);
-			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			ratio->SetBinContent(bin, content);
-			ratio->SetBinError(bin, 0);
-		}
-		ratio->Draw("P");
-		ratio->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
-		ratio->GetYaxis()->SetRangeUser(-3.5, 3.5);
-	}
-
+	ratio->Divide((TH1*)stack->GetStack()->Last());
+	ratio->Draw("E0");
+	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
+	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleOffset(0.5);
-	ratio->GetYaxis()->SetNdivisions(505);
 	ratio->SetTitle("");
+	ratio->GetYaxis()->SetNdivisions(505);
 
 	c->Update();
-	if (!drawpull) {
-		TLine *line = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
-		line->SetLineColor(kBlack);
-		line->Draw();
-	}
+	TLine *lineratio = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
+	lineratio->SetLineColor(kBlack);
+	lineratio->Draw();
+	c->Update();
+
+
 	if (drawpull) {
-		TLine *line = new TLine(c->cd(2)->GetUxmin(), 0.0, c->cd(2)->GetUxmax(), 0);
-		line->SetLineColor(kBlack);
-		line->Draw();
-		ratio->GetYaxis()->SetNdivisions(505);
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleOffset(0.3);
+
+		c->Update();
+		c->cd(3);
+		TH1* pull = (TH1*) data->Clone();
+		pull->Reset();
+		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
+			double sigma_d = data->GetBinError(bin);
+			double sigma_mc = lastStack->GetBinError(bin);
+			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
+			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			pull->SetBinContent(bin, content);
+			pull->SetBinError(bin, 0);
+		}
+		pull->Draw("P");
+		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
+		pull->GetYaxis()->SetRangeUser(-3.5, 3.5);
+		pull->GetXaxis()->SetLabelSize(pull->GetXaxis()->GetLabelSize() * 3);
+		pull->GetYaxis()->SetLabelSize(pull->GetYaxis()->GetLabelSize() * 3);
+		pull->GetXaxis()->SetTitleSize(pull->GetXaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleSize(pull->GetYaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleOffset(0.5);
+		pull->GetYaxis()->SetNdivisions(505);
+		pull->SetTitle("");
+		c->Update();
+		TLine *linepull = new TLine(c->cd(3)->GetUxmin(), 0.0, c->cd(3)->GetUxmax(), 0);
+		linepull->SetLineColor(kBlack);
+		linepull->Draw();
 	}
-	c->cd(1);
 
 
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
@@ -306,8 +332,8 @@ void HistDrawer::SetHistoStyle(TH1* histo, int color, bool filled) {
 	}
 }
 
-TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad) {
-	if (ratiopad) {
+TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad, bool pullpad) {
+	if (ratiopad && !pullpad) {
 		TCanvas* c = new TCanvas(name, name, 1024, 1024);
 		c->Divide(1, 2);
 		c->cd(1)->SetPad(0., 0.3, 1.0, 1.0);
@@ -320,6 +346,28 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad) {
 		c->cd(1)->SetLeftMargin(0.15);
 		c->cd(2)->SetRightMargin(0.05);
 		c->cd(2)->SetLeftMargin(0.15);
+		c->cd(2)->SetTicks(1, 1);
+		c->cd(1)->SetTicks(1, 1);
+		return c;
+	}
+	if (pullpad) {
+		TCanvas* c = new TCanvas(name, name, 1024, 1024);
+		c->Divide(1, 3);
+		c->cd(1)->SetPad(0., 0.4, 1.0, 1.0);
+		c->cd(1)->SetBottomMargin(0.0);
+		c->cd(2)->SetPad(0., 0.25, 1.0, 0.4);
+		c->cd(2)->SetTopMargin(0.0);
+		c->cd(3)->SetPad(0., 0.0, 1.0, 0.25);
+		c->cd(3)->SetTopMargin(0.0);
+		c->cd(1)->SetTopMargin(0.07);
+		c->cd(2)->SetBottomMargin(0.0);
+		c->cd(3)->SetBottomMargin(0.4);
+		c->cd(1)->SetRightMargin(0.05);
+		c->cd(1)->SetLeftMargin(0.15);
+		c->cd(2)->SetRightMargin(0.05);
+		c->cd(2)->SetLeftMargin(0.15);
+		c->cd(3)->SetRightMargin(0.05);
+		c->cd(3)->SetLeftMargin(0.15);
 		c->cd(2)->SetTicks(1, 1);
 		c->cd(1)->SetTicks(1, 1);
 		return c;
