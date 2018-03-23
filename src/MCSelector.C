@@ -127,7 +127,6 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    xMax_Gen = pt.get<int>("Binning.xMax_Gen");
    xMin_Reco = pt.get<int>("Binning.xMin_Reco");
    xMax_Reco = pt.get<int>("Binning.xMax_Reco");
-   nMax = pt.get<int>("general.maxEvents");
    split = pt.get<int>("general.split");
 
    std::cout << "Config parsed!" << std::endl;

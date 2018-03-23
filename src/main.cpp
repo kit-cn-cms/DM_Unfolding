@@ -48,7 +48,6 @@ int main(int argc, char** argv) {
 	TString genvar = pt.get<string>("vars.gen");
 	TString recovar = pt.get<string>("vars.reco");
 	int split = pt.get<int>("general.split");
-	// int nBins_Gen = pt.get<int>("Binning.nBins_Gen");
 	int xMin_Gen = pt.get<int>("Binning.xMin_Gen");
 	int xMax_Gen = pt.get<int>("Binning.xMax_Gen");
 	std::vector<double> BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
@@ -57,9 +56,7 @@ int main(int argc, char** argv) {
 	int nBins_Reco = BinEdgesReco.size() - 1;
 	std::vector<string>	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
 	std::vector<string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
-	// pt.put("general.fillhistos",false);
 	bool fillhistos = true;
-
 
 // Fill Histos?
 	char c;
@@ -231,8 +228,12 @@ int main(int argc, char** argv) {
 	Unfolder Unfolder_Split;
 	Unfolder_Split.ParseConfig();
 	TUnfoldDensity* unfold_Split = Unfolder_Split.SetUp(A_all_Split.at(0), MET_DummyData_all.at(0));
+	TH2* ProbMatrix_Split = (TH2*) A_all_Split.at(0)->Clone();
+	ProbMatrix_Split->Reset();
+	unfold_Split-> TUnfold::GetProbabilityMatrix(ProbMatrix_Split,TUnfoldDensity::kHistMapOutputVert);
+	Drawer.Draw2D(ProbMatrix_Split, "ProbMatrix_Split");
 	//subtract fakes
-	unfold_Split->SubtractBackground(fakes_all_Split.at(0), "fakes_Split", 1, 0.1);
+	unfold_Split->SubtractBackground(fakes_all_Split.at(0), "fakes_Split", 1, 0.0);
 
 	//addsys variations of MigrationMatrix
 	for (unsigned int i = 1; i < variation.size(); i++) {
@@ -276,7 +277,7 @@ int main(int argc, char** argv) {
 		tmp->Reset();
 		unfold_Split->GetEmatrixSysSource(tmp,  var + TString("_Split"));
 		v_ErrorMatrixVariations_Split.push_back(tmp);
-		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + var + "_Split");
+		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + var + "_Split", true);
 	}
 
 	TH1D* METTotalError_Split = new TH1D("TotalError_Split", "MET", nBins_Gen, BinEdgesGen.data());
@@ -317,15 +318,19 @@ int main(int argc, char** argv) {
 	Unfolder Unfolder;
 	Unfolder.ParseConfig();
 	TUnfoldDensity* unfold = Unfolder.SetUp(A_all.at(0), MET_data);
+	TH2* ProbMatrix = (TH2*) A_all.at(0)->Clone();
+	ProbMatrix->Reset();
+	unfold-> TUnfold::GetProbabilityMatrix(ProbMatrix,TUnfoldDensity::kHistMapOutputVert);
+	Drawer.Draw2D(ProbMatrix, "ProbMatrix");
 
-	unfold->SubtractBackground(fakes_all.at(0), "fakes", 1, 0.1); //subtract fakes
+	unfold->SubtractBackground(fakes_all.at(0), "fakes", 1, 0.0); //subtract fakes
 
 	//addsys variations of MigrationMatrix
-	nVariation=0;
+	nVariation = 0;
 	for (auto& var : variation) {
-	// for (unsigned int i = 1; i < variation.size(); i++) {
+		// for (unsigned int i = 1; i < variation.size(); i++) {
 		unfold->AddSysError(A_all.at(nVariation), TString(var), TUnfoldDensity::kHistMapOutputVert, TUnfoldDensity::kSysErrModeMatrix);
-		nVariation+=1;
+		nVariation += 1;
 	}
 
 	unfold->SetBias(GenMET_all.at(0));
@@ -363,7 +368,7 @@ int main(int argc, char** argv) {
 		tmp->Reset();
 		unfold->GetEmatrixSysSource(tmp, TString(var));
 		v_ErrorMatrixVariations.push_back(tmp);
-		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var));
+		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var), true);
 	}
 
 
