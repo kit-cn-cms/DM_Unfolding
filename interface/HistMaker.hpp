@@ -19,7 +19,7 @@ class HistMaker
 public:
 	std::vector<TString> GetInputFileList(std::vector<std::string> paths , TString type);
 	void ParseConfig();
-	void FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains,std::vector<std::map<std::string, TChain*>> BkgChainsVariations);
+	void FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains,std::vector<std::vector<TChain*>> BkgChainsVariations);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
 	TTree* CreateFriendTree(std::vector<std::string> BranchNames, long n_Events);
@@ -39,10 +39,6 @@ public:
 	std::vector<std::string> DataPath;
 	std::vector<std::string> bkgnames;
 	std::map<std::string, std::vector<std::string>> BkgPaths;
-	// std::vector<std::map<std::string, std::vector<TString>>> BkgFileListsVariations;
-	std::map<std::string, std::vector<TString>> BkgFilelists;
-	std::vector<std::map<std::string, TChain*>> BkgChainsVariations;
-	std::map<std::string, TChain*> BkgChains;
 	std::vector<std::string> weights;
 	std::vector<std::string> additionalBranchNames;
 
