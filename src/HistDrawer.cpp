@@ -130,7 +130,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
-	ratio->Divide((TH1*)stack->GetStack()->Last());
+	ratio->Divide( (TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
 	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
@@ -197,6 +197,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 
 void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	gStyle->SetEndErrorSize(10);
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
@@ -240,7 +241,7 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 	}
 	else data-> SetXTitle(xlabel);
 
-c->cd(2);
+	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
 	ratio->Divide((TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
@@ -276,7 +277,7 @@ c->cd(2);
 			double sigma_d = data->GetBinError(bin);
 			double sigma_mc = lastStack->GetBinError(bin);
 			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			double content = ( data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
 			pull->SetBinContent(bin, content);
 			pull->SetBinError(bin, 0);
 		}
