@@ -35,7 +35,7 @@ void Unfolder::ParseConfig() {
 	tauMax = pt.get<double>("Unfolding.tauMax");
 }
 
-std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold, const char * distribution, const char * axisSteering ) {
+std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold, TString name, const char * distribution, const char * axisSteering ) {
 	cout << "Finding BestTau" << endl;
 	int iBest;
 	TSpline *scanResult = 0;
@@ -45,14 +45,6 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
-	return std::make_tuple(iBest, scanResult, lCurve);
-
-}
-
-void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString name) {
-	int iBest = get<0>(tuple);
-	TSpline* scanResult = get<1>(tuple);
-	TGraph* lCurve = get<2>(tuple);
 
 	//Graphs to Visualize best choice of Tau
 	Double_t t[1], rho[1], x[1], y[1];
@@ -77,8 +69,56 @@ void Unfolder::VisualizeTau(std::tuple<int, TSpline* , TGraph* > tuple, TString 
 	tau->SaveAs(path.GetPdfPath() + "tau_" + name + ".pdf");
 	tau->SaveAs(path.GetPdfPath() + "../pngs/tau_" + name + ".png");
 	tau->Write();
+
+	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
+	clCurve->cd();
+	lCurve->Draw();
+	bestLCurve->Draw("*");
+	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
+	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
+
 	output->Close();
+
+	return std::make_tuple(iBest, scanResult, lCurve);
 }
+
+std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TString name) {
+	cout << "Finding BestTau" << endl;
+	int iBest;
+	TSpline *logTauX, *logTauY, *logTauCurvature;
+	TGraph *lCurve = 0;
+
+	// iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoAvgSys, distribution, axisSteering, &lCurve);
+	iBest = unfold->ScanLcurve(nScan, 0, 0, &lCurve, &logTauX, &logTauY);
+
+	std::cout << " Best tau=" << unfold->GetTau() << "\n";
+	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
+
+	//Graphs to Visualize best choice of Tau
+	Double_t t[1], x[1], y[1];
+	logTauX->GetKnot(iBest, t[0], x[0]);
+	logTauY->GetKnot(iBest, t[0], y[0]);
+	TGraph *bestLcurve = new TGraph(1, x, y);
+	TGraph *bestLogTauLogChi2 = new TGraph(1, t, x);
+
+	TCanvas* tau = new TCanvas("logtauvsChi2_" + name, "logtauvsChi2_" + name);
+	logTauX->Draw();
+	bestLogTauLogChi2->SetMarkerColor(kRed);
+	bestLogTauLogChi2->Draw("*");
+	tau->SaveAs(path.GetPdfPath() + "logtauvsChi2_" + name + ".pdf");
+	tau->SaveAs(path.GetPdfPath() +  "../pngs/logtauvsChi2_" + name + ".png");
+
+	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
+	lCurve->Draw("AL");
+	bestLcurve->SetMarkerColor(kRed);
+	bestLcurve->Draw("*");
+	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
+	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
+
+	// return std::make_tuple(iBest, scanResult, lCurve);
+}
+
+
 
 void Unfolder::DoUnfolding(TUnfoldDensity* unfold, TH1F* h_Data) {
 	unfold->DoUnfold(unfold->GetTau(), h_Data, biasScale);

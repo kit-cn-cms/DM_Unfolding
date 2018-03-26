@@ -230,7 +230,7 @@ int main(int argc, char** argv) {
 	TUnfoldDensity* unfold_Split = Unfolder_Split.SetUp(A_all_Split.at(0), MET_DummyData_all.at(0));
 	TH2* ProbMatrix_Split = (TH2*) A_all_Split.at(0)->Clone();
 	ProbMatrix_Split->Reset();
-	unfold_Split-> TUnfold::GetProbabilityMatrix(ProbMatrix_Split,TUnfoldDensity::kHistMapOutputVert);
+	unfold_Split-> TUnfold::GetProbabilityMatrix(ProbMatrix_Split, TUnfoldDensity::kHistMapOutputVert);
 	Drawer.Draw2D(ProbMatrix_Split, "ProbMatrix_Split");
 	//subtract fakes
 	unfold_Split->SubtractBackground(fakes_all_Split.at(0), "fakes_Split", 1, 0.0);
@@ -243,15 +243,14 @@ int main(int argc, char** argv) {
 	unfold_Split->SetBias(GenMET_all_Split.at(0));
 
 	std::tuple<int , TSpline*, TGraph*> TauResult_Split;
-	TauResult_Split = Unfolder_Split.FindBestTau(unfold_Split);
-	Unfolder_Split.VisualizeTau(TauResult_Split, "Split");
+	TauResult_Split = Unfolder_Split.FindBestTau(unfold_Split, "Split");
 
-	// unfold_Split->DoUnfold(10.0);
-
+	// unfold_Split->DoUnfold(0.0);
+	//GetOutput
 	std::tuple<TH1*, TH1*> unfold_output_Split;
 	unfold_output_Split = Unfolder_Split.GetOutput(unfold_Split);
 
-	//ERRORS
+	//Visualize ERRORS
 	TH2* ErrorMatrix_Split = unfold_Split->GetEmatrixTotal("ErrorMatrix_Split");
 
 	//STAT SOURCES
@@ -320,7 +319,7 @@ int main(int argc, char** argv) {
 	TUnfoldDensity* unfold = Unfolder.SetUp(A_all.at(0), MET_data);
 	TH2* ProbMatrix = (TH2*) A_all.at(0)->Clone();
 	ProbMatrix->Reset();
-	unfold-> TUnfold::GetProbabilityMatrix(ProbMatrix,TUnfoldDensity::kHistMapOutputVert);
+	unfold-> TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
 	Drawer.Draw2D(ProbMatrix, "ProbMatrix");
 
 	unfold->SubtractBackground(fakes_all.at(0), "fakes", 1, 0.0); //subtract fakes
@@ -328,7 +327,6 @@ int main(int argc, char** argv) {
 	//addsys variations of MigrationMatrix
 	nVariation = 0;
 	for (auto& var : variation) {
-		// for (unsigned int i = 1; i < variation.size(); i++) {
 		unfold->AddSysError(A_all.at(nVariation), TString(var), TUnfoldDensity::kHistMapOutputVert, TUnfoldDensity::kSysErrModeMatrix);
 		nVariation += 1;
 	}
@@ -336,14 +334,13 @@ int main(int argc, char** argv) {
 	unfold->SetBias(GenMET_all.at(0));
 
 	std::tuple<int , TSpline*, TGraph*> TauResult;
-	TauResult = Unfolder.FindBestTau(unfold);
-	Unfolder.VisualizeTau(TauResult, "data");
-
+	TauResult = Unfolder.FindBestTau(unfold, "data");
+	//Get Output
 	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
 
-	//ERRORS
+	//Visualize ERRORS
 	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
 
 	//STAT SOURCES
@@ -401,6 +398,8 @@ int main(int argc, char** argv) {
 	TGraphErrors *MET_Syst = new TGraphErrors(nBins_Gen, BinCenters.data(), BinContents.data(), zeros.data(), TotalError.data());
 	TH2* L = unfold->GetL("L");
 	TH2* RhoTotal = unfold->GetRhoIJtotal("RhoTotal");
+	std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << "+" << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n";
+
 
 // Draw Distributions
 	bool log = true;
@@ -448,10 +447,11 @@ int main(int argc, char** argv) {
 	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_Split", log, false, drawpull);
 	Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors_Split", log, false, drawpull);
 
-	Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
+	// Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
 	Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
 
 	Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), v_testmet_bkgs_Split.at(0), bkgnames, "DummyDataMinFakesvsTestMET" , log);
+	Drawer.DrawDataMC(TestMET_all_Split.at(0), {MET_all_Split.at(0)}, {"Reco"}, "Purity_Split" , log);
 
 //Using Data
 	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded", log);
@@ -460,14 +460,14 @@ int main(int argc, char** argv) {
 	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs.at(0), GenBkgNames, "MET_UnfoldedvsGen", log, false, drawpull);
 	Drawer.DrawDataMCerror(METTotalError, MET_Stat, MET_Syst, v_GenMET_bkgs.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors", log, false, drawpull);
 
-	Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs.at(0), GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
+	// Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs.at(0), GenBkgNames, "MET_UnfoldedvsGen_normalized", log, true);
 	Drawer.DrawDataMC(h_DataMinFakes.at(0), {std::get<1>(unfold_output)},  {"FoldedBack"}, "MET_DatavsFoldedBack", log);
 
 	Drawer.Draw1D(h_DataMinFakes.at(0), "DataMinFakes");
 	Drawer.DrawDataMC(h_DataMinFakes.at(0), v_testmet_bkgs.at(0), bkgnames, "DataMinFakesvsTestMET", log);
 
 
-	Drawer.DrawDataMC(v_MET_bkgs[0][3], {v_MET_bkgs[1][3]}, {"JESup"}, "nomvsJESup", log);
+	// Drawer.DrawDataMC(v_MET_bkgs[0][3], {v_MET_bkgs[1][3]}, {"JESup"}, "nomvsJESup", log);
 
 
 

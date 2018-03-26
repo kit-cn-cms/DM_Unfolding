@@ -114,7 +114,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
-	stack->SetMinimum(0.1);
+	stack->SetMinimum(1);
 	stack->Draw("hist");
 	data->Draw("sameP");
 	legend->Draw("same");
@@ -225,7 +225,7 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
-	stack->SetMinimum(0.1);
+	stack->SetMinimum(1);
 	stack->Draw("hist");
 	data->Draw("PSame");
 	data_stat->Draw("same||");
