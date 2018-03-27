@@ -55,9 +55,9 @@ void HistMaker::MakeHistos() {
 	for (auto& chain : DataChains) chain->AddFriend(FriendChain);
 
 	//Reset Histofile
-	// std::remove(path.GetHistoFilePath());
-	TFile* histofile = new TFile(path.GetHistoFilePath(), "RECREATE");
-	histofile->Close();
+	std::remove(path.GetHistoFilePath());
+	// TFile* histofile = new TFile(path.GetHistoFilePath(), "RECREATE");
+	// histofile->Close();
 
 	FillHistos(SignalChains, DataChains, BkgChainsVariations);
 }
@@ -256,6 +256,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 		chain->Process(sel, "data_" + TString(variation.at(nVariation)));
 		pl->ClearCache();
 		nVariation += 1;
+		delete chain;
 	}
 	//Signal
 	nVariation = 0;
@@ -264,6 +265,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 		chain->Process(sel, "signal_" + TString(variation.at(nVariation)));
 		pl->ClearCache();
 		nVariation += 1;
+		delete chain;
 	}
 	nVariation = 0;
 	for (auto& varchains : BkgChainsVariations) {
@@ -273,6 +275,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 			chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
 			pl->ClearCache();
 			j += 1;
+			delete chain;
 		}
 		nVariation += 1;
 	}

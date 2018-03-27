@@ -88,11 +88,11 @@ void MCSelector::Begin(TTree * /*tree*/)
    // When running with PROOF Begin() is only called on the client.
    // The tree argument is deprecated (on PROOF 0 is passed).
    TString option = GetOption();
+   histofile = new TFile(path.GetHistoFilePath(), "UPDATE");
 
    // TParameter<TString> *p =
    // dynamic_cast<TParameter<TString>*>(fInput->FindObject("outputpath"));
    // outpath = (p) ? (TString) p->GetVal() : outpath;
-   histofile = new TFile(path.GetHistoFilePath(), "UPDATE");
 }
 
 
@@ -102,7 +102,7 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
    // The tree argument is deprecated (on PROOF 0 is passed).
-
+   TH1::AddDirectory(kFALSE);
    TString option = GetOption();
    std::cout << "Processing: " << option << std::endl;
    std::cout << "Setting up Histos..." << std::endl;
@@ -113,16 +113,13 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
 
    bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
    BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
-   BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
-   nBins_Reco = BinEdgesReco.size() - 1;
    nBins_Gen = BinEdgesGen.size() - 1;
-
 
    genvar = pt.get<std::string>("vars.gen");
    recovar = pt.get<std::string>("vars.reco");
    variation = pt.get<std::string>("general.variation");
    // nBins_Gen = pt.get<int>("Binning.nBins_Gen");
-   // nBins_Reco = pt.get<int>("Binning.nBins_Reco");
+   nBins_Reco = pt.get<int>("Binning.nBins_Reco");
    xMin_Gen = pt.get<int>("Binning.xMin_Gen");
    xMax_Gen = pt.get<int>("Binning.xMax_Gen");
    xMin_Reco = pt.get<int>("Binning.xMin_Reco");
@@ -136,13 +133,13 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    h_GenSplit = new TH1F(genvar + "_" + option + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
    h_GenSplit->Sumw2();
    GetOutputList()->Add(h_GenSplit);
-   h_RecoSplit = new TH1F(recovar + "_" + option + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
+   h_RecoSplit = new TH1F(recovar + "_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
    h_RecoSplit->Sumw2();
    GetOutputList()->Add(h_RecoSplit);
-   h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split", "DummyData", nBins_Reco, BinEdgesReco.data());
+   h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split", "DummyData", nBins_Reco, xMin_Reco, xMax_Reco);
    h_DummyDataSplit->Sumw2();
    GetOutputList()->Add(h_DummyDataSplit);
-   ASplit = new TH2D("A_" + option + "_Split", "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
+   ASplit = new TH2D("A_" + option + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
    ASplit->Sumw2();
    GetOutputList()->Add(ASplit);
 
@@ -151,26 +148,26 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
    h_Gen->Sumw2();
    GetOutputList()->Add(h_Gen);
-   h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, BinEdgesReco.data());
+   h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
    h_Reco->Sumw2();
    GetOutputList()->Add(h_Reco);
-   A = new TH2D("A_" + option, "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
+   A = new TH2D("A_" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
    A->Sumw2();
    GetOutputList()->Add(A);
 
-   h_testMET = new TH1F("TestMET" + option, "TESTMET",  nBins_Reco, BinEdgesReco.data());
+   h_testMET = new TH1F("TestMET" + option, "TESTMET",  nBins_Reco, xMin_Reco, xMax_Reco);
    h_testMET->Sumw2();
    GetOutputList()->Add(h_testMET);
 
-   h_testMET_Split = new TH1F("TestMET" + option + "_Split", "TESTMET",  nBins_Reco, BinEdgesReco.data());
+   h_testMET_Split = new TH1F("TestMET" + option + "_Split", "TESTMET",  nBins_Reco, xMin_Reco, xMax_Reco);
    h_testMET_Split->Sumw2();
    GetOutputList()->Add(h_testMET_Split);
 
-   h_fake = new TH1F("fakes_" + option, recovar, nBins_Reco, BinEdgesReco.data());
+   h_fake = new TH1F("fakes_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
    h_fake->Sumw2();
    GetOutputList()->Add(h_fake);
 
-   h_fake_Split = new TH1F("fakes_" + option + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
+   h_fake_Split = new TH1F("fakes_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
    h_fake_Split->Sumw2();
    GetOutputList()->Add(h_fake_Split);
 
@@ -222,12 +219,12 @@ Bool_t MCSelector::Process(Long64_t entry)
    //////////////////////
    //Add weights here!!//
    //////////////////////
-   weight_ =  (*Weight_XS)*(*Weight_CSV)*(*Weight_PU);
+   weight_ =  (*Weight_XS) * (*Weight_CSV) * (*Weight_PU);
    if (*Weight_GenValue > 0)weight_ *= 1;
    else weight_ *= -1;
    // weight_ = *Weight;
    if (!option.Contains("data")) weight_ *= 35.9 ;
-   if (option.Contains("Zjet")) weight_ *= 3*0.971;
+   if (option.Contains("Zjet")) weight_ *= 3 * 0.971;
 
    //Calculate split
    // std::cout << "WARNING split > 50, therefore not working correctly -> Proceeding with split =50" << std::endl;
@@ -291,7 +288,7 @@ void MCSelector::Terminate()
    std::cout << "Output List:" << std::endl;
    GetOutputList()->ls();
    TString option = GetOption();
-
+   
    //Full Sample
    A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
    histofile->WriteTObject(A);
@@ -330,6 +327,7 @@ void MCSelector::Terminate()
    histofile->WriteTObject(h_Evt_Phi_GenMET);
 
    histofile->Close();
+   delete histofile;
    std::cout << "Master finished" << std::endl;
 
 }

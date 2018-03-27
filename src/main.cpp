@@ -51,9 +51,8 @@ int main(int argc, char** argv) {
 	int xMin_Gen = pt.get<int>("Binning.xMin_Gen");
 	int xMax_Gen = pt.get<int>("Binning.xMax_Gen");
 	std::vector<double> BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
-	std::vector<double> BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
 	int nBins_Gen = BinEdgesGen.size() - 1;
-	int nBins_Reco = BinEdgesReco.size() - 1;
+	int nBins_Reco = pt.get<int>("Binning.nBins_Reco");
 	std::vector<string>	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
 	std::vector<string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
 	bool fillhistos = true;
@@ -156,6 +155,7 @@ int main(int argc, char** argv) {
 	for (auto& var : variation) {
 		for (const auto& name : bkgnames) {
 			v_MET_bkgs.at(nVariation).push_back(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
+			MET_all.at(nVariation)->Add(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
 
 			v_GenMET_bkgs.at(nVariation).push_back(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
 			GenMET_all.at(nVariation)->Add(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
@@ -242,6 +242,7 @@ int main(int argc, char** argv) {
 
 	unfold_Split->SetBias(GenMET_all_Split.at(0));
 
+	//Find Best Tau
 	std::tuple<int , TSpline*, TGraph*> TauResult_Split;
 	TauResult_Split = Unfolder_Split.FindBestTau(unfold_Split, "Split");
 
@@ -286,7 +287,6 @@ int main(int argc, char** argv) {
 	std::vector<double> BinCenters_Split;
 	std::vector<double> BinContents_Split;
 	std::vector<double> TotalError_Split;
-
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
 		double staterror = ErrorMatrix_MCstat_Split->GetBinContent(bin, bin)
 		                   + ErrorMatrix_input_Split->GetBinContent(bin, bin);
@@ -333,8 +333,10 @@ int main(int argc, char** argv) {
 
 	unfold->SetBias(GenMET_all.at(0));
 
+	//Find Best Tau
 	std::tuple<int , TSpline*, TGraph*> TauResult;
 	TauResult = Unfolder.FindBestTau(unfold, "data");
+	// unfold->DoUnfold(0.0316227766);
 	//Get Output
 	//0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
@@ -405,15 +407,15 @@ int main(int argc, char** argv) {
 	bool log = true;
 	bool drawpull = true;
 //General Distributions
-	Drawer.Draw1D(MET_all.at(0), "MET_all");
-	Drawer.Draw1D(MET_all_Split.at(0), "MET_all_Split");
-	Drawer.Draw1D(GenMET_all.at(0), "GenMET_all");
-	Drawer.Draw1D(GenMET_all_Split.at(0), "GenMET_all_Split");
-	Drawer.Draw1D(MET_data, "MET_data");
-	Drawer.Draw1D(fakes_all.at(0), "fakes_all");
-	Drawer.Draw1D(fakes_all_Split.at(0), "fakes_all_Split");
-	Drawer.Draw1D(METTotalError, "MET_unfolded_errors");
-	Drawer.Draw1D(METTotalError_Split, "MET_unfolded_errors_Split");
+	// Drawer.Draw1D(MET_all.at(0), "MET_all");
+	// Drawer.Draw1D(MET_all_Split.at(0), "MET_all_Split");
+	// Drawer.Draw1D(GenMET_all.at(0), "GenMET_all");
+	// Drawer.Draw1D(GenMET_all_Split.at(0), "GenMET_all_Split");
+	// Drawer.Draw1D(MET_data, "MET_data");
+	// Drawer.Draw1D(fakes_all.at(0), "fakes_all");
+	// Drawer.Draw1D(fakes_all_Split.at(0), "fakes_all_Split");
+	// Drawer.Draw1D(METTotalError, "MET_unfolded_errors");
+	// Drawer.Draw1D(METTotalError_Split, "MET_unfolded_errors_Split");
 
 	nVariation = 0;
 	for (auto& var : variation) {
@@ -465,16 +467,8 @@ int main(int argc, char** argv) {
 
 	Drawer.Draw1D(h_DataMinFakes.at(0), "DataMinFakes");
 	Drawer.DrawDataMC(h_DataMinFakes.at(0), v_testmet_bkgs.at(0), bkgnames, "DataMinFakesvsTestMET", log);
-
-
-	// Drawer.DrawDataMC(v_MET_bkgs[0][3], {v_MET_bkgs[1][3]}, {"JESup"}, "nomvsJESup", log);
-
-
-
-
-
-
-
+	// Drawer.DrawDataMC(TestMET_all.at(0), {MET_all.at(0)}, {"Reco"}, "Purity" , log);
+	Drawer.DrawRatio(TestMET_all.at(0), MET_all.at(0), "Purity");
 
 
 	return (0);
