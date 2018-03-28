@@ -70,9 +70,9 @@ public :
    TH1F* h_GenSplit = 0;
    TH2D* ASplit = 0;
    TH1F* h_testMET = 0;
-   TH1F* h_testMET_Split=0;
-   TH1F* h_fake=0;
-   TH1F* h_fake_Split=0;
+   TH1F* h_testMET_Split = 0;
+   TH1F* h_fake = 0;
+   TH1F* h_fake_Split = 0;
 
    //Additional Histos
    TH1F* h_N_Jets = 0;
@@ -96,6 +96,13 @@ public :
    TTreeReaderValue<Long64_t> GenBTagVetoSelection = {fReader, "GenBTagVetoSelection"};
    TTreeReaderValue<Long64_t> GenMonoJetSelection = {fReader, "GenMonoJetSelection"};
    TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {fReader, "GenLeptonVetoSelection"};
+   
+   TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X = {fReader, "Triggered_HLT_PFMET170_X"};
+   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X = {fReader, "Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X"};
+   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X = {fReader, "Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X"};
+   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X = {fReader, "Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X"};
+   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X = {fReader, "Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X"};
+
 
 
 

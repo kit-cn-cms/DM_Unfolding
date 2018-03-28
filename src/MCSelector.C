@@ -223,7 +223,7 @@ Bool_t MCSelector::Process(Long64_t entry)
    if (*Weight_GenValue > 0)weight_ *= 1;
    else weight_ *= -1;
    // weight_ = *Weight;
-   if (!option.Contains("data")) weight_ *= 35.9 ;
+   if (!option.Contains("data")) weight_ *= 35.91823 ;
    if (option.Contains("Zjet")) weight_ *= 3 * 0.971;
 
    //Calculate split
@@ -232,40 +232,41 @@ Bool_t MCSelector::Process(Long64_t entry)
    // std::cout << split_ << std::endl;
    double random = rand.Rndm();
 
-
-   if ( (!*GenLeptonVetoSelection  || !*GenBTagVetoSelection || !*GenMonoJetSelection || !*GenLeptonVetoSelection ) && *var_gen > 250) {
-      if (random >= split_ ) {
-         h_fake_Split->Fill(*var_reco, weight_);
+   if (*Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X ) {
+      if ( (!*GenLeptonVetoSelection  || !*GenBTagVetoSelection || !*GenMonoJetSelection || !*GenLeptonVetoSelection ) && *var_gen > 250) {
+         if (random >= split_ ) {
+            h_fake_Split->Fill(*var_reco, weight_);
+         }
+         h_fake->Fill(*var_reco, weight_);
       }
-      h_fake->Fill(*var_reco, weight_);
-   }
-   else {
+      else {
+         if (random >= split_) {
+            h_GenSplit->Fill(*var_gen, weight_);
+            h_testMET_Split->Fill(*var_reco, weight_);
+            ASplit->Fill(*var_reco, *var_gen, weight_);
+         }
+         h_Gen->Fill(*var_gen, weight_);
+         h_testMET->Fill(*var_reco, weight_);
+         A->Fill(*var_reco, *var_gen, weight_);
+      }
+
       if (random >= split_) {
-         h_GenSplit->Fill(*var_gen, weight_);
-         h_testMET_Split->Fill(*var_reco, weight_);
-         ASplit->Fill(*var_reco, *var_gen, weight_);
+         h_RecoSplit->Fill(*var_reco, weight_);
+         h_DummyDataSplit->Fill(*var_reco, weight_);
       }
-      h_Gen->Fill(*var_gen, weight_);
-      h_testMET->Fill(*var_reco, weight_);
-      A->Fill(*var_reco, *var_gen, weight_);
+      h_Reco->Fill(*var_reco, weight_);
+
+
+
+      //Additional Variables
+      h_N_Jets->Fill(*N_Jets, weight_);
+      h_Jet_Pt->Fill(*Jet_Pt, weight_);
+      h_Jet_Eta->Fill(*Jet_Eta, weight_);
+      h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
+      h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
+
+      weight_ = 0;
    }
-
-   if (random >= split_) {
-      h_RecoSplit->Fill(*var_reco, weight_);
-      h_DummyDataSplit->Fill(*var_reco, weight_);
-   }
-   h_Reco->Fill(*var_reco, weight_);
-
-
-
-   //Additional Variables
-   h_N_Jets->Fill(*N_Jets, weight_);
-   h_Jet_Pt->Fill(*Jet_Pt, weight_);
-   h_Jet_Eta->Fill(*Jet_Eta, weight_);
-   h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
-   h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
-
-   weight_ = 0;
    return kTRUE;
 }
 
@@ -288,7 +289,7 @@ void MCSelector::Terminate()
    std::cout << "Output List:" << std::endl;
    GetOutputList()->ls();
    TString option = GetOption();
-   
+
    //Full Sample
    A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
    histofile->WriteTObject(A);
