@@ -256,19 +256,18 @@ int main(int argc, char** argv) {
 
 	//STAT SOURCES
 	TH2* ErrorMatrix_MCstat_Split = unfold_Split->GetEmatrixSysUncorr("ErrorMatrix_MCstat_Split");
-	Drawer.Draw2D(ErrorMatrix_MCstat_Split, "ErrorMatrix_MCstat_Split");
+	Drawer.Draw2D(ErrorMatrix_MCstat_Split, "ErrorMatrix_MCstat_Split",true);
 	TH2* ErrorMatrix_input_Split = unfold_Split->GetEmatrixInput("ErrorMatrix_input_Split");
-	Drawer.Draw2D(ErrorMatrix_input_Split, "ErrorMatrix_input_Split");
+	Drawer.Draw2D(ErrorMatrix_input_Split, "ErrorMatrix_input_Split",true);
 
 	//SYST SOURCES
 	//subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr_Split = unfold_Split->GetEmatrixSysBackgroundUncorr("fakes_Split", "fakes_Split");
-	Drawer.Draw2D(ErrorMatrix_subBKGuncorr_Split, "ErrorMatrix_subBKGuncorr_Split");
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr_Split, "ErrorMatrix_subBKGuncorr_Split",true);
 	TH2* ErrorMatrix_subBKGscale_Split = (TH2*) ErrorMatrix_subBKGuncorr_Split->Clone();
 	ErrorMatrix_subBKGscale_Split->Reset();
 	unfold_Split->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale_Split, "fakes_Split");
-	Drawer.Draw2D(ErrorMatrix_subBKGscale_Split, "ErrorMatrix_subBKGscale_Split");
-
+	Drawer.Draw2D(ErrorMatrix_subBKGscale_Split, "ErrorMatrix_subBKGscale_Split",true);
 
 	//Variations of MigrationMatrix
 	std::vector<TH2*> v_ErrorMatrixVariations_Split;
@@ -347,18 +346,18 @@ int main(int argc, char** argv) {
 
 	//STAT SOURCES
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat");
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat",true);
 	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input");
-	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input");
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input",true);
 
 	//SYST SOURCES
 	//subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes", "fakes");
-	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr");
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr",true);
 	TH2* ErrorMatrix_subBKGscale = (TH2*) ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes");
-	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale");
+	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale",true);
 
 	//Variations of MigrationMatrix
 	std::vector<TH2*> v_ErrorMatrixVariations;
@@ -450,7 +449,7 @@ int main(int argc, char** argv) {
 	Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors_Split", log, false, drawpull);
 
 	// Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
-	Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split");
+	Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), {std::get<1>(unfold_output_Split)},  {"FoldedBack"}, "MET_DummyDatavsFoldedBack_Split",log);
 
 	Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), v_testmet_bkgs_Split.at(0), bkgnames, "DummyDataMinFakesvsTestMET" , log);
 	Drawer.DrawDataMC(TestMET_all_Split.at(0), {MET_all_Split.at(0)}, {"Reco"}, "Purity_Split" , log);
