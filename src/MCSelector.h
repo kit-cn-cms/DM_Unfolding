@@ -64,6 +64,7 @@ public :
    TH1F* h_Gen = 0;
    TH1F* h_Data = 0;
    TH2D* A = 0;
+   TH2D* A_equBins = 0;
    //Split Sample
    TH1F* h_DummyDataSplit = 0;
    TH1F* h_RecoSplit = 0;

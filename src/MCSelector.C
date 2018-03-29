@@ -154,6 +154,9 @@ void MCSelector::SlaveBegin(TTree * /*tree*/)
    A = new TH2D("A_" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
    A->Sumw2();
    GetOutputList()->Add(A);
+   A_equBins = new TH2D("A_equBins" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Reco, xMin_Reco, xMax_Reco);
+   A_equBins->Sumw2();
+   GetOutputList()->Add(A_equBins);
 
    h_testMET = new TH1F("TestMET" + option, "TESTMET",  nBins_Reco, xMin_Reco, xMax_Reco);
    h_testMET->Sumw2();
@@ -248,6 +251,7 @@ Bool_t MCSelector::Process(Long64_t entry)
          h_Gen->Fill(*var_gen, weight_);
          h_testMET->Fill(*var_reco, weight_);
          A->Fill(*var_reco, *var_gen, weight_);
+         A_equBins->Fill(*var_reco, *var_gen, weight_);
       }
 
       if (random >= split_) {
@@ -293,6 +297,8 @@ void MCSelector::Terminate()
    //Full Sample
    A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
    histofile->WriteTObject(A);
+   A_equBins = dynamic_cast<TH2D*>(fOutput->FindObject(A_equBins));
+   histofile->WriteTObject(A_equBins);
    h_Gen = dynamic_cast<TH1F*>(fOutput->FindObject(h_Gen));
    histofile->WriteTObject(h_Gen);
    h_Reco = dynamic_cast<TH1F*>(fOutput->FindObject(h_Reco));
