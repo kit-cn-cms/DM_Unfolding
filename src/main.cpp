@@ -98,12 +98,14 @@ main(int argc, char** argv)
   std::vector<std::vector<TH1*>> v_GenMET_bkgs(variation.size());
   std::vector<std::vector<TH1*>> v_fakes_bkgs(variation.size());
   std::vector<std::vector<TH1*>> v_testmet_bkgs(variation.size());
+  std::vector<std::vector<TH1*>> v_testMETgenBinning_bkgs(variation.size());
   std::vector<std::vector<TH2*>> v_A_bkgs(variation.size());
 
   std::vector<TH1F*> MET_all;
   std::vector<TH1F*> GenMET_all;
   std::vector<TH1F*> fakes_all;
   std::vector<TH1F*> TestMET_all;
+  std::vector<TH1F*> testMETgenBinning_all;
   std::vector<TH2*> A_all;
   std::vector<TH2*> A_equBins_all;
 
@@ -137,6 +139,8 @@ main(int argc, char** argv)
       histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_" + var));
     TestMET_all.push_back(
       histhelper.Get1DHisto("TestMET" + bkgnames.at(0) + "_" + var));
+    testMETgenBinning_all.push_back(
+      histhelper.Get1DHisto("testMETgenBinning" + bkgnames.at(0) + "_" + var));
     A_all.push_back(histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_" + var));
     A_equBins_all.push_back(
       histhelper.Get2DHisto("A_equBins" + bkgnames.at(0) + "_" + var));
@@ -145,6 +149,7 @@ main(int argc, char** argv)
     GenMET_all.at(nVariation)->Reset();
     fakes_all.at(nVariation)->Reset();
     TestMET_all.at(nVariation)->Reset();
+    testMETgenBinning_all.at(nVariation)->Reset();
     A_all.at(nVariation)->Reset();
     A_equBins_all.at(nVariation)->Reset();
 
@@ -198,6 +203,12 @@ main(int argc, char** argv)
         .push_back(histhelper.Get1DHisto("TestMET" + name + "_" + var));
       TestMET_all.at(nVariation)
         ->Add(histhelper.Get1DHisto("TestMET" + name + "_" + var));
+
+      v_testMETgenBinning_bkgs.at(nVariation)
+        .push_back(
+          histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
+      testMETgenBinning_all.at(nVariation)
+        ->Add(histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
 
       v_A_bkgs.at(nVariation)
         .push_back(histhelper.Get2DHisto("A_" + name + "_" + var));
@@ -279,6 +290,7 @@ main(int argc, char** argv)
        << TestMET_all.at(0)->Integral() << endl;
 
   Drawer.DrawRatio(TestMET_all.at(0), MET_all.at(0), "Purity");
+  Drawer.DrawRatio(testMETgenBinning_all.at(0), GenMET_all.at(0), "Stability");
   Drawer.DrawDataMC(h_DummyDataMinFakes.at(0),
                     v_testmet_bkgs_Split.at(0),
                     bkgnames,
