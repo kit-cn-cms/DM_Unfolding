@@ -51,7 +51,7 @@ std::vector<double> BinFinder::FitSlices(std::vector<TH1*> slices) {
 		slice->Fit("gaus");
 		slice->Draw("");
 		TF1 *fit = slice->GetFunction("gaus");
-		sigmas.push_back(fit->GetParameter(2));
+		sigmas.push_back(fit->GetParameter(2)*2);
 		// cout << floor(sigma/10+0.5)*10 << endl;
 		// bins.push_back();
 		c->SaveAs(path.GetPdfPath() + "/bins/" + name + ".pdf");
@@ -74,8 +74,8 @@ std::vector<int> BinFinder::CalculateBinEdges(std::vector<double> sigmas) {
 	}
 	edges.push_back(xMin);
 	edges.push_back(xMin + roundedsigmas.at(0));
-	int tmp;
-	int prevsig;
+	int tmp = roundedsigmas.at(0);
+	int prevsig = roundedsigmas.at(0);
 	for (unsigned int i = 1; i <= roundedsigmas.size(); i++) {
 		if (roundedsigmas.at(i) < tmp) tmp = prevsig;
 		else tmp = roundedsigmas.at(i);
