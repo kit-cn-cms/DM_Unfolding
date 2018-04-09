@@ -82,29 +82,29 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 	return std::make_tuple(iBest, scanResult, lCurve);
 }
 
-std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TString name) {
+std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TString name) {
 	cout << "Finding BestTau" << endl;
 	int iBest;
 	TSpline *logTauX, *logTauY, *logTauCurvature;
 	TGraph *lCurve = 0;
 
 	// iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoAvgSys, distribution, axisSteering, &lCurve);
-	iBest = unfold->ScanLcurve(nScan, 0, 0, &lCurve, &logTauX, &logTauY);
+	iBest = unfold->TUnfold::ScanLcurve(nScan, tauMin, tauMax, &lCurve, &logTauX, &logTauY);
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
 
-	//Graphs to Visualize best choice of Tau
+	// save point corresponding to the kink in the L curve as TGraph
 	Double_t t[1], x[1], y[1];
 	logTauX->GetKnot(iBest, t[0], x[0]);
 	logTauY->GetKnot(iBest, t[0], y[0]);
 	TGraph *bestLcurve = new TGraph(1, x, y);
-	TGraph *bestLogTauLogChi2 = new TGraph(1, t, x);
+	TGraph *bestLogTauX = new TGraph(1, t, x);
 
 	TCanvas* tau = new TCanvas("logtauvsChi2_" + name, "logtauvsChi2_" + name);
 	logTauX->Draw();
-	bestLogTauLogChi2->SetMarkerColor(kRed);
-	bestLogTauLogChi2->Draw("*");
+	bestLogTauX->SetMarkerColor(kRed);
+	bestLogTauX->Draw("*");
 	tau->SaveAs(path.GetPdfPath() + "logtauvsChi2_" + name + ".pdf");
 	tau->SaveAs(path.GetPdfPath() +  "../pngs/logtauvsChi2_" + name + ".png");
 
@@ -115,7 +115,7 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* 
 	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
 	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
 
-	// return std::make_tuple(iBest, scanResult, lCurve);
+	return std::make_tuple(iBest, lCurve);
 }
 
 
