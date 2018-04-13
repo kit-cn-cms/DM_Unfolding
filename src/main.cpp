@@ -155,11 +155,11 @@ main(int argc, char** argv)
 
     // Pseudata
     MET_DummyData_all.push_back(histhelper.Get1DHisto(
-      "DummyData_" + bkgnames.at(0) + "_" + var + "_Split"));
+                                  "DummyData_" + bkgnames.at(0) + "_" + var + "_Split"));
     MET_all_Split.push_back(histhelper.Get1DHisto(
-      recovar + "_" + bkgnames.at(0) + "_" + var + "_Split"));
+                              recovar + "_" + bkgnames.at(0) + "_" + var + "_Split"));
     GenMET_all_Split.push_back(histhelper.Get1DHisto(
-      genvar + "_" + bkgnames.at(0) + "_" + var + "_Split"));
+                                 genvar + "_" + bkgnames.at(0) + "_" + var + "_Split"));
     fakes_all_Split.push_back(
       histhelper.Get1DHisto("fakes_" + bkgnames.at(0) + "_" + var + "_Split"));
     TestMET_all_Split.push_back(
@@ -185,74 +185,74 @@ main(int argc, char** argv)
   for (auto& var : variation) {
     for (const auto& name : bkgnames) {
       v_MET_bkgs.at(nVariation)
-        .push_back(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
+      .push_back(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
       MET_all.at(nVariation)
-        ->Add(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
+      ->Add(histhelper.Get1DHisto(recovar + "_" + name + "_" + var));
 
       v_GenMET_bkgs.at(nVariation)
-        .push_back(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
+      .push_back(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
       GenMET_all.at(nVariation)
-        ->Add(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
+      ->Add(histhelper.Get1DHisto(genvar + "_" + name + "_" + var));
 
       v_fakes_bkgs.at(nVariation)
-        .push_back(histhelper.Get1DHisto("fakes_" + name + "_" + var));
+      .push_back(histhelper.Get1DHisto("fakes_" + name + "_" + var));
       fakes_all.at(nVariation)
-        ->Add(histhelper.Get1DHisto("fakes_" + name + "_" + var));
+      ->Add(histhelper.Get1DHisto("fakes_" + name + "_" + var));
 
       v_testmet_bkgs.at(nVariation)
-        .push_back(histhelper.Get1DHisto("TestMET" + name + "_" + var));
+      .push_back(histhelper.Get1DHisto("TestMET" + name + "_" + var));
       TestMET_all.at(nVariation)
-        ->Add(histhelper.Get1DHisto("TestMET" + name + "_" + var));
+      ->Add(histhelper.Get1DHisto("TestMET" + name + "_" + var));
 
       v_testMETgenBinning_bkgs.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
+      .push_back(
+        histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
       testMETgenBinning_all.at(nVariation)
-        ->Add(histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
+      ->Add(histhelper.Get1DHisto("testMETgenBinning" + name + "_" + var));
 
       v_A_bkgs.at(nVariation)
-        .push_back(histhelper.Get2DHisto("A_" + name + "_" + var));
+      .push_back(histhelper.Get2DHisto("A_" + name + "_" + var));
       A_all.at(nVariation)->Add(histhelper.Get2DHisto("A_" + name + "_" + var));
       A_equBins_all.at(nVariation)
-        ->Add(histhelper.Get2DHisto("A_equBins" + name + "_" + var));
+      ->Add(histhelper.Get2DHisto("A_equBins" + name + "_" + var));
 
       v_MET_DummyDatas.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto("DummyData_" + name + "_" + var + "_Split"));
+      .push_back(
+        histhelper.Get1DHisto("DummyData_" + name + "_" + var + "_Split"));
       MET_DummyData_all.at(nVariation)
-        ->Add(
-          histhelper.Get1DHisto("DummyData_" + name + "_" + var + "_Split"));
+      ->Add(
+        histhelper.Get1DHisto("DummyData_" + name + "_" + var + "_Split"));
 
       v_MET_bkgs_Split.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto(recovar + "_" + name + "_" + var + "_Split"));
+      .push_back(
+        histhelper.Get1DHisto(recovar + "_" + name + "_" + var + "_Split"));
       MET_all_Split.at(nVariation)
-        ->Add(
-          histhelper.Get1DHisto(recovar + "_" + name + "_" + var + "_Split"));
+      ->Add(
+        histhelper.Get1DHisto(recovar + "_" + name + "_" + var + "_Split"));
 
       v_GenMET_bkgs_Split.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto(genvar + "_" + name + "_" + var + "_Split"));
+      .push_back(
+        histhelper.Get1DHisto(genvar + "_" + name + "_" + var + "_Split"));
       GenMET_all_Split.at(nVariation)
-        ->Add(
-          histhelper.Get1DHisto(genvar + "_" + name + "_" + var + "_Split"));
+      ->Add(
+        histhelper.Get1DHisto(genvar + "_" + name + "_" + var + "_Split"));
 
       v_fakes_bkgs_Split.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto("fakes_" + name + "_" + var + "_Split"));
+      .push_back(
+        histhelper.Get1DHisto("fakes_" + name + "_" + var + "_Split"));
       fakes_all_Split.at(nVariation)
-        ->Add(histhelper.Get1DHisto("fakes_" + name + "_" + var + "_Split"));
+      ->Add(histhelper.Get1DHisto("fakes_" + name + "_" + var + "_Split"));
 
       v_testmet_bkgs_Split.at(nVariation)
-        .push_back(
-          histhelper.Get1DHisto("TestMET" + name + "_" + var + "_Split"));
+      .push_back(
+        histhelper.Get1DHisto("TestMET" + name + "_" + var + "_Split"));
       TestMET_all_Split.at(nVariation)
-        ->Add(histhelper.Get1DHisto("TestMET" + name + "_" + var + "_Split"));
+      ->Add(histhelper.Get1DHisto("TestMET" + name + "_" + var + "_Split"));
 
       v_A_bkgs_Split.at(nVariation)
-        .push_back(histhelper.Get2DHisto("A_" + name + "_" + var + "_Split"));
+      .push_back(histhelper.Get2DHisto("A_" + name + "_" + var + "_Split"));
       A_all_Split.at(nVariation)
-        ->Add(histhelper.Get2DHisto("A_" + name + "_" + var + "_Split"));
+      ->Add(histhelper.Get2DHisto("A_" + name + "_" + var + "_Split"));
     }
     nVariation += 1;
   }
@@ -283,7 +283,7 @@ main(int argc, char** argv)
   cout << "Data integral: " << MET_data->Integral() << endl;
   cout << "Data-Fake integral: "
        << h_DataMinFakes.at(0)->Integral(
-            h_DataMinFakes.at(0)->GetXaxis()->FindBin(250), 25)
+         h_DataMinFakes.at(0)->GetXaxis()->FindBin(250), 25)
        << endl;
   cout << "Gen integral: " << GenMET_all.at(0)->Integral() << endl;
   cout << "Reco (passes GenSelection) integral: "
@@ -310,12 +310,11 @@ main(int argc, char** argv)
 
   if (DoUnfolding) {
     // Do Unfolding
-    // Split Input (e.g. only on MC)
+// Split Input (e.g. only on MC)
     cout << "Unfolding using only MC with a split of " << split << ":" << endl;
     Unfolder Unfolder_Split;
     Unfolder_Split.ParseConfig();
-    MET_signal.at(0)->Scale(0.01);
-    MET_DummyData_all.at(0)->Add(MET_signal.at(0));
+
     TUnfoldDensity* unfold_Split =
       Unfolder_Split.SetUp(A_all_Split.at(0), MET_DummyData_all.at(0));
     TH2* ProbMatrix_Split = (TH2*)A_all_Split.at(0)->Clone();
@@ -335,12 +334,13 @@ main(int argc, char** argv)
                                 TUnfoldDensity::kSysErrModeMatrix);
     }
 
-    unfold_Split->SetBias(GenMET_all_Split.at(0));
+    // unfold_Split->SetBias(GenMET_all_Split.at(0));
 
     // Find Best Tau
-    Unfolder_Split.FindBestTauLcurve(unfold_Split, "Split");
-
+    // Unfolder_Split.FindBestTauLcurve(unfold_Split, "Split");
+    Unfolder_Split.FindBestTau(unfold_Split, "Split");
     // unfold_Split->DoUnfold(0.0);
+
     // GetOutput
     std::tuple<TH1*, TH1*> unfold_output_Split;
     unfold_output_Split = Unfolder_Split.GetOutput(unfold_Split);
@@ -363,7 +363,7 @@ main(int argc, char** argv)
       (TH2*)ErrorMatrix_subBKGuncorr_Split->Clone();
     ErrorMatrix_subBKGscale_Split->Reset();
     unfold_Split->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale_Split,
-                                               "fakes_Split");
+        "fakes_Split");
     Drawer.Draw2D(
       ErrorMatrix_subBKGscale_Split, "ErrorMatrix_subBKGscale_Split", true);
     TH2* ErrorMatrix_MCstat_Split =
@@ -411,20 +411,149 @@ main(int argc, char** argv)
     }
 
     TGraphErrors* MET_Split_Stat = new TGraphErrors(nBins_Gen,
-                                                    BinCenters_Split.data(),
-                                                    BinContents_Split.data(),
-                                                    zeros.data(),
-                                                    EStat_split.data());
+        BinCenters_Split.data(),
+        BinContents_Split.data(),
+        zeros.data(),
+        EStat_split.data());
     TGraphErrors* MET_Split_Syst = new TGraphErrors(nBins_Gen,
-                                                    BinCenters_Split.data(),
-                                                    BinContents_Split.data(),
-                                                    zeros.data(),
-                                                    TotalError_Split.data());
+        BinCenters_Split.data(),
+        BinContents_Split.data(),
+        zeros.data(),
+        TotalError_Split.data());
 
     TH2* L_Split = unfold_Split->GetL("L_Split");
     TH2* RhoTotal_Split = unfold_Split->GetRhoIJtotal("RhoTotal_Split");
+    std::cout << "#####chi**2 from DummyData#####" << std::endl;
+    std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
+              << unfold_Split->GetChi2A() << "+" << unfold_Split->GetChi2L() << "+"
+              << unfold_Split->GetChi2Sys() << " / " << unfold_Split->GetNdf() << "\n";
 
-    // Data Input
+// Split Input with Signal (e.g. only on MC)
+    cout << "Unfolding using only MC with a split of " << split << ", and a added signal" << endl;
+    Unfolder Unfolder_Split_Signal;
+    Unfolder_Split_Signal.ParseConfig();
+
+    TH1F* InputwithSignal=(TH1F*) MET_DummyData_all.at(0)->Clone();
+    MET_signal.at(0)->Scale(0.1);
+    InputwithSignal->Add(MET_signal.at(0));
+
+    TUnfoldDensity* unfold_Split_Signal =
+      Unfolder_Split_Signal.SetUp(A_all_Split.at(0), InputwithSignal);
+    TH2* ProbMatrix_Split_Signal = (TH2*)A_all_Split.at(0)->Clone();
+    ProbMatrix_Split_Signal->Reset();
+    unfold_Split_Signal->TUnfold::GetProbabilityMatrix(
+      ProbMatrix_Split_Signal, TUnfoldDensity::kHistMapOutputVert);
+    Drawer.Draw2D(ProbMatrix_Split_Signal, "ProbMatrix_Split_Signal");
+    // subtract fakes
+    unfold_Split_Signal->SubtractBackground(
+      fakes_all_Split.at(0), "fakes_Split", 1, 0.0);
+
+    // addsys variations of MigrationMatrix
+    for (unsigned int i = 1; i < variation.size(); i++) {
+      unfold_Split_Signal->AddSysError(A_all_Split.at(i),
+                                       variation.at(i) + TString("_Split"),
+                                       TUnfoldDensity::kHistMapOutputVert,
+                                       TUnfoldDensity::kSysErrModeMatrix);
+    }
+
+    // unfold_Split_Signal->SetBias(GenMET_all_Split.at(0));
+
+    // Find Best Tau
+    // Unfolder_Split_Signal.FindBestTauLcurve(unfold_Split_Signal, "Split");
+    Unfolder_Split_Signal.FindBestTau(unfold_Split_Signal, "Split_Signal");
+
+    // GetOutput
+    std::tuple<TH1*, TH1*> unfold_output_Split_Signal;
+    unfold_output_Split_Signal = Unfolder_Split_Signal.GetOutput(unfold_Split_Signal);
+
+    // Visualize ERRORS
+    TH2* ErrorMatrix_Split_Signal = unfold_Split_Signal->GetEmatrixTotal("ErrorMatrix_Split_Signal");
+
+    // STAT SOURCES
+    TH2* ErrorMatrix_input_Split_Signal =
+      unfold_Split_Signal->GetEmatrixInput("ErrorMatrix_input_Split_Signal");
+    Drawer.Draw2D(ErrorMatrix_input_Split_Signal, "ErrorMatrix_input_Split_Signal", true);
+
+    // SYST SOURCES
+    // subtracted bkgs
+    TH2* ErrorMatrix_subBKGuncorr_Split_Signal =
+      unfold_Split_Signal->GetEmatrixSysBackgroundUncorr("fakes_Split", "fakes_Split");
+    Drawer.Draw2D(
+      ErrorMatrix_subBKGuncorr_Split_Signal, "ErrorMatrix_subBKGuncorr_Split_Signal", true);
+    TH2* ErrorMatrix_subBKGscale_Split_Signal = (TH2*)ErrorMatrix_subBKGuncorr_Split_Signal->Clone();
+    ErrorMatrix_subBKGscale_Split_Signal->Reset();
+    unfold_Split_Signal->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale_Split_Signal, "fakes_Split_Signal");
+    Drawer.Draw2D(
+      ErrorMatrix_subBKGscale_Split_Signal, "ErrorMatrix_subBKGscale_Split_Signal", true);
+    TH2* ErrorMatrix_MCstat_Split_Signal = unfold_Split_Signal->GetEmatrixSysUncorr("ErrorMatrix_MCstat_Split_Signal");
+    Drawer.Draw2D(ErrorMatrix_MCstat_Split_Signal, "ErrorMatrix_MCstat_Split_Signal", true);
+    // Variations of MigrationMatrix
+    std::vector<TH2*> v_ErrorMatrixVariations_Split_Signal;
+    for (auto& var : variation) {
+      TH2* tmp = (TH2*)ErrorMatrix_subBKGuncorr_Split_Signal->Clone();
+      tmp->Reset();
+      unfold_Split_Signal->GetEmatrixSysSource(tmp, var + TString("_Split"));
+      v_ErrorMatrixVariations_Split_Signal.push_back(tmp);
+      Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + var + "_Split_Signal", true);
+    }
+
+    TH1D* METTotalError_Split_Signal =
+      new TH1D("TotalError_Split_Signal", "MET", nBins_Gen, BinEdgesGen.data());
+    std::vector<double> EStat_Split_Signal;
+    std::vector<double> ESyst_Split_Signal;
+    // std::vector<double> zeros;
+    std::vector<double> BinCenters_Split_Signal;
+    std::vector<double> BinContents_Split_Signal;
+    std::vector<double> TotalError_Split_Signal;
+    for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
+      double staterror = ErrorMatrix_input_Split_Signal->GetBinContent(bin, bin);
+      EStat_Split_Signal.push_back(sqrt(staterror));
+      double systerror =
+        ErrorMatrix_subBKGuncorr_Split_Signal->GetBinContent(bin, bin) +
+        ErrorMatrix_subBKGscale_Split_Signal->GetBinContent(bin, bin) +
+        ErrorMatrix_MCstat_Split_Signal->GetBinContent(bin, bin);
+      for (auto mat : v_ErrorMatrixVariations_Split_Signal) {
+        systerror += mat->GetBinContent(bin, bin);
+      }
+      ESyst_Split_Signal.push_back(sqrt(systerror));
+      // zeros.push_back(0);
+      TotalError_Split_Signal.push_back(sqrt(staterror + systerror));
+      BinCenters_Split_Signal.push_back(
+        std::get<0>(unfold_output_Split_Signal)->GetBinCenter(bin));
+      BinContents_Split_Signal.push_back(
+        std::get<0>(unfold_output_Split_Signal)->GetBinContent(bin));
+      METTotalError_Split_Signal->SetBinContent(
+        bin, std::get<0>(unfold_output_Split_Signal)->GetBinContent(bin));
+      METTotalError_Split_Signal->SetBinError(
+        bin, sqrt(ErrorMatrix_Split_Signal->GetBinContent(bin, bin)));
+    }
+
+    TGraphErrors* MET_Split_Signal_Stat = new TGraphErrors(nBins_Gen,
+        BinCenters_Split_Signal.data(),
+        BinContents_Split_Signal.data(),
+        zeros.data(),
+        EStat_Split_Signal.data());
+    TGraphErrors* MET_Split_Signal_Syst = new TGraphErrors(nBins_Gen,
+        BinCenters_Split_Signal.data(),
+        BinContents_Split_Signal.data(),
+        zeros.data(),
+        TotalError_Split_Signal.data());
+
+    TH2* L_Split_Signal = unfold_Split_Signal->GetL("L_Split_Signal");
+    TH2* RhoTotal_Split_Signal = unfold_Split_Signal->GetRhoIJtotal("RhoTotal_Split_Signal");
+    std::cout << "#####chi**2 from DummyData with added Signal#####" << std::endl;
+    std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
+              << unfold_Split_Signal->GetChi2A() << "+" << unfold_Split_Signal->GetChi2L() << "+"
+              << unfold_Split_Signal->GetChi2Sys() << " / " << unfold_Split_Signal->GetNdf() << "\n";
+
+
+
+
+
+
+
+
+// Data Input
     cout << "Unfolding using real Data:" << endl;
     Unfolder Unfolder;
     Unfolder.ParseConfig();
@@ -450,12 +579,11 @@ main(int argc, char** argv)
       nVariation += 1;
     }
 
-    unfold->SetBias(GenMET_all.at(0));
+    // unfold->SetBias(GenMET_all.at(0));
 
     // Find Best Tau
     Unfolder.FindBestTauLcurve(unfold, "data");
     // Unfolder.FindBestTau(unfold, "data");
-    // unfold->DoUnfold(0.0);
     // Get Output
     // 0st element=unfolded 1st=folded back
     std::tuple<TH1*, TH1*> unfold_output;
@@ -508,7 +636,7 @@ main(int argc, char** argv)
         systerror += mat->GetBinContent(bin, bin);
       }
       ESyst.push_back(sqrt(systerror));
-      zeros.push_back(0);
+      // zeros.push_back(0);
       TotalError.push_back(sqrt(staterror + systerror));
       BinCenters.push_back(std::get<0>(unfold_output)->GetBinCenter(bin));
       BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
@@ -519,22 +647,23 @@ main(int argc, char** argv)
     }
 
     TGraphErrors* MET_Stat = new TGraphErrors(nBins_Gen,
-                                              BinCenters.data(),
-                                              BinContents.data(),
-                                              zeros.data(),
-                                              EStat.data());
+        BinCenters.data(),
+        BinContents.data(),
+        zeros.data(),
+        EStat.data());
     TGraphErrors* MET_Syst = new TGraphErrors(nBins_Gen,
-                                              BinCenters.data(),
-                                              BinContents.data(),
-                                              zeros.data(),
-                                              TotalError.data());
+        BinCenters.data(),
+        BinContents.data(),
+        zeros.data(),
+        TotalError.data());
     TH2* L = unfold->GetL("L");
     TH2* RhoTotal = unfold->GetRhoIJtotal("RhoTotal");
+    std::cout << "#####chi**2 from Data#####" << std::endl;
     std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
               << unfold->GetChi2A() << "+" << unfold->GetChi2L() << "+"
               << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n";
 
-    // Draw Distributions
+// Draw Stuff
 
     // General Distributions
     Drawer.Draw1D(MET_signal.at(0), "MET_signal");
@@ -562,6 +691,7 @@ main(int argc, char** argv)
     Drawer.Draw2D(L_Split, "L_Split");
     Drawer.Draw2D(RhoTotal, "RhoTotal");
     Drawer.Draw2D(RhoTotal_Split, "RhoTotal_Split");
+    Drawer.Draw2D(RhoTotal_Split_Signal, "RhoTotal_Split_Signal");
 
     Drawer.DrawDataMC(MET_data, v_MET_bkgs.at(0), bkgnames, "MET", log);
     Drawer.DrawDataMC(MET_DummyData_all.at(0),
@@ -571,32 +701,22 @@ main(int argc, char** argv)
                       log,
                       false,
                       drawpull);
+    Drawer.DrawDataMC(InputwithSignal, v_MET_bkgs_Split.at(0), bkgnames, "MET_Split_Signal", log);
 
-    // Output of Unfolding
+
+
+  // Output of Unfolding
     std::vector<string> GenBkgNames;
     for (const std::string& name : bkgnames) {
       GenBkgNames.push_back("Gen_" + name);
     }
 
-    // split Input
-    Drawer.Draw1D(std::get<0>(unfold_output_Split),
-                  recovar + "_unfolded_Split");
-    Drawer.Draw1D(std::get<1>(unfold_output_Split),
-                  recovar + "_foldedback_Split");
+  // split Input
+    Drawer.Draw1D(std::get<0>(unfold_output_Split),recovar + "_unfolded_Split");
+    Drawer.Draw1D(std::get<1>(unfold_output_Split),recovar + "_foldedback_Split");
 
-    Drawer.DrawDataMC(METTotalError_Split,
-                      v_GenMET_bkgs_Split.at(0),
-                      GenBkgNames,
-                      "MET_UnfoldedvsGen_Split",
-                      log,
-                      false,
-                      drawpull);
-    Drawer.DrawDataMCerror(METTotalError_Split,
-                           MET_Split_Stat,
-                           MET_Split_Syst,
-                           v_GenMET_bkgs_Split.at(0),
-                           GenBkgNames,
-                           "MET_UnfoldedvsGenErrors_Split",
+    Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames,"MET_UnfoldedvsGen_Split",log,false,drawpull);
+    Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames,"MET_UnfoldedvsGenErrors_Split",
                            log,
                            false,
                            drawpull);
@@ -604,18 +724,59 @@ main(int argc, char** argv)
     // Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0),
     // GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
     Drawer.DrawDataMC(h_DummyDataMinFakes.at(0),
-                      { std::get<1>(unfold_output_Split) },
-                      { "FoldedBack" },
-                      "MET_DummyDatavsFoldedBack_Split",
-                      log);
+    { std::get<1>(unfold_output_Split) },
+    { "FoldedBack" },
+    "MET_DummyDatavsFoldedBack_Split",
+    log);
 
     Drawer.DrawDataMC(TestMET_all_Split.at(0),
-                      { MET_all_Split.at(0) },
-                      { "Reco" },
-                      "Purity_Split",
-                      log);
+    { MET_all_Split.at(0) },
+    { "Reco" },
+    "Purity_Split",
+    log);
 
-    // Using Data
+  // split Input with Signal
+    Drawer.Draw1D(std::get<0>(unfold_output_Split_Signal),
+                  recovar + "_unfolded_Split_Signal");
+    Drawer.Draw1D(std::get<1>(unfold_output_Split_Signal),
+                  recovar + "_foldedback_Split_Signal");
+
+    Drawer.DrawDataMC(METTotalError_Split_Signal,
+                      v_GenMET_bkgs_Split.at(0),
+                      GenBkgNames,
+                      "MET_UnfoldedvsGen_Split_Signal",
+                      log,
+                      false,
+                      drawpull);
+    Drawer.DrawDataMCerror(METTotalError_Split_Signal,
+                           MET_Split_Signal_Stat,
+                           MET_Split_Signal_Syst,
+                           v_GenMET_bkgs_Split.at(0),
+                           GenBkgNames,
+                           "MET_UnfoldedvsGenErrors_Split_Signal",
+                           log,
+                           false,
+                           drawpull);
+
+    // Drawer.DrawDataMC(METTotalError_Split_Signal, v_GenMET_bkgs_Split_Signal.at(0),
+    // GenBkgNames, "MET_UnfoldedvsGen_normalized_Split_Signal", log);
+    Drawer.DrawDataMC(InputwithSignal,
+    { std::get<1>(unfold_output_Split_Signal) },
+    { "FoldedBack" },
+    "MET_DummyDatavsFoldedBack_Split_Signal",
+    log);
+
+    Drawer.DrawDataMC(InputwithSignal,
+    { MET_all_Split.at(0) },
+    { "Reco" },
+    "Purity_Split_Signal",
+    log);
+
+
+
+
+
+  // Using Data
     Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded", log);
     Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
 
@@ -639,10 +800,10 @@ main(int argc, char** argv)
     // Drawer.DrawDataMC(METTotalError, v_GenMET_bkgs.at(0), GenBkgNames,
     // "MET_UnfoldedvsGen_normalized", log, true);
     Drawer.DrawDataMC(h_DataMinFakes.at(0),
-                      { std::get<1>(unfold_output) },
-                      { "FoldedBack" },
-                      "MET_DatavsFoldedBack",
-                      log);
+    { std::get<1>(unfold_output) },
+    { "FoldedBack" },
+    "MET_DatavsFoldedBack",
+    log);
 
     Drawer.Draw1D(h_DataMinFakes.at(0), "DataMinFakes");
     // Drawer.DrawDataMC(TestMET_all.at(0), {MET_all.at(0)}, {"Reco"}, "Purity"
