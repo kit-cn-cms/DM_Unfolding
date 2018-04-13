@@ -46,7 +46,7 @@ TString PathHelper::GetConfigPath( ) {
 	////////////////////////////////////////////
 	string Config = "DMConfig";
 	////////////////////////////////////////////
-	TString filepath = workingdir + "/../" + "/Config/" + Config + ".ini";
+	TString filepath = workingdir + "/.." + "/Config/" + Config + ".ini";
 	return filepath;
 }
 TString PathHelper::GetConfigPathforSlaves() {
