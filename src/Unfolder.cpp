@@ -88,7 +88,6 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	TSpline *logTauX, *logTauY, *logTauCurvature;
 	TGraph *lCurve = 0;
 
-	// iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoAvgSys, distribution, axisSteering, &lCurve);
 	iBest = unfold->TUnfold::ScanLcurve(nScan, tauMin, tauMax, &lCurve, &logTauX, &logTauY);
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
