@@ -6,6 +6,7 @@
 #include "TFile.h"
 #include "TCanvas.h"
 #include "TH2D.h"
+#include <TString.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -88,7 +89,7 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	TSpline *logTauX, *logTauY, *logTauCurvature;
 	TGraph *lCurve = 0;
 
-	iBest = unfold->TUnfold::ScanLcurve(nScan, tauMin, tauMax, &lCurve, &logTauX, &logTauY);
+	iBest = unfold->TUnfold::ScanLcurve(nScan, tauMin, tauMax, &lCurve, &logTauX, &logTauY, &logTauCurvature);
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
@@ -106,6 +107,13 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	bestLogTauX->Draw("*");
 	tau->SaveAs(path.GetPdfPath() + "logtauvsChi2_" + name + ".pdf");
 	tau->SaveAs(path.GetPdfPath() +  "../pngs/logtauvsChi2_" + name + ".png");
+
+	TCanvas* curv = new TCanvas("curvature_" + name, "curvature_" + name);
+	logTauCurvature->Draw();
+	bestLogTauX->SetMarkerColor(kRed);
+	bestLogTauX->Draw("*");
+	curv->SaveAs(path.GetPdfPath() + "curvature_" + name + ".pdf");
+	curv->SaveAs(path.GetPdfPath() +  "../pngs/curvature_" + name + ".png");
 
 	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
 	lCurve->Draw("AL");
