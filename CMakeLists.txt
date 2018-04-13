@@ -14,7 +14,7 @@ else()
 endif()
 
 #---Locate the ROOT package and defines a number of variables (e.g. ROOT_INCLUDE_DIRS)
-find_package(ROOT REQUIRED COMPONENTS MathCore RIO Hist Tree Net TString)
+find_package(ROOT REQUIRED COMPONENTS MathCore RIO Hist Tree Net)
 
 #---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
 include(${ROOT_USE_FILE})
@@ -23,7 +23,7 @@ include_directories(${CMAKE_SOURCE_DIR} ${ROOT_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/interface)
 add_definitions(${ROOT_CXX_FLAGS})
 
-ROOT_GENERATE_DICTIONARY(G__MCSelector ../src/MCSelector.h LINKDEF ../interface/LinkDef.h)
+ROOT_GENERATE_DICTIONARY(G__MCSelector src/MCSelector.h LINKDEF interface/LinkDef.h)
 
 #---Create a shared library with geneated dictionary
 add_library(MCSelector SHARED ${PROJECT_SOURCE_DIR}/src/MCSelector.C G__MCSelector.cxx)
@@ -70,7 +70,7 @@ link_directories(${ROOT_LIBRARY_DIR})
 
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
-set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++0x -std=c++17 -lstdc++ -lTreePlayer -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options  -lm"  )
+set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++0x -std=c++17 -lstdc++ -lUnfold  -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options  -lm"  )
 
 
 macro(install_symlink filepath sympath)
