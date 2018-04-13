@@ -424,8 +424,9 @@ main(int argc, char** argv)
     TH2* L_Split = unfold_Split->GetL("L_Split");
     TH2* RhoTotal_Split = unfold_Split->GetRhoIJtotal("RhoTotal_Split");
     std::cout << "#####chi**2 from DummyData#####" << std::endl;
-    std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
-              << unfold_Split->GetChi2A() << "+" << unfold_Split->GetChi2L() << "+"
+    std::cout << "chi**2_A+chi**2_L/Ndf = "
+              << unfold_Split->GetChi2A() << "+" << unfold_Split->GetChi2L() << " / " << unfold_Split->GetNdf() << "\n"
+              << "chi**2_Sys/Ndf = "
               << unfold_Split->GetChi2Sys() << " / " << unfold_Split->GetNdf() << "\n";
 
 // Split Input with Signal (e.g. only on MC)
@@ -541,9 +542,10 @@ main(int argc, char** argv)
 
     TH2* L_Split_Signal = unfold_Split_Signal->GetL("L_Split_Signal");
     TH2* RhoTotal_Split_Signal = unfold_Split_Signal->GetRhoIJtotal("RhoTotal_Split_Signal");
-    std::cout << "#####chi**2 from DummyData with added Signal#####" << std::endl;
-    std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
-              << unfold_Split_Signal->GetChi2A() << "+" << unfold_Split_Signal->GetChi2L() << "+"
+    std::cout << "#####chi**2 from DummyData#####" << std::endl;
+    std::cout << "chi**2_A+chi**2_L/Ndf = "
+              << unfold_Split_Signal->GetChi2A() << "+" << unfold_Split_Signal->GetChi2L() << " / " << unfold_Split_Signal->GetNdf() << "\n"
+              << "chi**2_Sys/Ndf = "
               << unfold_Split_Signal->GetChi2Sys() << " / " << unfold_Split_Signal->GetNdf() << "\n";
 
 
@@ -658,9 +660,10 @@ main(int argc, char** argv)
         TotalError.data());
     TH2* L = unfold->GetL("L");
     TH2* RhoTotal = unfold->GetRhoIJtotal("RhoTotal");
-    std::cout << "#####chi**2 from Data#####" << std::endl;
-    std::cout << "chi**2 = chi**2_A+chi**2_L+chi**2_Sys/Ndf = "
-              << unfold->GetChi2A() << "+" << unfold->GetChi2L() << "+"
+    std::cout << "#####chi**2 from DummyData#####" << std::endl;
+    std::cout << "chi**2_A+chi**2_L/Ndf = "
+              << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n"
+              << "chi**2_Sys/Ndf = "
               << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n";
 
 // Draw Stuff
