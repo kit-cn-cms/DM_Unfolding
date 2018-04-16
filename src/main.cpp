@@ -337,8 +337,8 @@ main(int argc, char** argv)
     // unfold_Split->SetBias(GenMET_all_Split.at(0));
 
     // Find Best Tau
-    // Unfolder_Split.FindBestTauLcurve(unfold_Split, "Split");
-    Unfolder_Split.FindBestTau(unfold_Split, "Split");
+    Unfolder_Split.FindBestTauLcurve(unfold_Split, "Split");
+    // Unfolder_Split.FindBestTau(unfold_Split, "Split");
     // unfold_Split->DoUnfold(0.0);
 
     // GetOutput
@@ -460,8 +460,8 @@ main(int argc, char** argv)
     // unfold_Split_Signal->SetBias(GenMET_all_Split.at(0));
 
     // Find Best Tau
-    // Unfolder_Split_Signal.FindBestTauLcurve(unfold_Split_Signal, "Split");
-    Unfolder_Split_Signal.FindBestTau(unfold_Split_Signal, "Split_Signal");
+    Unfolder_Split_Signal.FindBestTauLcurve(unfold_Split_Signal, "Split_Signal");
+    // Unfolder_Split_Signal.FindBestTau(unfold_Split_Signal, "Split_Signal");
 
     // GetOutput
     std::tuple<TH1*, TH1*> unfold_output_Split_Signal;
@@ -586,6 +586,7 @@ main(int argc, char** argv)
     // Find Best Tau
     Unfolder.FindBestTauLcurve(unfold, "data");
     // Unfolder.FindBestTau(unfold, "data");
+    // unfold->DoUnfold(0.000316228);
     // Get Output
     // 0st element=unfolded 1st=folded back
     std::tuple<TH1*, TH1*> unfold_output;
