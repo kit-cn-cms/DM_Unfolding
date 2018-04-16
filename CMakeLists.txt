@@ -42,8 +42,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/lib)
 # these instructions search the directory tree when cmake is
 # invoked and put all files that match the pattern in the variables 
 # `sources` and `data`
-file(GLOB_RECURSE sources      src/*.cpp )
-file(GLOB_RECURSE headerfiles  interface/*.hpp interface/*.hpp)
+file(GLOB_RECURSE sources      ${PROJECT_SOURCE_DIR}/src/*.cpp )
+file(GLOB_RECURSE headerfiles  ${PROJECT_SOURCE_DIR}/interface/*.hpp ${PROJECT_SOURCE_DIR}/interface/*.hpp)
 
 
 # add the data to the target, so it becomes visible in some IDE
