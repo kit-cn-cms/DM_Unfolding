@@ -95,13 +95,22 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
 
 	// save point corresponding to the kink in the L curve as TGraph
-	Double_t t[1], x[1], y[1];
+	Double_t t[1], x[1], y[1], c[1];
 	logTauX->GetKnot(iBest, t[0], x[0]);
 	logTauY->GetKnot(iBest, t[0], y[0]);
+	logTauCurvature->GetKnot(iBest, t[0], c[0]);
 	TGraph *bestLcurve = new TGraph(1, x, y);
 	TGraph *bestLogTauX = new TGraph(1, t, x);
+	TGraph *bestCLogTau = new TGraph(1, t, c);
+
+	Double_t *tAll = new Double_t[nScan], *cAll = new Double_t[nScan];
+	for (Int_t i = 0; i < nScan; i++) {
+		logTauCurvature->GetKnot(i, tAll[i], cAll[i]);
+	}
+	TGraph *curvknots = new TGraph(nScan, tAll, cAll);
 
 	TCanvas* tau = new TCanvas("logtauvsChi2_" + name, "logtauvsChi2_" + name);
+	tau->cd();
 	logTauX->Draw();
 	bestLogTauX->SetMarkerColor(kRed);
 	bestLogTauX->Draw("*");
@@ -109,13 +118,16 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	tau->SaveAs(path.GetPdfPath() +  "../pngs/logtauvsChi2_" + name + ".png");
 
 	TCanvas* curv = new TCanvas("curvature_" + name, "curvature_" + name);
+	curv->cd();
 	logTauCurvature->Draw();
-	bestLogTauX->SetMarkerColor(kRed);
-	bestLogTauX->Draw("*");
+	curvknots->Draw("*");
+	bestCLogTau->SetMarkerColor(kRed);
+	bestCLogTau->Draw("*");
 	curv->SaveAs(path.GetPdfPath() + "curvature_" + name + ".pdf");
 	curv->SaveAs(path.GetPdfPath() +  "../pngs/curvature_" + name + ".png");
 
 	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
+	clCurve->cd();
 	lCurve->Draw("AL");
 	bestLcurve->SetMarkerColor(kRed);
 	bestLcurve->Draw("*");
