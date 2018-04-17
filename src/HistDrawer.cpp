@@ -45,12 +45,12 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	if (log) gPad->SetLogz();
 
 	if (xlabel == "none") {
-		hist->SetXTitle(name + "_Reco");
+		hist->SetXTitle(name);
 	}
 	else hist-> SetXTitle(xlabel);
 
 	if (ylabel == "none") {
-		hist->SetYTitle(name + "_Gen");
+		hist->SetYTitle(name);
 	}
 	else hist-> SetYTitle(ylabel);
 
