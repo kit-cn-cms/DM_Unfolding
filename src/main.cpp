@@ -366,12 +366,20 @@ main(int argc, char** argv)
     Drawer.Draw2D(ErrorMatrix_MCstat_Split, "ErrorMatrix_MCstat_Split", true, "Unfolded MET", "Unfolded MET");
     // Variations of MigrationMatrix
     std::vector<TH2*> v_ErrorMatrixVariations_Split;
+    std::vector<TH1*> v_ShiftVariations_Split;
     for (auto& var : variation) {
       TH2* tmp = (TH2*)ErrorMatrix_subBKGuncorr_Split->Clone();
       tmp->Reset();
       unfold_Split->GetEmatrixSysSource(tmp, var + TString("_Split"));
       v_ErrorMatrixVariations_Split.push_back(tmp);
       Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + var + "_Split", true, "Unfolded MET", "Unfolded MET");
+
+      TH1* Delta = (TH1*) GenMET_all.at(0)->Clone();
+      Delta->Reset();
+      Delta->Sumw2();
+      unfold_Split->TUnfoldSys::GetDeltaSysSource(Delta, TString(var) + TString("_Split"));
+      v_ShiftVariations_Split.push_back(Delta);
+      Drawer.Draw1D(Delta, "Shift_" + TString(var) + "_Split", false, "unfolded MET");
     }
 
     TH1D* METTotalError_Split = new TH1D("TotalError_Split", "MET", nBins_Gen, BinEdgesGen.data());
@@ -483,6 +491,7 @@ main(int argc, char** argv)
     TH2* ErrorMatrix_MCstat_Split_Signal = unfold_Split_Signal->GetEmatrixSysUncorr("ErrorMatrix_MCstat_Split_Signal");
     Drawer.Draw2D(ErrorMatrix_MCstat_Split_Signal, "ErrorMatrix_MCstat_Split_Signal", true, "Unfolded MET", "Unfolded MET");
     // Variations of MigrationMatrix
+    std::vector<TH1*> v_ShiftVariations_Split_Signal;
     std::vector<TH2*> v_ErrorMatrixVariations_Split_Signal;
     for (auto& var : variation) {
       TH2* tmp = (TH2*)ErrorMatrix_subBKGuncorr_Split_Signal->Clone();
@@ -490,6 +499,13 @@ main(int argc, char** argv)
       unfold_Split_Signal->GetEmatrixSysSource(tmp, var + TString("_Split"));
       v_ErrorMatrixVariations_Split_Signal.push_back(tmp);
       Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + var + "_Split_Signal", true, "Unfolded MET", "Unfolded MET");
+
+      TH1* Delta = (TH1*) GenMET_all.at(0)->Clone();
+      Delta->Reset();
+      Delta->Sumw2();
+      unfold_Split_Signal->TUnfoldSys::GetDeltaSysSource(Delta, TString(var) + TString("_Split"));
+      v_ShiftVariations_Split_Signal.push_back(Delta);
+      Drawer.Draw1D(Delta, "Shift_" + TString(var) + "_Split_Signal", false, "unfolded MET");
     }
 
     TH1D* METTotalError_Split_Signal =
@@ -607,12 +623,20 @@ main(int argc, char** argv)
 
     // Variations of MigrationMatrix
     std::vector<TH2*> v_ErrorMatrixVariations;
+    std::vector<TH1*> v_ShiftVariations;
     for (auto& var : variation) {
       TH2* tmp = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
       tmp->Reset();
       unfold->GetEmatrixSysSource(tmp, TString(var));
       v_ErrorMatrixVariations.push_back(tmp);
       Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var), true, "Unfolded MET", "Unfolded MET");
+
+      TH1* Delta = (TH1*) GenMET_all.at(0)->Clone();
+      Delta->Reset();
+      Delta->Sumw2();
+      unfold->TUnfoldSys::GetDeltaSysSource(Delta, TString(var));
+      v_ShiftVariations.push_back(Delta);
+      Drawer.Draw1D(Delta, "Shift_" + TString(var), false, "unfolded MET");
     }
 
     TH1D* METTotalError =
@@ -713,6 +737,21 @@ main(int argc, char** argv)
     Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
     Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
 
+    nVariation = 0;
+    std::vector<TH1*> v_NomPlusVar_Split;
+    for (auto& var : variation) {
+      TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output_Split)->Clone();
+      NomPlusVar->Add(v_ShiftVariations_Split.at(nVariation));
+      v_NomPlusVar_Split.push_back(NomPlusVar);
+      nVariation += 1;
+    }
+
+    nVariation = 0;
+    for (auto& var : variation) {
+      Drawer.DrawDataMC(v_NomPlusVar_Split.at(nVariation), {std::get<0>(unfold_output_Split)}, {"nominal+" + var}, var + "vsNominal_Split", log, false, drawpull);
+      nVariation += 1;
+    }
+
     Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_Split", log, false, drawpull);
     Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors_Split",
                            log,
@@ -738,6 +777,21 @@ main(int argc, char** argv)
                   recovar + "_unfolded_Split_Signal");
     Drawer.Draw1D(std::get<1>(unfold_output_Split_Signal),
                   recovar + "_foldedback_Split_Signal");
+
+    nVariation = 0;
+    std::vector<TH1*> v_NomPlusVar_Split_Signal;
+    for (auto& var : variation) {
+      TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output_Split_Signal)->Clone();
+      NomPlusVar->Add(v_ShiftVariations_Split_Signal.at(nVariation));
+      v_NomPlusVar_Split_Signal.push_back(NomPlusVar);
+      nVariation += 1;
+    }
+
+    nVariation = 0;
+    for (auto& var : variation) {
+      Drawer.DrawDataMC(v_NomPlusVar_Split_Signal.at(nVariation), {std::get<0>(unfold_output_Split_Signal)}, {"nominal+" + var}, var + "vsNominal_Split_Signal", log, false, drawpull);
+      nVariation += 1;
+    }
 
     Drawer.DrawDataMC(METTotalError_Split_Signal,
                       v_GenMET_bkgs_Split.at(0),
@@ -777,6 +831,24 @@ main(int argc, char** argv)
     // Using Data
     Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded", log);
     Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
+
+    nVariation = 0;
+    std::vector<TH1*> v_NomPlusVar;
+    for (auto& var : variation) {
+      TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
+      NomPlusVar->Add(v_ShiftVariations.at(nVariation));
+      v_NomPlusVar.push_back(NomPlusVar);
+      nVariation += 1;
+    }
+
+    nVariation = 0;
+    for (auto& var : variation) {
+      Drawer.DrawDataMC(v_NomPlusVar.at(nVariation), {std::get<0>(unfold_output)}, {"nominal+" + var}, var + "vsNominal", log, false, drawpull);
+      nVariation += 1;
+    }
+
+
+
 
     Drawer.DrawDataMC(METTotalError,
                       v_GenMET_bkgs.at(0),
