@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <iostream>
 
-// #include "TMath.h"
+#include "TMath.h"
 #include "TGraphErrors.h"
 #include "TSortedList.h"
 #include <math.h>
@@ -85,7 +85,7 @@ main(int argc, char** argv)
   // Reset Output ROOTFILE
   std::remove(path.GetOutputFilePath());
 
-  // Return relevant Histos
+// Return relevant Histos
 
   // Full Sample
   HistHelper histhelper;
@@ -642,10 +642,13 @@ main(int argc, char** argv)
     TH1D* METTotalError =
       new TH1D("TotalError", "MET", nBins_Gen, BinEdgesGen.data());
     std::vector<double> EStat;
-    std::vector<double> ESyst;
+    std::vector<double> ESystL;
+    std::vector<double> ESystH;
     std::vector<double> BinCenters;
     std::vector<double> BinContents;
     std::vector<double> TotalError;
+    double systerrorL;
+    double systerrorH;
 
     for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
       double staterror = ErrorMatrix_input->GetBinContent(bin, bin);
@@ -653,18 +656,24 @@ main(int argc, char** argv)
       double systerror = ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin) +
                          ErrorMatrix_subBKGscale->GetBinContent(bin, bin) +
                          ErrorMatrix_MCstat->GetBinContent(bin, bin);
-      for (auto mat : v_ErrorMatrixVariations) {
-        systerror += mat->GetBinContent(bin, bin);
+
+      for (auto shift : v_ShiftVariations) {
+        float error = shift->GetBinContent(bin, bin);
+        if (error > 0) systerrorH = error * error;
+        else systerrorL = error * error ;
       }
-      ESyst.push_back(sqrt(systerror));
+      systerrorH += systerror + staterror ;
+      systerrorL += systerror + staterror ;
+
+      ESystH.push_back(sqrt(systerrorH));
+      ESystL.push_back(sqrt(systerrorL));
+      // ESyst.push_back(sqrt(systerror));
       // zeros.push_back(0);
       TotalError.push_back(sqrt(staterror + systerror));
       BinCenters.push_back(std::get<0>(unfold_output)->GetBinCenter(bin));
       BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
-      METTotalError->SetBinContent(
-        bin, std::get<0>(unfold_output)->GetBinContent(bin));
-      METTotalError->SetBinError(bin,
-                                 sqrt(ErrorMatrix->GetBinContent(bin, bin)));
+      // METTotalError->SetBinContent(bin, std::get<0>(unfold_output)->GetBinContent(bin));
+      // METTotalError->SetBinError(bin, sqrt(ErrorMatrix->GetBinContent(bin, bin)));
     }
 
     TGraphErrors* MET_Stat = new TGraphErrors(nBins_Gen,
@@ -672,11 +681,13 @@ main(int argc, char** argv)
         BinContents.data(),
         zeros.data(),
         EStat.data());
-    TGraphErrors* MET_Syst = new TGraphErrors(nBins_Gen,
+    TGraphAsymmErrors* MET_Syst = new TGraphAsymmErrors(nBins_Gen,
         BinCenters.data(),
         BinContents.data(),
         zeros.data(),
-        TotalError.data());
+        zeros.data(),
+        ESystL.data(),
+        ESystH.data());
     TH2* L = unfold->GetL("L");
     TH2* RhoTotal = unfold->GetRhoIJtotal("RhoTotal");
     std::cout << "#####chi**2 from DummyData#####" << std::endl;
@@ -733,7 +744,7 @@ main(int argc, char** argv)
       GenBkgNames.push_back("Gen_" + name);
     }
 
-    // split Input
+// split Input
     Drawer.Draw1D(std::get<0>(unfold_output_Split), recovar + "_unfolded_Split");
     Drawer.Draw1D(std::get<1>(unfold_output_Split), recovar + "_foldedback_Split");
 
@@ -753,10 +764,10 @@ main(int argc, char** argv)
     }
 
     Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGen_Split", log, false, drawpull);
-    Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors_Split",
-                           log,
-                           false,
-                           drawpull);
+    // Drawer.DrawDataMCerror(METTotalError_Split, MET_Split_Stat, MET_Split_Syst, v_GenMET_bkgs_Split.at(0), GenBkgNames, "MET_UnfoldedvsGenErrors_Split",
+    //                        log,
+    //                        false,
+    //                        drawpull);
 
     // Drawer.DrawDataMC(METTotalError_Split, v_GenMET_bkgs_Split.at(0),
     // GenBkgNames, "MET_UnfoldedvsGen_normalized_Split", log);
@@ -772,7 +783,7 @@ main(int argc, char** argv)
     "Purity_Split",
     log);
 
-    // split Input with Signal
+// split Input with Signal
     Drawer.Draw1D(std::get<0>(unfold_output_Split_Signal),
                   recovar + "_unfolded_Split_Signal");
     Drawer.Draw1D(std::get<1>(unfold_output_Split_Signal),
@@ -800,15 +811,15 @@ main(int argc, char** argv)
                       log,
                       false,
                       drawpull);
-    Drawer.DrawDataMCerror(METTotalError_Split_Signal,
-                           MET_Split_Signal_Stat,
-                           MET_Split_Signal_Syst,
-                           v_GenMET_bkgs_Split.at(0),
-                           GenBkgNames,
-                           "MET_UnfoldedvsGenErrors_Split_Signal",
-                           log,
-                           false,
-                           drawpull);
+    // Drawer.DrawDataMCerror(METTotalError_Split_Signal,
+    //                        MET_Split_Signal_Stat,
+    //                        MET_Split_Signal_Syst,
+    //                        v_GenMET_bkgs_Split.at(0),
+    //                        GenBkgNames,
+    //                        "MET_UnfoldedvsGenErrors_Split_Signal",
+    //                        log,
+    //                        false,
+    //                        drawpull);
 
     // Drawer.DrawDataMC(METTotalError_Split_Signal, v_GenMET_bkgs_Split_Signal.at(0),
     // GenBkgNames, "MET_UnfoldedvsGen_normalized_Split_Signal", log);
@@ -827,8 +838,7 @@ main(int argc, char** argv)
 
 
 
-
-    // Using Data
+// Using Data
     Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded", log);
     Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback", log);
 
@@ -857,8 +867,7 @@ main(int argc, char** argv)
                       log,
                       false,
                       drawpull);
-    Drawer.DrawDataMCerror(METTotalError,
-                           MET_Stat,
+    Drawer.DrawDataMCerror(MET_Stat,
                            MET_Syst,
                            v_GenMET_bkgs.at(0),
                            GenBkgNames,

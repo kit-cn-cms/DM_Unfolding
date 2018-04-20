@@ -5,6 +5,7 @@
 #include "TFile.h"
 #include "TCanvas.h"
 #include "THStack.h"
+#include <TMath.h>
 #include "TLine.h"
 #include <TROOT.h>
 #include <TStyle.h>
@@ -196,12 +197,12 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 }
 
 
-void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	gStyle->SetEndErrorSize(10);
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
-	legend->AddEntry(data, "Data", "P");
+	legend->AddEntry(data_stat, "Data", "P");
 	gStyle->SetErrorX(0.);
 	gStyle->SetOptStat(0);
 	if (log) gPad->SetLogy();
@@ -218,32 +219,39 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 		index += 1;
 		fillcolor += 1;
 	}
+	double max_data = TMath::MaxElement(data_syst->GetN(), data_syst->GetX());
+	// float max_data = data->GetMaximum();
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
-	if (normalize) 	data->Scale(1 / data->Integral());
-
-	float max_data = data->GetMaximum();
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
 	stack->SetMinimum(10);
 	stack->Draw("hist");
-	data->Draw("PSame");
-	data_stat->Draw("same||");
-	data_syst->Draw("same||[]");
+	data_stat->Draw("Psame");
+	data_stat->SetMarkerStyle(20);
+	data_syst->Draw("same[]");
 	legend->Draw("same");
-	data->SetStats(false);
 
-
-	data->SetMarkerStyle(20);
-	// data->SetMarkerSize();
 	if (xlabel == "none") {
-		data->SetXTitle(name);
+		lastStack->SetXTitle(name);
 	}
-	else data-> SetXTitle(xlabel);
+	else lastStack-> SetXTitle(xlabel);
+
+	TH1* data = new TH1F("data", "data", lastStack->GetNbinsX(), lastStack->GetXaxis()->GetXmin(), lastStack->GetXaxis()->GetXmax());
+	data->Sumw2();
+	for (int i = 1; i <= lastStack->GetNbinsX() ; i++) {
+		data->SetBinContent(i, data_syst->GetY()[i - 1]);
+		float Ehigh = data_syst->GetEYhigh()[i - 1];
+		float Elow = data_syst->GetEYlow()[i - 1];
+		if (Ehigh > Elow) data->SetBinError(i, Ehigh);
+		else data->SetBinError(i, Elow);
+	}
+	data->SetMarkerStyle(20);
+	
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
-	ratio->Divide((TH1*)stack->GetStack()->Last());
+	ratio->Divide( (TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
 	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
@@ -277,7 +285,7 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 			double sigma_d = data->GetBinError(bin);
 			double sigma_mc = lastStack->GetBinError(bin);
 			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = ( data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
 			pull->SetBinContent(bin, content);
 			pull->SetBinError(bin, 0);
 		}
@@ -298,6 +306,8 @@ void HistDrawer::DrawDataMCerror(TH1* data, TGraphErrors* data_stat, TGraphError
 	}
 
 
+
+	c->cd(1);
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
