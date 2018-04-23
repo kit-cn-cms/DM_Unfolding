@@ -157,9 +157,10 @@ void UnfoldWrapper::DoIt() {
 
 	bool log = true;
 	bool drawpull = true;
+	bool normalize = true;
 	Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
 	Drawer.Draw2D(L, "L" + label);
-	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, false, "Unfolded MET", "Unfolded MET");
+	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
 	Drawer.DrawDataMC(data, MC.at(0), bkgnames, "MET", log);
 
@@ -182,7 +183,7 @@ void UnfoldWrapper::DoIt() {
 
 	nVariation = 0;
 	for (auto& var : variations) {
-		Drawer.DrawDataMC(v_NomPlusVar.at(nVariation), {std::get<0>(unfold_output)}, {"nominal+" + var}, var + "vsNominal" + label, log, false, drawpull);
+		Drawer.DrawDataMC(v_NomPlusVar.at(nVariation), {std::get<0>(unfold_output)}, {"nominal+" + var}, var + "vsNominal" + label, log, !normalize, drawpull);
 		nVariation += 1;
 	}
 
@@ -192,7 +193,7 @@ void UnfoldWrapper::DoIt() {
 	                       GenBkgNames,
 	                       varName + "UnfoldedvsGenErrors" + label,
 	                       log,
-	                       false,
+	                       !normalize,
 	                       drawpull);
 
 	Drawer.DrawDataMC(h_DataMinFakes,
