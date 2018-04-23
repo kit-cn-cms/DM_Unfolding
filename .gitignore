@@ -32,5 +32,12 @@
 *.app
 
 *.pdf
+*.png
 *.root
 *.ROOT
+
+/build/*
+*.pcm
+*.d
+*.so
+*.pcm

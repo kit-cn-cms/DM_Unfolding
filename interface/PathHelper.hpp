@@ -9,6 +9,13 @@ class PathHelper
 public:
 	TString GetOutputFilePath();
 	TString GetHistoFilePath();
+	TString GetConfigPath();
+	TString GetConfigPathforSlaves();
+
+	TString GetPdfPath();
+	TString GetSourcePath() ;
+	TString GetIncludePath() ;
+	TString GetRootFilesPath();
 
 
 
