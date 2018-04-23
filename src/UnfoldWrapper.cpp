@@ -129,7 +129,9 @@ void UnfoldWrapper::DoIt() {
 		ESystL.push_back(sqrt(systerrorL));
 		zeros.push_back(0);
 		TotalError.push_back(sqrt(staterror + systerror));
-		BinCenters.push_back(std::get<0>(unfold_output)->GetBinCenter(bin));
+		TAxis *xaxis = std::get<0>(unfold_output)->GetXaxis();
+		Double_t binCenter = xaxis->GetBinCenter(bin);
+		BinCenters.push_back(binCenter);
 		BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
 	}
 
@@ -188,7 +190,7 @@ void UnfoldWrapper::DoIt() {
 	                       MET_Syst,
 	                       GenMC.at(0),
 	                       GenBkgNames,
-	                       varName + "UnfoldedvsGenErrors"+label,
+	                       varName + "UnfoldedvsGenErrors" + label,
 	                       log,
 	                       false,
 	                       drawpull);

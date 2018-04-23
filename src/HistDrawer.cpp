@@ -237,8 +237,10 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	}
 	else lastStack-> SetXTitle(xlabel);
 
-	TH1* data = new TH1F("data", "data", lastStack->GetNbinsX(), lastStack->GetXaxis()->GetXmin(), lastStack->GetXaxis()->GetXmax());
-	data->Sumw2();
+	// TH1* data = new TH1F("data", "data", lastStack->GetNbinsX(), BinEdges.data());
+	TH1* data = (TH1*) MC.at(0)->Clone();
+	data->ResetAttMarker();
+	data->Reset();
 	for (int i = 1; i <= lastStack->GetNbinsX() ; i++) {
 		data->SetBinContent(i, data_syst->GetY()[i - 1]);
 		float Ehigh = data_syst->GetEYhigh()[i - 1];
@@ -257,9 +259,9 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
-	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
-	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
-	ratio->GetYaxis()->SetTitleOffset(0.5);
+	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.5);
+	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 2.2);
+	ratio->GetYaxis()->SetTitleOffset(053);
 	ratio->SetTitle("");
 	ratio->GetYaxis()->SetNdivisions(505);
 
@@ -295,7 +297,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		pull->GetXaxis()->SetLabelSize(pull->GetXaxis()->GetLabelSize() * 3);
 		pull->GetYaxis()->SetLabelSize(pull->GetYaxis()->GetLabelSize() * 3);
 		pull->GetXaxis()->SetTitleSize(pull->GetXaxis()->GetTitleSize() * 3.5);
-		pull->GetYaxis()->SetTitleSize(pull->GetYaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleSize(pull->GetYaxis()->GetTitleSize() * 2.2);
 		pull->GetYaxis()->SetTitleOffset(0.5);
 		pull->GetYaxis()->SetNdivisions(505);
 		pull->SetTitle("");
@@ -304,7 +306,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		linepull->SetLineColor(kBlack);
 		linepull->Draw();
 	}
-	
+
 	c->cd(1);
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
