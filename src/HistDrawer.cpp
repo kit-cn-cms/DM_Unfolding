@@ -247,7 +247,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		else data->SetBinError(i, Elow);
 	}
 	data->SetMarkerStyle(20);
-	
+
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
@@ -304,9 +304,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		linepull->SetLineColor(kBlack);
 		linepull->Draw();
 	}
-
-
-
+	
 	c->cd(1);
 	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
