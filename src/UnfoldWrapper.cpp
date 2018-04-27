@@ -1,6 +1,7 @@
 #include "../interface/UnfoldWrapper.hpp"
 #include "../interface/Unfolder.hpp"
 #include "../interface/HistDrawer.hpp"
+#include "../interface/FileWriter.hpp"
 
 
 #include <iostream>
@@ -25,6 +26,8 @@ void UnfoldWrapper::DoIt() {
 	std::cout << "#########Unfolding with label: " << label << "##################" << std::endl;
 	Unfolder Unfolder;
 	HistDrawer Drawer;
+	//Write important histos to dedicated file
+	FileWriter writer(label);
 
 	// Subtract Fakes from Data
 	TH1F* h_DataMinFakes = (TH1F*)data->Clone();
@@ -177,6 +180,7 @@ void UnfoldWrapper::DoIt() {
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
 		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
+		NomPlusVar->SetName(TString(var));
 		v_NomPlusVar.push_back(NomPlusVar);
 		nVariation += 1;
 	}
@@ -184,6 +188,7 @@ void UnfoldWrapper::DoIt() {
 	nVariation = 0;
 	for (auto& var : variations) {
 		Drawer.DrawDataMC(v_NomPlusVar.at(nVariation), {std::get<0>(unfold_output)}, {"nominal+" + var}, var + "vsNominal" + label, log, !normalize, drawpull);
+		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
 
