@@ -37,6 +37,17 @@ TString PathHelper::GetHistoFilePath()
 	return filepath;
 }
 
+TString PathHelper::GetROOTdirPath()
+{
+	char currentdir[1024];
+	getcwd(currentdir, sizeof(currentdir));
+	string workingdir(currentdir);
+
+	TString filepath = workingdir + "/.." + "/rootfiles/";
+	return filepath;
+}
+
+
 TString PathHelper::GetConfigPath( ) {
 	char currentdir[1024];
 	getcwd(currentdir, sizeof(currentdir));
