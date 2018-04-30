@@ -86,36 +86,48 @@ public:
   // Readers to access the data (delete the ones you do not need).
   TTreeReaderValue<Float_t> var_reco = { fReader, "Evt_Pt_MET" };
   TTreeReaderValue<Float_t> var_gen = { fReader, "Evt_Pt_GenMET" };
+
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
   TTreeReaderValue<Float_t> Weight_PU = { fReader, "Weight_PU" };
   TTreeReaderValue<Float_t> Weight_CSV = { fReader, "Weight_CSV" };
-  TTreeReaderValue<Float_t> Weight = { fReader, "Weight" };
+
+  TTreeReaderValue<Float_t> Weight_PUup = { fReader, "Weight_pu69p2Up" };
+  TTreeReaderValue<Float_t> Weight_PUdown = { fReader, "Weight_pu69p2Down" };
+
+  TTreeReaderValue<Float_t> Weight_MuRup = { fReader, "Weight_scale_variation_muR_2p0_muF_1p0" };
+  TTreeReaderValue<Float_t> Weight_MuRdown = { fReader, "Weight_scale_variation_muR_0p5_muF_1p0" };
+  TTreeReaderValue<Float_t> Weight_MuFup = { fReader, "Weight_scale_variation_muR_1p0_muF_0p5" };
+  TTreeReaderValue<Float_t> Weight_MuFdown = { fReader, "Weight_scale_variation_muR_1p0_muF_2p0" };
+
+
+  TTreeReaderValue<Float_t> Weight_CSVLFup = { fReader, "Weight_CSVLFup" };
+  TTreeReaderValue<Float_t> Weight_CSVLFdown = { fReader, "Weight_CSVLFdown" };
+  TTreeReaderValue<Float_t> Weight_CSVHFup = { fReader, "Weight_CSVHFup" };
+  TTreeReaderValue<Float_t> Weight_CSVHFdown = { fReader, "Weight_CSVHFdown" };
+  TTreeReaderValue<Float_t> Weight_CSVHFStats1up = { fReader, "Weight_CSVHFStats1up" };
+  TTreeReaderValue<Float_t> Weight_CSVHFStats1down = { fReader, "Weight_CSVHFStats1down" };
+  TTreeReaderValue<Float_t> Weight_CSVLFStats1up = { fReader, "Weight_CSVLFStats1up" };
+  TTreeReaderValue<Float_t> Weight_CSVLFStats1down = { fReader, "Weight_CSVLFStats1down" };
+  TTreeReaderValue<Float_t> Weight_CSVHFStats2up = { fReader, "Weight_CSVHFStats2up" };
+  TTreeReaderValue<Float_t> Weight_CSVHFStats2down = { fReader, "Weight_CSVHFStats2down" };
+  TTreeReaderValue<Float_t> Weight_CSVLFStats2up = { fReader, "Weight_CSVLFStats2up" };
+  TTreeReaderValue<Float_t> Weight_CSVLFStats2down = { fReader, "Weight_CSVLFStats2down" };
+  TTreeReaderValue<Float_t> Weight_CSVCErr1up = { fReader, "Weight_CSVCErr1up" };
+  TTreeReaderValue<Float_t> Weight_CSVCErr1down = { fReader, "Weight_CSVCErr1down" };
+  TTreeReaderValue<Float_t> Weight_CSVCErr2up = { fReader, "Weight_CSVCErr2up" };
+  TTreeReaderValue<Float_t> Weight_CSVCErr2down = { fReader, "Weight_CSVCErr2down" };
 
   TTreeReaderValue<Long64_t> GenMETSelection = { fReader, "GenMETSelection" };
-  TTreeReaderValue<Long64_t> GenBTagVetoSelection = { fReader,
-                                                      "GenBTagVetoSelection" };
-  TTreeReaderValue<Long64_t> GenMonoJetSelection = { fReader,
-                                                     "GenMonoJetSelection" };
-  TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {
-    fReader,
-    "GenLeptonVetoSelection"
-  };
+  TTreeReaderValue<Long64_t> GenBTagVetoSelection = { fReader, "GenBTagVetoSelection" };
+  TTreeReaderValue<Long64_t> GenMonoJetSelection = { fReader, "GenMonoJetSelection" };
+  TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {fReader, "GenLeptonVetoSelection" };
 
-  TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X = {
-    fReader,
-    "Triggered_HLT_PFMET170_X"
-  };
-  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X =
-    { fReader, "Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X" };
-  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X =
-    { fReader, "Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X" };
-  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X =
-    { fReader, "Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X" };
-  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X = {
-    fReader,
-    "Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X"
-  };
+  TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X = {fReader, "Triggered_HLT_PFMET170_X"};
+  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X" };
+  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X" };
+  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X" };
+  TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X" };
 
   float weight_ = 1;
 

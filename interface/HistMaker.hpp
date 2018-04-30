@@ -19,10 +19,10 @@ class HistMaker
 public:
 	std::vector<TString> GetInputFileList(std::vector<std::string> paths , TString type);
 	void ParseConfig();
-	void FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains,std::vector<std::vector<TChain*>> BkgChainsVariations);
+	void FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains, std::vector<std::vector<TChain*>> BkgChainsVariations);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
-	TTree* CreateFriendTree(std::vector<std::string> BranchNames, long n_Events);
+	TTree* CreateFriendTree(std::vector<std::string> BranchNamesLong, std::vector<std::string> BranchNamesFLoat, long n_Events);
 
 
 	TH1F* Get1DHisto(TString name);
@@ -40,9 +40,11 @@ public:
 	std::vector<std::string> bkgnames;
 	std::map<std::string, std::vector<std::string>> BkgPaths;
 	std::vector<std::string> weights;
-	std::vector<std::string> additionalBranchNames;
+	std::vector<std::string> additionalBranchNamesLong;
+	std::vector<std::string> additionalBranchNamesFloat;
 
 	std::vector<std::string> variation;
+	std::vector<std::string> systematics;
 	int nBins_Gen;
 	int nBins_Reco;
 	int xMin;

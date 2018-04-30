@@ -269,6 +269,54 @@ MCSelector::Process(Long64_t entry)
   if (option.Contains("Zjet"))
     weight_ *= 3 * 0.971;
 
+  if (option.Contains("PUup"))
+    weight_ *= (*Weight_PUup) / (*Weight_PU);
+  if (option.Contains("PUdown"))
+    weight_ *= (*Weight_PUdown) / (*Weight_PU);
+
+  if (option.Contains("MuRup"))
+    weight_ *= (*Weight_MuRup);
+  if (option.Contains("MuRdown"))
+    weight_ *= (*Weight_MuRdown);
+  if (option.Contains("MuFup"))
+    weight_ *= (*Weight_MuFup);
+  if (option.Contains("MuFdown"))
+    weight_ *= (*Weight_MuFdown);
+
+  if (option.Contains("Weight_CSVLFup"))
+    weight_ *= (*Weight_CSVLFup);
+  if (option.Contains("Weight_CSVLFdown"))
+    weight_ *= (*Weight_CSVLFdown);
+  if (option.Contains("Weight_CSVHFup"))
+    weight_ *= (*Weight_CSVHFup);
+  if (option.Contains("Weight_CSVHFdown"))
+    weight_ *= (*Weight_CSVHFdown);
+  if (option.Contains("Weight_CSVHFStats1up"))
+    weight_ *= (*Weight_CSVHFStats1up);
+  if (option.Contains("Weight_CSVHFStats1down"))
+    weight_ *= (*Weight_CSVHFStats1down);
+  if (option.Contains("Weight_CSVLFStats1up"))
+    weight_ *= (*Weight_CSVLFStats1up);
+  if (option.Contains("Weight_CSVLFStats1down"))
+    weight_ *= (*Weight_CSVLFStats1down);
+  if (option.Contains("Weight_CSVHFStats2up"))
+    weight_ *= (*Weight_CSVHFStats2up);
+  if (option.Contains("Weight_CSVHFStats2down"))
+    weight_ *= (*Weight_CSVHFStats2down);
+  if (option.Contains("Weight_CSVLFStats2up"))
+    weight_ *= (*Weight_CSVLFStats2up);
+  if (option.Contains("Weight_CSVLFStats2down"))
+    weight_ *= (*Weight_CSVLFStats2down);
+
+  if (option.Contains("Weight_CSVCErr1up"))
+    weight_ *= (*Weight_CSVCErr1up);
+  if (option.Contains("Weight_CSVCErr1down"))
+    weight_ *= (*Weight_CSVCErr1down);
+  if (option.Contains("Weight_CSVCErr2up"))
+    weight_ *= (*Weight_CSVCErr2up);
+  if (option.Contains("Weight_CSVCErr2down"))
+    weight_ *= (*Weight_CSVCErr2down);
+
   // Calculate split
   // std::cout << "WARNING split > 50, therefore not working correctly ->
   // Proceeding with split =50" << std::endl;

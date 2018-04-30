@@ -58,6 +58,11 @@ main(int argc, char** argv)
   int nBins_Reco = pt.get<int>("Binning.nBins_Reco");
   std::vector<string> variation =
     to_array<std::string>(pt.get<std::string>("general.variation"));
+  std::vector<string> systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
+  for (auto& sys : systematics) {
+    variation.push_back("nominal_" + sys);
+  }
+
   std::vector<string> bkgnames =
     to_array<std::string>(pt.get<std::string>("Bkg.names"));
   bool fillhistos = true;
@@ -318,12 +323,12 @@ main(int argc, char** argv)
     Wrapper_Split.DoIt();
 
 
-    TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();
-    MET_signal.at(0)->Scale(0.1);
-    InputwithSignal->Add(MET_signal.at(0));
+    // TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();
+    // MET_signal.at(0)->Scale(0.1);
+    // InputwithSignal->Add(MET_signal.at(0));
 
-    UnfoldWrapper Wrapper_Split_Signal = UnfoldWrapper("MET", "SplitSignal", A_all_Split,  InputwithSignal, fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
-    Wrapper_Split_Signal.DoIt();
+    // UnfoldWrapper Wrapper_Split_Signal = UnfoldWrapper("MET", "SplitSignal", A_all_Split,  InputwithSignal, fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
+    // Wrapper_Split_Signal.DoIt();
 // Draw Stuff
 
     // General Distributions

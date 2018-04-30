@@ -49,11 +49,22 @@ void HistMaker::MakeHistos() {
 	}
 
 	long data_events = DataChains.at(0)->GetEntries();
-	TTree* FriendTree = CreateFriendTree(additionalBranchNames, data_events);
+	TTree* FriendTree = CreateFriendTree(additionalBranchNamesLong, additionalBranchNamesFloat, data_events);
 	TChain* FriendChain = new TChain("TreeFriend");
 	FriendChain->Add(path.GetRootFilesPath() + "TreeFriend.root");
 	for (auto& chain : DataChains) chain->AddFriend(FriendChain);
+	for (auto& chain : SignalChains) chain->AddFriend(FriendChain);
 
+	int nVariation = 0;
+	for (auto& varchains : BkgChainsVariations) {
+		int j = 0;
+		for (auto& chain : varchains) {
+			if (variation.at(nVariation) != "nominal") {
+				chain->AddFriend(FriendChain);
+			}
+		}
+		nVariation += 1;
+	}
 	//Reset Histofile
 	std::remove(path.GetHistoFilePath());
 	// TFile* histofile = new TFile(path.GetHistoFilePath(), "RECREATE");
@@ -80,7 +91,8 @@ void HistMaker::ParseConfig() {
 	SignalPath = to_array<std::string>(pt.get<std::string>("SignalSample.path"));
 	DataPath = to_array<std::string>(pt.get<std::string>("DataSample.path"));
 	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
-	additionalBranchNames = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNames"));
+	additionalBranchNamesLong = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNamesLong"));
+	additionalBranchNamesFloat = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNamesFloat"));
 
 	for (const std::string& name : bkgnames) {
 		BkgPaths[name];
@@ -92,6 +104,7 @@ void HistMaker::ParseConfig() {
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
 	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
+	systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
 	useBatch = pt.get<bool>("general.useBatch");
 
 	cout << "Config parsed!" << endl;
@@ -206,13 +219,16 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	return chain;
 }
 
-TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNames, long n_Events) {
+TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNamesLong, std::vector<string> BranchNamesFloat, long n_Events) {
 	TFile* friendfile = new TFile(path.GetRootFilesPath() + "TreeFriend.root", "RECREATE");
 	TTree* TreeFriend = new TTree("TreeFriend", "TreeFriend");
 	TreeFriend->SetEntries(n_Events);
 	Long64_t dummyval = 1;
-	for (auto const& name : BranchNames) {
+	for (auto const& name : BranchNamesLong) {
 		TBranch *branch = TreeFriend->Branch(name.c_str(), &dummyval, (name + "/L").c_str());
+	}
+	for (auto const& name : BranchNamesFloat) {
+		TBranch *branch = TreeFriend->Branch(name.c_str(), &dummyval, (name + "/F").c_str());
 	}
 	for (int j = 0; j < n_Events; j++) {
 		dummyval = 1;
@@ -271,9 +287,21 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	for (auto& varchains : BkgChainsVariations) {
 		int j = 0;
 		for (auto& chain : varchains) {
-			chain->SetProof();
-			chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
-			pl->ClearCache();
+			if (variation.at(nVariation) == "nominal") {
+				chain->SetProof();
+				chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
+				pl->ClearCache();
+				for (auto& sys : systematics) {
+					chain->SetProof();
+					chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation) + "_" + sys);
+					pl->ClearCache();
+				}
+			}
+			else {
+				chain->SetProof();
+				chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
+				pl->ClearCache();
+			}
 			j += 1;
 			delete chain;
 		}
