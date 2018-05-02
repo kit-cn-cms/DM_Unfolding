@@ -44,7 +44,6 @@ public:
 	std::vector<std::string> additionalBranchNamesFloat;
 
 	std::vector<std::string> variation;
-	std::vector<std::string> systematics;
 	int nBins_Gen;
 	int nBins_Reco;
 	int xMin;

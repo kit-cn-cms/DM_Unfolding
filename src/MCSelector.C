@@ -100,6 +100,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   // The SlaveBegin() function is called after the Begin() function.
   // When running with PROOF SlaveBegin() is called on each slave server.
   // The tree argument is deprecated (on PROOF 0 is passed).
+
   TH1::AddDirectory(kFALSE);
   TString option = GetOption();
   std::cout << "Processing: " << option << std::endl;
@@ -123,6 +124,8 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   xMin_Reco = pt.get<int>("Binning.xMin_Reco");
   xMax_Reco = pt.get<int>("Binning.xMax_Reco");
   split = pt.get<int>("general.split");
+  systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
+
 
   std::cout << "Config parsed!" << std::endl;
 
@@ -157,31 +160,33 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(ASplit);
 
   // book histos for full distributions
-  h_Gen =
-    new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
+  h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
   GetOutputList()->Add(h_Gen);
   h_Reco =
     new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
-  A = new TH2D("A_" + option,
-               "A",
-               nBins_Reco,
-               xMin_Reco,
-               xMax_Reco,
-               nBins_Gen,
-               BinEdgesGen.data());
+
+  A = new TH2D("A_" + option , "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
   A->Sumw2();
   GetOutputList()->Add(A);
-  A_equBins = new TH2D("A_equBins" + option,
-                       "A",
-                       nBins_Reco,
-                       xMin_Reco,
-                       xMax_Reco,
-                       nBins_Reco,
-                       xMin_Reco,
-                       xMax_Reco);
+
+  if (option.Contains("nominal")) {
+    for (auto& sys : systematics) {
+      TH2D* tmp = new TH2D("A_" + option + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
+      tmp->Sumw2();
+      ASys.push_back(tmp);
+      GetOutputList()->Add(tmp);
+
+      TH2D* tmpSplit = new TH2D("A_" + option + "_Split" + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
+      tmpSplit->Sumw2();
+      ASysSplit.push_back(tmpSplit);
+      GetOutputList()->Add(tmpSplit);
+    }
+  }
+
+  A_equBins = new TH2D("A_equBins" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Reco, xMin_Reco, xMax_Reco);
   A_equBins->Sumw2();
   GetOutputList()->Add(A_equBins);
 
@@ -190,10 +195,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_testMET->Sumw2();
   GetOutputList()->Add(h_testMET);
 
-  h_testMETgenBinning = new TH1F("testMETgenBinning" + option,
-                                 "testMETgenBinning",
-                                 nBins_Gen,
-                                 BinEdgesGen.data());
+  h_testMETgenBinning = new TH1F("testMETgenBinning" + option, "testMETgenBinning", nBins_Gen, BinEdgesGen.data());
   h_testMETgenBinning->Sumw2();
   GetOutputList()->Add(h_testMETgenBinning);
 
@@ -202,13 +204,11 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_testMET_Split->Sumw2();
   GetOutputList()->Add(h_testMET_Split);
 
-  h_fake =
-    new TH1F("fakes_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_fake = new TH1F("fakes_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_fake->Sumw2();
   GetOutputList()->Add(h_fake);
 
-  h_fake_Split = new TH1F(
-    "fakes_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_fake_Split = new TH1F( "fakes_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
 
@@ -222,12 +222,10 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Jet_Eta = new TH1F("Jet_Eta_" + option, "Jet_Eta", 40, -4, 4);
   h_Jet_Eta->Sumw2();
   GetOutputList()->Add(h_Jet_Eta);
-  h_Evt_Phi_MET =
-    new TH1F("Evt_Phi_MET_" + option, "Evt_Phi_MET", 50, -3.2, 3.2);
+  h_Evt_Phi_MET = new TH1F("Evt_Phi_MET_" + option, "Evt_Phi_MET", 50, -3.2, 3.2);
   h_Evt_Phi_MET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_MET);
-  h_Evt_Phi_GenMET =
-    new TH1F("Evt_Phi_GenMET_" + option, "Evt_Phi_GenMET", 50, -3.2, 3.2);
+  h_Evt_Phi_GenMET = new TH1F("Evt_Phi_GenMET_" + option, "Evt_Phi_GenMET", 50, -3.2, 3.2);
   h_Evt_Phi_GenMET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_GenMET);
 
@@ -269,54 +267,6 @@ MCSelector::Process(Long64_t entry)
   if (option.Contains("Zjet"))
     weight_ *= 3 * 0.971;
 
-  if (option.Contains("PUup"))
-    weight_ *= (*Weight_PUup) / (*Weight_PU);
-  if (option.Contains("PUdown"))
-    weight_ *= (*Weight_PUdown) / (*Weight_PU);
-
-  if (option.Contains("MuRup"))
-    weight_ *= (*Weight_MuRup);
-  if (option.Contains("MuRdown"))
-    weight_ *= (*Weight_MuRdown);
-  if (option.Contains("MuFup"))
-    weight_ *= (*Weight_MuFup);
-  if (option.Contains("MuFdown"))
-    weight_ *= (*Weight_MuFdown);
-
-  if (option.Contains("Weight_CSVLFup"))
-    weight_ *= (*Weight_CSVLFup);
-  if (option.Contains("Weight_CSVLFdown"))
-    weight_ *= (*Weight_CSVLFdown);
-  if (option.Contains("Weight_CSVHFup"))
-    weight_ *= (*Weight_CSVHFup);
-  if (option.Contains("Weight_CSVHFdown"))
-    weight_ *= (*Weight_CSVHFdown);
-  if (option.Contains("Weight_CSVHFStats1up"))
-    weight_ *= (*Weight_CSVHFStats1up);
-  if (option.Contains("Weight_CSVHFStats1down"))
-    weight_ *= (*Weight_CSVHFStats1down);
-  if (option.Contains("Weight_CSVLFStats1up"))
-    weight_ *= (*Weight_CSVLFStats1up);
-  if (option.Contains("Weight_CSVLFStats1down"))
-    weight_ *= (*Weight_CSVLFStats1down);
-  if (option.Contains("Weight_CSVHFStats2up"))
-    weight_ *= (*Weight_CSVHFStats2up);
-  if (option.Contains("Weight_CSVHFStats2down"))
-    weight_ *= (*Weight_CSVHFStats2down);
-  if (option.Contains("Weight_CSVLFStats2up"))
-    weight_ *= (*Weight_CSVLFStats2up);
-  if (option.Contains("Weight_CSVLFStats2down"))
-    weight_ *= (*Weight_CSVLFStats2down);
-
-  if (option.Contains("Weight_CSVCErr1up"))
-    weight_ *= (*Weight_CSVCErr1up);
-  if (option.Contains("Weight_CSVCErr1down"))
-    weight_ *= (*Weight_CSVCErr1down);
-  if (option.Contains("Weight_CSVCErr2up"))
-    weight_ *= (*Weight_CSVCErr2up);
-  if (option.Contains("Weight_CSVCErr2down"))
-    weight_ *= (*Weight_CSVCErr2down);
-
   // Calculate split
   // std::cout << "WARNING split > 50, therefore not working correctly ->
   // Proceeding with split =50" << std::endl;
@@ -342,11 +292,25 @@ MCSelector::Process(Long64_t entry)
         h_testMET_Split->Fill(*var_reco, weight_);
         h_testMETgenBinning->Fill(*var_reco, weight_);
         ASplit->Fill(*var_reco, *var_gen, weight_);
+        int n = 0;
+        for (auto& hist : ASysSplit) {
+          // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
+          float tmpweight = weight_ * *(sysweights.find(systematics.at(n))->second);
+          hist->Fill(*var_reco, *var_gen, tmpweight );
+          n++;
+        }
       }
       h_Gen->Fill(*var_gen, weight_);
       h_testMET->Fill(*var_reco, weight_);
-      A->Fill(*var_reco, *var_gen, weight_);
       A_equBins->Fill(*var_reco, *var_gen, weight_);
+      A->Fill(*var_reco, *var_gen, weight_);
+      int n = 0;
+      for (auto& hist : ASys) {
+        // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
+        float tmpweight = weight_ * *(sysweights.find(systematics.at(n))->second);
+        hist->Fill(*var_reco, *var_gen, tmpweight );
+        n++;
+      }
     }
 
     if (random >= split_) {
@@ -388,47 +352,10 @@ MCSelector::Terminate()
   GetOutputList()->ls();
   TString option = GetOption();
 
-  // Full Sample
-  A = dynamic_cast<TH2D*>(fOutput->FindObject(A));
-  histofile->WriteTObject(A);
-  A_equBins = dynamic_cast<TH2D*>(fOutput->FindObject(A_equBins));
-  histofile->WriteTObject(A_equBins);
-  h_Gen = dynamic_cast<TH1F*>(fOutput->FindObject(h_Gen));
-  histofile->WriteTObject(h_Gen);
-  h_Reco = dynamic_cast<TH1F*>(fOutput->FindObject(h_Reco));
-  histofile->WriteTObject(h_Reco);
-  // Split Sample
-  h_DummyDataSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_DummyDataSplit));
-  histofile->WriteTObject(h_DummyDataSplit);
-  ASplit = dynamic_cast<TH2D*>(fOutput->FindObject(ASplit));
-  histofile->WriteTObject(ASplit);
-  h_GenSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_GenSplit));
-  histofile->WriteTObject(h_GenSplit);
-  h_RecoSplit = dynamic_cast<TH1F*>(fOutput->FindObject(h_RecoSplit));
-  histofile->WriteTObject(h_RecoSplit);
-  h_testMET = dynamic_cast<TH1F*>(fOutput->FindObject(h_testMET));
-  histofile->WriteTObject(h_testMET);
-  h_testMETgenBinning =
-    dynamic_cast<TH1F*>(fOutput->FindObject(h_testMETgenBinning));
-  histofile->WriteTObject(h_testMETgenBinning);
-  h_testMET_Split = dynamic_cast<TH1F*>(fOutput->FindObject(h_testMET_Split));
-  histofile->WriteTObject(h_testMET_Split);
-  h_fake = dynamic_cast<TH1F*>(fOutput->FindObject(h_fake));
-  histofile->WriteTObject(h_fake);
-  h_fake_Split = dynamic_cast<TH1F*>(fOutput->FindObject(h_fake_Split));
-  histofile->WriteTObject(h_fake_Split);
-
-  // Additional Variables
-  h_N_Jets = dynamic_cast<TH1F*>(fOutput->FindObject(h_N_Jets));
-  histofile->WriteTObject(h_N_Jets);
-  h_Jet_Pt = dynamic_cast<TH1F*>(fOutput->FindObject(h_Jet_Pt));
-  histofile->WriteTObject(h_Jet_Pt);
-  h_Jet_Eta = dynamic_cast<TH1F*>(fOutput->FindObject(h_Jet_Eta));
-  histofile->WriteTObject(h_Jet_Eta);
-  h_Evt_Phi_MET = dynamic_cast<TH1F*>(fOutput->FindObject(h_Evt_Phi_MET));
-  histofile->WriteTObject(h_Evt_Phi_MET);
-  h_Evt_Phi_GenMET = dynamic_cast<TH1F*>(fOutput->FindObject(h_Evt_Phi_GenMET));
-  histofile->WriteTObject(h_Evt_Phi_GenMET);
+  for (const auto && obj : * (GetOutputList())) {
+    // obj->Write();
+    histofile->WriteTObject(obj);
+  }
 
   histofile->Close();
   delete histofile;

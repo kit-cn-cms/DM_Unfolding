@@ -59,9 +59,6 @@ main(int argc, char** argv)
   std::vector<string> variation =
     to_array<std::string>(pt.get<std::string>("general.variation"));
   std::vector<string> systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
-  for (auto& sys : systematics) {
-    variation.push_back("nominal_" + sys);
-  }
 
   std::vector<string> bkgnames =
     to_array<std::string>(pt.get<std::string>("Bkg.names"));
@@ -150,6 +147,7 @@ main(int argc, char** argv)
     A_all.push_back(histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_" + var));
     A_equBins_all.push_back(
       histhelper.Get2DHisto("A_equBins" + bkgnames.at(0) + "_" + var));
+    MET_all.at(nVariation)->Print();
 
     MET_all.at(nVariation)->Reset();
     GenMET_all.at(nVariation)->Reset();

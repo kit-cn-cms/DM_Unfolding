@@ -104,7 +104,6 @@ void HistMaker::ParseConfig() {
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
 	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
-	systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
 	useBatch = pt.get<bool>("general.useBatch");
 
 	cout << "Config parsed!" << endl;
@@ -283,25 +282,14 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 		nVariation += 1;
 		delete chain;
 	}
+	//MC Backgrounds
 	nVariation = 0;
 	for (auto& varchains : BkgChainsVariations) {
 		int j = 0;
 		for (auto& chain : varchains) {
-			if (variation.at(nVariation) == "nominal") {
-				chain->SetProof();
-				chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
-				pl->ClearCache();
-				for (auto& sys : systematics) {
-					chain->SetProof();
-					chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation) + "_" + sys);
-					pl->ClearCache();
-				}
-			}
-			else {
-				chain->SetProof();
-				chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
-				pl->ClearCache();
-			}
+			chain->SetProof();
+			chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
+			pl->ClearCache();
 			j += 1;
 			delete chain;
 		}
@@ -309,16 +297,16 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	}
 
 
-	//Log SlaveSessions
-	TProofLog *p = TProof::Mgr("lite://")->GetSessionLogs();
-	p->Save("*", "filewithlogs.txt");
-	pl->ClearCache();
-	pl->Close();
+//Log SlaveSessions
+TProofLog *p = TProof::Mgr("lite://")->GetSessionLogs();
+p->Save("*", "filewithlogs.txt");
+pl->ClearCache();
+pl->Close();
 
-	//Stop Timer
-	cout << "Time for Filling Histo Procedure:" << endl;
-	watch.Stop();
-	watch.Print();
+//Stop Timer
+cout << "Time for Filling Histo Procedure:" << endl;
+watch.Stop();
+watch.Print();
 }
 
 
