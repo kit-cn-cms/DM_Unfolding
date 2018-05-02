@@ -176,12 +176,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
     for (auto& sys : systematics) {
       TH2D* tmp = new TH2D("A_" + option + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmp->Sumw2();
-      ASys.push_back(tmp);
+      ASys[sys] = tmp;
       GetOutputList()->Add(tmp);
 
       TH2D* tmpSplit = new TH2D("A_" + option + "_Split" + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmpSplit->Sumw2();
-      ASysSplit.push_back(tmpSplit);
+      ASysSplit[sys] = tmp;
       GetOutputList()->Add(tmpSplit);
     }
   }
@@ -293,23 +293,20 @@ MCSelector::Process(Long64_t entry)
         h_testMETgenBinning->Fill(*var_reco, weight_);
         ASplit->Fill(*var_reco, *var_gen, weight_);
         int n = 0;
-        for (auto& hist : ASysSplit) {
+        for (auto& sys : systematics ) {
           // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
-          float tmpweight = weight_ * *(sysweights.find(systematics.at(n))->second);
-          hist->Fill(*var_reco, *var_gen, tmpweight );
-          n++;
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
         }
       }
       h_Gen->Fill(*var_gen, weight_);
       h_testMET->Fill(*var_reco, weight_);
       A_equBins->Fill(*var_reco, *var_gen, weight_);
       A->Fill(*var_reco, *var_gen, weight_);
-      int n = 0;
-      for (auto& hist : ASys) {
+      for (auto& sys : systematics ) {
         // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
-        float tmpweight = weight_ * *(sysweights.find(systematics.at(n))->second);
-        hist->Fill(*var_reco, *var_gen, tmpweight );
-        n++;
+        float tmpweight = weight_ * *(sysweights.find(sys)->second);
+        ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
       }
     }
 

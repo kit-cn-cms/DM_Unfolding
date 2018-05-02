@@ -61,7 +61,7 @@ public:
   TH1F* h_Reco = 0;
   TH1F* h_Gen = 0;
   TH1F* h_Data = 0;
-  std::vector<TH2D*> ASys;
+  std::map<std::string, TH2D*> ASys;
   TH2D* A = 0;
   TH2D* A_equBins = 0;
   // Split Sample
@@ -69,7 +69,7 @@ public:
   TH1F* h_RecoSplit = 0;
   TH1F* h_GenSplit = 0;
   TH2D* ASplit = 0;
-  std::vector<TH2D*> ASysSplit;
+  std::map<std::string, TH2D*> ASysSplit;
   TH1F* h_testMET = 0;
   TH1F* h_testMETgenBinning = 0;
 
@@ -133,34 +133,7 @@ public:
   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X" };
 
   float weight_ = 1;
-  // std::vector<TTreeReaderValue<Float_t>> sysweights = {((MCSelector*)this)->MCSelector::Weight_PUup,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_PUdown,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_MuRup,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_MuRdown,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_MuFup,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_MuFdown,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFup,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFdown,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFup,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFdown,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1down,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1down,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2down,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2down,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVCErr1up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVCErr1down,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVCErr2up,
-  //                                                      ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down,
-  //                                                     };
 
-
-  // std::map<std::string, TTreeReaderValue<Float_t> > sysweights = {
-  //   {"Weight_PUup", ((MCSelector*)this)->MCSelector::Weight_PUup}
-  // };
   std::map<std::string, TTreeReaderValue<Float_t> > sysweights = {
     {"PUup", ((MCSelector*)this)->MCSelector::Weight_PUup},
     {"PUdown", ((MCSelector*)this)->MCSelector::Weight_PUdown},

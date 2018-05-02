@@ -147,7 +147,6 @@ main(int argc, char** argv)
     A_all.push_back(histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_" + var));
     A_equBins_all.push_back(
       histhelper.Get2DHisto("A_equBins" + bkgnames.at(0) + "_" + var));
-    MET_all.at(nVariation)->Print();
 
     MET_all.at(nVariation)->Reset();
     GenMET_all.at(nVariation)->Reset();
