@@ -294,8 +294,10 @@ MCSelector::Process(Long64_t entry)
         ASplit->Fill(*var_reco, *var_gen, weight_);
         int n = 0;
         for (auto& sys : systematics ) {
-          // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (sys == "PUup" || sys == "PUdown") {
+            tmpweight /= *(sysweights.find(sys)->second);
+          }
           ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
         }
       }
@@ -304,7 +306,6 @@ MCSelector::Process(Long64_t entry)
       A_equBins->Fill(*var_reco, *var_gen, weight_);
       A->Fill(*var_reco, *var_gen, weight_);
       for (auto& sys : systematics ) {
-        // std::cout << systematics.at(n) << ": " <<  *(sysweights.find(systematics.at(n))->second) << std::endl;
         float tmpweight = weight_ * *(sysweights.find(sys)->second);
         ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
       }
