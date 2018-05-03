@@ -92,6 +92,7 @@ public:
 
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
+  TTreeReaderValue<Float_t> Weight_GEN_nom = { fReader, "Weight_GEN_nom" };
   TTreeReaderValue<Float_t> Weight_PU = { fReader, "Weight_PU" };
   TTreeReaderValue<Float_t> Weight_CSV = { fReader, "Weight_CSV" };
 
