@@ -222,15 +222,17 @@ TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNamesLong, std::vec
 	TFile* friendfile = new TFile(path.GetRootFilesPath() + "TreeFriend.root", "RECREATE");
 	TTree* TreeFriend = new TTree("TreeFriend", "TreeFriend");
 	TreeFriend->SetEntries(n_Events);
-	Long64_t dummyval = 1;
+	Long64_t longval = 1;
+	Float_t floatval = 1;
 	for (auto const& name : BranchNamesLong) {
-		TBranch *branch = TreeFriend->Branch(name.c_str(), &dummyval, (name + "/L").c_str());
+		TBranch *branch = TreeFriend->Branch(name.c_str(), &longval, (name + "/L").c_str());
 	}
 	for (auto const& name : BranchNamesFloat) {
-		TBranch *branch = TreeFriend->Branch(name.c_str(), &dummyval, (name + "/F").c_str());
+		TBranch *branch = TreeFriend->Branch(name.c_str(), &floatval, (name + "/F").c_str());
 	}
 	for (int j = 0; j < n_Events; j++) {
-		dummyval = 1;
+		longval = 1;
+		floatval = 1;
 		TreeFriend->Fill();
 	}
 
@@ -298,15 +300,15 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 
 
 //Log SlaveSessions
-TProofLog *p = TProof::Mgr("lite://")->GetSessionLogs();
-p->Save("*", "filewithlogs.txt");
-pl->ClearCache();
-pl->Close();
+	TProofLog *p = TProof::Mgr("lite://")->GetSessionLogs();
+	p->Save("*", "filewithlogs.txt");
+	pl->ClearCache();
+	pl->Close();
 
 //Stop Timer
-cout << "Time for Filling Histo Procedure:" << endl;
-watch.Stop();
-watch.Print();
+	cout << "Time for Filling Histo Procedure:" << endl;
+	watch.Stop();
+	watch.Print();
 }
 
 
