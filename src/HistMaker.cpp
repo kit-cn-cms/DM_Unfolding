@@ -42,6 +42,15 @@ void HistMaker::MakeHistos() {
 			std::vector<TString> filelist = GetInputFileList(BkgPaths[name], var);
 			cout << filelist.at(0) << endl;;
 			TChain* tmp_chain = ChainFiles(filelist);
+
+			if (name == "diboson" || name == "singletop") {
+				long nevents = tmp_chain->GetEntries();
+				TTree* tmpFriendTree = CreateFriendTree(LHAFixBranchesLong, LHAFixBranchesFloat, nevents, name + TString("Friend"));
+				TChain* tmpFriendChain = new TChain( name + TString("Friend"));
+				tmpFriendChain->Add(path.GetRootFilesPath() + name + TString("Friend.root"));
+				tmp_chain -> AddFriend(tmpFriendChain);
+			}
+
 			BkgChains.push_back(tmp_chain);
 		}
 		BkgChainsVariations.push_back(BkgChains);
@@ -49,7 +58,7 @@ void HistMaker::MakeHistos() {
 	}
 
 	long data_events = DataChains.at(0)->GetEntries();
-	TTree* FriendTree = CreateFriendTree(additionalBranchNamesLong, additionalBranchNamesFloat, data_events);
+	TTree* FriendTree = CreateFriendTree(additionalBranchNamesLong, additionalBranchNamesFloat, data_events, TString("TreeFriend"));
 	TChain* FriendChain = new TChain("TreeFriend");
 	FriendChain->Add(path.GetRootFilesPath() + "TreeFriend.root");
 	for (auto& chain : DataChains) chain->AddFriend(FriendChain);
@@ -67,9 +76,6 @@ void HistMaker::MakeHistos() {
 	}
 	//Reset Histofile
 	std::remove(path.GetHistoFilePath());
-	// TFile* histofile = new TFile(path.GetHistoFilePath(), "RECREATE");
-	// histofile->Close();
-
 	FillHistos(SignalChains, DataChains, BkgChainsVariations);
 }
 
@@ -93,6 +99,9 @@ void HistMaker::ParseConfig() {
 	bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
 	additionalBranchNamesLong = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNamesLong"));
 	additionalBranchNamesFloat = to_array<std::string>(pt.get<std::string>("tree.additionalBranchNamesFloat"));
+
+	LHAFixBranchesLong = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesLong"));
+	LHAFixBranchesFloat = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesFloat"));
 
 	for (const std::string& name : bkgnames) {
 		BkgPaths[name];
@@ -132,7 +141,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 				// you want here. Something like:
 				if (type == "nominal") {
 					if ( strstr( hFile->d_name, "nominal_Tree.root" )) {
-						printf( "found an .root file: %s \n", hFile->d_name );
+						// printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
 						TString fullpath = samplepath + path + fileName;
@@ -141,7 +150,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 				}
 				else if (type == "JESup") {
 					if ( strstr( hFile->d_name, "JESup_Tree.root" )) {
-						printf( "found an .root file: %s \n", hFile->d_name );
+						// printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
 						TString fullpath = samplepath + path + fileName;
@@ -150,7 +159,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 				}
 				else if (type == "JESdown") {
 					if ( strstr( hFile->d_name, "JESdown_Tree.root" )) {
-						printf( "found an .root file: %s \n", hFile->d_name );
+						// printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
 						TString fullpath = samplepath + path + fileName;
@@ -159,7 +168,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 				}
 				else if (type == "JERup") {
 					if ( strstr( hFile->d_name, "JERup_Tree.root" )) {
-						printf( "found an .root file: %s \n", hFile->d_name );
+						// printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
 						TString fullpath = samplepath + path + fileName;
@@ -168,7 +177,7 @@ std::vector<TString> HistMaker::GetInputFileList(std::vector<std::string> paths 
 				}
 				else if (type == "JERdown") {
 					if ( strstr( hFile->d_name, "JERdown_Tree.root" )) {
-						printf( "found an .root file: %s \n", hFile->d_name );
+						// printf( "found an .root file: %s \n", hFile->d_name );
 						TString path_ = path;
 						TString fileName = hFile->d_name;
 						TString fullpath = samplepath + path + fileName;
@@ -218,9 +227,9 @@ TChain* HistMaker::ChainFiles(std::vector<TString> filelist) {
 	return chain;
 }
 
-TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNamesLong, std::vector<string> BranchNamesFloat, long n_Events) {
-	TFile* friendfile = new TFile(path.GetRootFilesPath() + "TreeFriend.root", "RECREATE");
-	TTree* TreeFriend = new TTree("TreeFriend", "TreeFriend");
+TTree* HistMaker::CreateFriendTree(std::vector<string> BranchNamesLong, std::vector<string> BranchNamesFloat, long n_Events, TString label) {
+	TFile* friendfile = new TFile(path.GetRootFilesPath() + label + ".root", "RECREATE");
+	TTree* TreeFriend = new TTree(label, label);
 	TreeFriend->SetEntries(n_Events);
 	Long64_t longval = 1;
 	Float_t floatval = 1;

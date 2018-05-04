@@ -22,7 +22,7 @@ public:
 	void FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain*> DataChains, std::vector<std::vector<TChain*>> BkgChainsVariations);
 	void MakeHistos();
 	TChain* ChainFiles(std::vector<TString> filelist);
-	TTree* CreateFriendTree(std::vector<std::string> BranchNamesLong, std::vector<std::string> BranchNamesFLoat, long n_Events);
+	TTree* CreateFriendTree(std::vector<std::string> BranchNamesLong, std::vector<std::string> BranchNamesFLoat, long n_Events, TString label);
 
 
 	TH1F* Get1DHisto(TString name);
@@ -42,6 +42,8 @@ public:
 	std::vector<std::string> weights;
 	std::vector<std::string> additionalBranchNamesLong;
 	std::vector<std::string> additionalBranchNamesFloat;
+	std::vector<std::string> LHAFixBranchesLong;
+	std::vector<std::string> LHAFixBranchesFloat;
 
 	std::vector<std::string> variation;
 	int nBins_Gen;
