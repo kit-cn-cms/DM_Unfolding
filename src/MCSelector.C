@@ -264,7 +264,7 @@ MCSelector::Process(Long64_t entry)
   // weight_ = *Weight;
   if (!option.Contains("data"))
     weight_ *= 35.91823;
-  if (option.Contains("Zjet"))
+  if (option.Contains("z_nunu_jets"))
     weight_ *= 3 * 0.971;
 
   // Calculate split

@@ -136,29 +136,30 @@ public:
   float weight_ = 1;
 
   std::map<std::string, TTreeReaderValue<Float_t> > sysweights = {
-    {"PUup", ((MCSelector*)this)->MCSelector::Weight_PUup},
-    {"PUdown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
-    {"MuRup", ((MCSelector*)this)->MCSelector::Weight_MuRup},
-    {"MuRdown", ((MCSelector*)this)->MCSelector::Weight_MuRdown},
-    {"MuFup", ((MCSelector*)this)->MCSelector::Weight_MuFup},
-    {"MuFdown", ((MCSelector*)this)->MCSelector::Weight_MuFdown},
-    {"Weight_CSVLFup", ((MCSelector*)this)->MCSelector::Weight_CSVLFup},
-    {"Weight_CSVLFdown", ((MCSelector*)this)->MCSelector::Weight_CSVLFdown},
-    {"Weight_CSVHFup", ((MCSelector*)this)->MCSelector::Weight_CSVHFup},
-    {"Weight_CSVHFdown", ((MCSelector*)this)->MCSelector::Weight_CSVHFdown},
-    {"Weight_CSVHFStats1up", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1up},
-    {"Weight_CSVHFStats1down", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1down},
-    {"Weight_CSVLFStats1up", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1up},
-    {"Weight_CSVLFStats1down", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1down},
-    {"Weight_CSVHFStats2up", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2up},
-    {"Weight_CSVHFStats2down", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2down},
-    {"Weight_CSVLFStats2up", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2up},
-    {"Weight_CSVLFStats2down", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2down},
-    {"Weight_CSVCErr1up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1up},
-    {"Weight_CSVCErr1down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1down},
-    {"Weight_CSVCErr2up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2up},
-    {"Weight_CSVCErr2down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down}
+    {"Weight_PUUp", ((MCSelector*)this)->MCSelector::Weight_PUup},
+    {"WeightPUDown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
+    {"Weight_scale_variation_muRUp", ((MCSelector*)this)->MCSelector::Weight_MuRup},
+    {"Weight_scale_variation_muRDown", ((MCSelector*)this)->MCSelector::Weight_MuRdown},
+    {"Weight_scale_variation_muFUp", ((MCSelector*)this)->MCSelector::Weight_MuFup},
+    {"_Weight_scale_variation_muFDown", ((MCSelector*)this)->MCSelector::Weight_MuFdown},
+    {"_CMS_btag_lfUp", ((MCSelector*)this)->MCSelector::Weight_CSVLFup},
+    {"CMS_btag_lfDown", ((MCSelector*)this)->MCSelector::Weight_CSVLFdown},
+    {"CMS_btag_hfUp", ((MCSelector*)this)->MCSelector::Weight_CSVHFup},
+    {"CMS_btag_hfDown", ((MCSelector*)this)->MCSelector::Weight_CSVHFdown},
+    {"CMS_btag_hfstats1Up", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1up},
+    {"CMS_btag_hfstats1Down", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats1down},
+    {"CMS_btag_lfstats1Up", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1up},
+    {"CMS_btag_lfstats1Down", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats1down},
+    {"CMS_btag_hfstats2Up", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2up},
+    {"CMS_btag_hfstats2Down", ((MCSelector*)this)->MCSelector::Weight_CSVHFStats2down},
+    {"CMS_btag_lfstats2Up", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2up},
+    {"CMS_btag_lfstats2Down", ((MCSelector*)this)->MCSelector::Weight_CSVLFStats2down},
+    {"CMS_btag_cferr1Up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1up},
+    {"CMS_btag_cferr1Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1down},
+    {"CMS_btag_cferr2Up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2up},
+    {"CMS_btag_cferr2Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down}
   };
+
 
   // Additional Variables
   TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
