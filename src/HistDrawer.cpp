@@ -93,7 +93,8 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
-	// gStyle->SetOptStat(0);
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(0);
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
@@ -202,7 +203,8 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	TLegend* legend = getLegend();
 	legend->AddEntry(data, "Data", "P");
 	gStyle->SetErrorX(0.);
-	// gStyle->SetOptStat(0);
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(0);
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
@@ -312,6 +314,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	legend->AddEntry(data_stat, "Data", "P");
 	gStyle->SetErrorX(0.);
 	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(0);
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
@@ -341,6 +344,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		lastStack->SetXTitle(name);
 	}
 	else lastStack-> SetXTitle(xlabel);
+	lastStack->SetTitle("");
 
 	// TH1* data = new TH1F("data", "data", lastStack->GetNbinsX(), BinEdges.data());
 	TH1* data = (TH1*) MC.at(0)->Clone();
@@ -406,6 +410,8 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		pull->GetYaxis()->SetTitleOffset(0.5);
 		pull->GetYaxis()->SetNdivisions(505);
 		pull->SetTitle("");
+		pull->GetXaxis()->SetTitleOffset(1);
+		pull->GetXaxis()->SetTitle(xlabel);
 		c->Update();
 		TLine *linepull = new TLine(c->cd(3)->GetUxmin(), 0.0, c->cd(3)->GetUxmax(), 0);
 		linepull->SetLineColor(kBlack);

@@ -384,8 +384,8 @@ main(int argc, char** argv)
 
     nVariation = 0;
     for (auto& var : variation) {
-      Drawer.Draw2D(A_all.at(nVariation), "A_all" + var, log);
-      Drawer.Draw2D(A_all_Split.at(nVariation), "A_all_" + var + "_Split", log);
+      Drawer.Draw2D(A_all.at(nVariation), "A_all" + var, log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
+      Drawer.Draw2D(A_all_Split.at(nVariation), "A_all_" + var + "_Split", log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
       nVariation += 1;
     }
   }

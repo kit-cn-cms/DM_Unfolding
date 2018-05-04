@@ -176,7 +176,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
-	Drawer.DrawDataMC(data, MC.at(0), nameColMap, "MET" + label, log);
+	Drawer.DrawDataMC(data, MC.at(0), nameColMap, "MET" + label, log, !normalize,!drawpull, "#slash{E}_{T}", "# Events");
 
 	std::vector<std::string> GenBkgNames;
 	for (const std::string& name : bkgnames) {
@@ -217,7 +217,8 @@ void UnfoldWrapper::DoIt() {
 	                       varName + "UnfoldedvsGenErrors" + label,
 	                       log,
 	                       !normalize,
-	                       drawpull);
+	                       drawpull,
+	                       "unfolded #slash{E}_{T}", "# Events");
 
 	Drawer.DrawDataMC(h_DataMinFakes,
 	{ std::get<1>(unfold_output) },
