@@ -165,7 +165,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
-	Drawer.DrawDataMC(data, MC.at(0), bkgnames, "MET"+label, log);
+	Drawer.DrawDataMC(data, MC.at(0), bkgnames, "MET" + label, log);
 
 	std::vector<std::string> GenBkgNames;
 	for (const std::string& name : bkgnames) {
@@ -192,8 +192,9 @@ void UnfoldWrapper::DoIt() {
 		nVariation += 1;
 	}
 
-	for (auto& bkgvar : GenMC) {
-		for (auto& bkg : bkgvar) {
+
+	for (const auto& sysvar : GenMC) {
+		for (const auto& bkg : sysvar) {
 			writer.addToFile(bkg);
 		}
 	}

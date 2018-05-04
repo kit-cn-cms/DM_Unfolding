@@ -97,8 +97,8 @@ main(int argc, char** argv)
 
   // variation x BkgNames
   // Backgrounds
-  std::vector<std::vector<TH1*>> v_MET_bkgs(variation.size());
-  std::vector<std::vector<TH1*>> v_GenMET_bkgs(variation.size());
+  std::vector<std::vector<TH1*>> v_MET_bkgs(variation.size() + systematics.size());
+  std::vector<std::vector<TH1*>> v_GenMET_bkgs(variation.size() + systematics.size());
   std::vector<std::vector<TH1*>> v_fakes_bkgs(variation.size());
   std::vector<std::vector<TH1*>> v_testmet_bkgs(variation.size());
   std::vector<std::vector<TH1*>> v_testMETgenBinning_bkgs(variation.size());
@@ -114,8 +114,8 @@ main(int argc, char** argv)
 
   // PseudoData
   std::vector<std::vector<TH1*>> v_MET_DummyDatas(variation.size());
-  std::vector<std::vector<TH1*>> v_MET_bkgs_Split(variation.size());
-  std::vector<std::vector<TH1*>> v_GenMET_bkgs_Split(variation.size());
+  std::vector<std::vector<TH1*>> v_MET_bkgs_Split(variation.size() + systematics.size());
+  std::vector<std::vector<TH1*>> v_GenMET_bkgs_Split(variation.size() + systematics.size());
   std::vector<std::vector<TH1*>> v_fakes_bkgs_Split(variation.size());
   std::vector<std::vector<TH1*>> v_testmet_bkgs_Split(variation.size());
   std::vector<std::vector<TH2*>> v_A_bkgs_Split(variation.size() + systematics.size());
@@ -184,13 +184,25 @@ main(int argc, char** argv)
     nVariation += 1;
   }
 
-  // add additional systematic variations only for migrationmatrix
+  // add additional systematic variations
   for (auto& sys : systematics) {
     A_all.push_back(histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_nominal_" + sys));
     A_all.at(nVariation)->Reset();
 
     A_all_Split.push_back(histhelper.Get2DHisto("A_" + bkgnames.at(0) + "_nominal_Split_" + sys));
     A_all_Split.at(nVariation)->Reset();
+
+    MET_all.push_back(histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_nominal_" + sys));
+    MET_all.at(nVariation)->Reset();
+
+    GenMET_all.push_back(histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_nominal_" + sys));
+    GenMET_all.at(nVariation)->Reset();
+
+    MET_all_Split.push_back(histhelper.Get1DHisto(recovar + "_" + bkgnames.at(0) + "_nominal_Split_" + sys));
+    MET_all_Split.at(nVariation)->Reset();
+
+    GenMET_all_Split.push_back(histhelper.Get1DHisto(genvar + "_" + bkgnames.at(0) + "_nominal_Split_" + sys));
+    GenMET_all_Split.at(nVariation)->Reset();
 
     nVariation++;
 
@@ -277,8 +289,14 @@ main(int argc, char** argv)
       v_A_bkgs.at(nVariation).push_back(histhelper.Get2DHisto("A_" + name + "_nominal_" + sys));
       A_all.at(nVariation)->Add(histhelper.Get2DHisto("A_" + name + "_nominal_" + sys));
 
-      v_A_bkgs_Split.at(nVariation).push_back(histhelper.Get2DHisto("A_" + name + "_nominal_" + sys));
-      A_all_Split.at(nVariation)->Add(histhelper.Get2DHisto("A_" + name + "_nominal_" + sys));
+      v_A_bkgs_Split.at(nVariation).push_back(histhelper.Get2DHisto("A_" + name + "_nominal" + "_Split" + "_" + sys));
+      A_all_Split.at(nVariation)->Add(histhelper.Get2DHisto("A_" + name + "_nominal" + "_Split" + "_" + sys));
+
+      v_GenMET_bkgs.at(nVariation).push_back(histhelper.Get1DHisto(genvar + "_" + name + "_nominal_" + sys));
+      GenMET_all.at(nVariation)->Add(histhelper.Get1DHisto(genvar + "_" + name + "_" + "nominal_" + sys));
+
+      v_GenMET_bkgs_Split.at(nVariation).push_back(histhelper.Get1DHisto(genvar + "_" + name + "_nominal" + "_Split" + "_" + sys));
+      GenMET_all_Split.at(nVariation)->Add(histhelper.Get1DHisto(genvar + "_" + name + "_nominal" + "_Split" + "_" + sys));
 
     }
     nVariation++;
@@ -344,7 +362,6 @@ main(int argc, char** argv)
 
     UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
     Wrapper_Split.DoIt();
-
 
     // TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();
     // MET_signal.at(0)->Scale(0.1);
