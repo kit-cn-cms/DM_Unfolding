@@ -26,6 +26,17 @@ void UnfoldWrapper::DoIt() {
 	std::cout << "#########Unfolding with label: " << label << "##################" << std::endl;
 	Unfolder Unfolder;
 	HistDrawer Drawer;
+
+	std::map<std::string, int>  nameColMap = {
+		{"#gamma +jets", kViolet + 7},
+		{"QCD", kViolet + 3},
+		{"Single Top", kViolet - 1},
+		{"t#bar{t}", kViolet - 2},
+		{"Diboson", kViolet},
+		{"Z(ll)+jets", kViolet - 7},
+		{"W(l#nu)+jets", kGreen},
+		{"Z(#nu#nu)+jets", kBlue},
+	};
 	//Write important histos to dedicated file
 	FileWriter writer(label);
 
@@ -165,7 +176,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
-	Drawer.DrawDataMC(data, MC.at(0), bkgnames, "MET" + label, log);
+	Drawer.DrawDataMC(data, MC.at(0), nameColMap, "MET" + label, log);
 
 	std::vector<std::string> GenBkgNames;
 	for (const std::string& name : bkgnames) {
@@ -199,11 +210,10 @@ void UnfoldWrapper::DoIt() {
 		}
 	}
 
-
 	Drawer.DrawDataMCerror(MET_Stat,
 	                       MET_Syst,
 	                       GenMC.at(0),
-	                       GenBkgNames,
+	                       nameColMap,
 	                       varName + "UnfoldedvsGenErrors" + label,
 	                       log,
 	                       !normalize,

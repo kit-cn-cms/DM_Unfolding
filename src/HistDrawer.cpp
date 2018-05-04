@@ -196,8 +196,115 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	// data->Chi2Test(lastStack, "WWP");
 }
 
+void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::string, int> nameColMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	TFile *output = new TFile(path.GetOutputFilePath(), "update");
+	TCanvas* c = getCanvas(name, true, drawpull);
+	TLegend* legend = getLegend();
+	legend->AddEntry(data, "Data", "P");
+	gStyle->SetErrorX(0.);
+	// gStyle->SetOptStat(0);
+	if (log) gPad->SetLogy();
 
-void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	THStack* stack = new THStack(name, name);
+	int index = 0;
+	for (auto const& x : nameColMap){
+		SetHistoStyle(MC.at(index), x.second, true);
+		MC.at(index)->SetFillColor(x.second);
+		if (normalize) MC.at(index) ->Scale(1 / (MC.size()* MC.at(index)->Integral()));
+		stack->Add(MC.at(index));
+		legend->AddEntry(MC.at(index), TString(x.first), "F");
+		index++;
+	}
+	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
+	if (normalize) 	data->Scale(1 / data->Integral());
+
+	float max_data = data->GetMaximum();
+	float max_Stack = lastStack->GetMaximum();
+	if (max_data > max_Stack) stack->SetMaximum(max_data);
+	else stack->SetMaximum(max_Stack);
+	stack->SetMinimum(10);
+	stack->Draw("hist");
+	data->Draw("sameP");
+	legend->Draw("same");
+	data->SetStats(false);
+
+
+	data->SetMarkerStyle(20);
+	// data->SetMarkerSize();
+	if (xlabel == "none") {
+		data->SetXTitle(name);
+	}
+	else data-> SetXTitle(xlabel);
+
+	c->cd(2);
+	TH1* ratio = (TH1*) data->Clone();
+	ratio->Divide( (TH1*)stack->GetStack()->Last());
+	ratio->Draw("E0");
+	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
+	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
+	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
+	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
+	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
+	ratio->GetYaxis()->SetTitleOffset(0.5);
+	ratio->SetTitle("");
+	ratio->GetYaxis()->SetNdivisions(505);
+
+	c->Update();
+	TLine *lineratio = new TLine(c->cd(2)->GetUxmin(), 1.0, c->cd(2)->GetUxmax(), 1.0);
+	lineratio->SetLineColor(kBlack);
+	lineratio->Draw();
+	c->Update();
+
+
+	if (drawpull) {
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetYaxis()->SetTitleOffset(0.3);
+
+		c->Update();
+		c->cd(3);
+		TH1* pull = (TH1*) data->Clone();
+		pull->Reset();
+		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
+			double sigma_d = data->GetBinError(bin);
+			double sigma_mc = lastStack->GetBinError(bin);
+			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
+			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			pull->SetBinContent(bin, content);
+			pull->SetBinError(bin, 0);
+		}
+		pull->Draw("P");
+		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
+		pull->GetYaxis()->SetRangeUser(-3.5, 3.5);
+		pull->GetXaxis()->SetLabelSize(pull->GetXaxis()->GetLabelSize() * 3);
+		pull->GetYaxis()->SetLabelSize(pull->GetYaxis()->GetLabelSize() * 3);
+		pull->GetXaxis()->SetTitleSize(pull->GetXaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleSize(pull->GetYaxis()->GetTitleSize() * 3.5);
+		pull->GetYaxis()->SetTitleOffset(0.5);
+		pull->GetYaxis()->SetNdivisions(505);
+		pull->SetTitle("");
+		c->Update();
+		TLine *linepull = new TLine(c->cd(3)->GetUxmin(), 0.0, c->cd(3)->GetUxmax(), 0);
+		linepull->SetLineColor(kBlack);
+		linepull->Draw();
+	}
+
+
+
+	c->cd(1);
+	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
+	c->Write();
+	output->Close();
+	std::cout << name << ": ";
+	// data->Chi2Test(lastStack, "WWP");
+}
+
+
+void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::map<std::string, int> nameColMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	gStyle->SetEndErrorSize(10);
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
@@ -208,16 +315,14 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	if (log) gPad->SetLogy();
 
 	THStack* stack = new THStack(name, name);
-	int fillcolor = 2;
 	int index = 0;
-	for (auto const& mc : MC) {
-		SetHistoStyle(mc, fillcolor, true);
-		mc->SetFillColor(fillcolor);
-		if (normalize) mc ->Scale(1 / (MC.size()* mc->Integral()));
-		stack->Add(mc);
-		legend->AddEntry(mc, TString(names.at(index)), "F");
-		index += 1;
-		fillcolor += 1;
+	for (auto const& x : nameColMap){
+		SetHistoStyle(MC.at(index), x.second, true);
+		MC.at(index)->SetFillColor(x.second);
+		if (normalize) MC.at(index) ->Scale(1 / (MC.size()* MC.at(index)->Integral()));
+		stack->Add(MC.at(index));
+		legend->AddEntry(MC.at(index), TString(x.first), "F");
+		index++;
 	}
 	double max_data = TMath::MaxElement(data_syst->GetN(), data_syst->GetX());
 	// float max_data = data->GetMaximum();
