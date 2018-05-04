@@ -163,8 +163,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
   GetOutputList()->Add(h_Gen);
-  h_Reco =
-    new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
 
@@ -179,10 +178,32 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
       ASys[sys] = tmp;
       GetOutputList()->Add(tmp);
 
+      TH1F* Recotmp = new TH1F(recovar + "_" + option + "_" + sys, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+      Recotmp->Sumw2();
+      h_RecoSys[sys] = Recotmp;
+      GetOutputList()->Add(Recotmp);
+
+      TH1F* Gentmp = new TH1F(genvar + "_" + option + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
+      Gentmp->Sumw2();
+      h_GenSys[sys] = Gentmp;
+      GetOutputList()->Add(Gentmp);
+
+
+
       TH2D* tmpSplit = new TH2D("A_" + option + "_Split" + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmpSplit->Sumw2();
       ASysSplit[sys] = tmp;
       GetOutputList()->Add(tmpSplit);
+
+      TH1F* RecotmpSplit = new TH1F(recovar + "_" + option + "_Split" + "_" + sys, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+      RecotmpSplit->Sumw2();
+      h_RecoSysSplit[sys] = RecotmpSplit;
+      GetOutputList()->Add(RecotmpSplit);
+
+      TH1F* GentmpSplit = new TH1F(genvar + "_" + option + "_Split" + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
+      GentmpSplit->Sumw2();
+      h_GenSysSplit[sys] = GentmpSplit;
+      GetOutputList()->Add(GentmpSplit);
     }
   }
 
@@ -190,8 +211,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   A_equBins->Sumw2();
   GetOutputList()->Add(A_equBins);
 
-  h_testMET =
-    new TH1F("TestMET" + option, "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
+  h_testMET = new TH1F("TestMET" + option, "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
   h_testMET->Sumw2();
   GetOutputList()->Add(h_testMET);
 
@@ -199,8 +219,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_testMETgenBinning->Sumw2();
   GetOutputList()->Add(h_testMETgenBinning);
 
-  h_testMET_Split = new TH1F(
-    "TestMET" + option + "_Split", "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
+  h_testMET_Split = new TH1F("TestMET" + option + "_Split", "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
   h_testMET_Split->Sumw2();
   GetOutputList()->Add(h_testMET_Split);
 
@@ -256,7 +275,7 @@ MCSelector::Process(Long64_t entry)
   //////////////////////
   // Add weights here!!//
   //////////////////////
-  weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU)* (*Weight_GEN_nom);
+  weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
   // if (*Weight_GenValue > 0)
   //   weight_ *= 1;
   // else
@@ -293,30 +312,64 @@ MCSelector::Process(Long64_t entry)
         h_testMETgenBinning->Fill(*var_reco, weight_);
         ASplit->Fill(*var_reco, *var_gen, weight_);
         int n = 0;
-        for (auto& sys : systematics ) {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (sys == "PUup" || sys == "PUdown") {
-            tmpweight /= *(sysweights.find(sys)->second);
+
+        if (option.Contains("nominal")) {
+          for (auto& sys : systematics ) {
+            float tmpweight = weight_ * *(sysweights.find(sys)->second);
+            if (sys == "PUup" || sys == "PUdown") {
+              tmpweight /= *(sysweights.find(sys)->second);
+            }
+            ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+            h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
           }
-          ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
         }
+
       }
       h_Gen->Fill(*var_gen, weight_);
       h_testMET->Fill(*var_reco, weight_);
       A_equBins->Fill(*var_reco, *var_gen, weight_);
       A->Fill(*var_reco, *var_gen, weight_);
-      for (auto& sys : systematics ) {
-        float tmpweight = weight_ * *(sysweights.find(sys)->second);
-        ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+
+      if (option.Contains("nominal")) {
+        for (auto& sys : systematics ) {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (sys == "PUup" || sys == "PUdown") {
+            tmpweight /= *(sysweights.find(sys)->second);
+          }
+          ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+          h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+        }
       }
+
     }
 
     if (random >= split_) {
       h_RecoSplit->Fill(*var_reco, weight_);
       h_DummyDataSplit->Fill(*var_reco, weight_);
+
+      if (option.Contains("nominal")) {
+        for (auto& sys : systematics ) {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (sys == "PUup" || sys == "PUdown") {
+            tmpweight /= *(sysweights.find(sys)->second);
+          }
+          h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
+        }
+      }
+
     }
     h_Reco->Fill(*var_reco, weight_);
 
+    if (option.Contains("nominal")) {
+      for (auto& sys : systematics ) {
+        float tmpweight = weight_ * *(sysweights.find(sys)->second);
+        if (sys == "PUup" || sys == "PUdown") {
+          tmpweight /= *(sysweights.find(sys)->second);
+        }
+        h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
+      }
+    }
+    
     // Additional Variables
     h_N_Jets->Fill(*N_Jets, weight_);
     h_Jet_Pt->Fill(*Jet_Pt, weight_);

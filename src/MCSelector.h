@@ -59,7 +59,9 @@ public:
   // book histos
   // Full Sample
   TH1F* h_Reco = 0;
+  std::map<std::string, TH1F*> h_RecoSys;
   TH1F* h_Gen = 0;
+  std::map<std::string, TH1F*> h_GenSys;
   TH1F* h_Data = 0;
   std::map<std::string, TH2D*> ASys;
   TH2D* A = 0;
@@ -67,7 +69,9 @@ public:
   // Split Sample
   TH1F* h_DummyDataSplit = 0;
   TH1F* h_RecoSplit = 0;
+  std::map<std::string, TH1F*> h_RecoSysSplit;
   TH1F* h_GenSplit = 0;
+  std::map<std::string, TH1F*> h_GenSysSplit;
   TH2D* ASplit = 0;
   std::map<std::string, TH2D*> ASysSplit;
   TH1F* h_testMET = 0;
