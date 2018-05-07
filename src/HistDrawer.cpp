@@ -9,10 +9,26 @@
 #include "TLine.h"
 #include <TROOT.h>
 #include <TStyle.h>
+#include <TPaveText.h>
+#include <numeric>
 
 template<typename Base, typename T>
 inline bool instanceof(const T *ptr) {
 	return dynamic_cast<const Base*>(ptr) != nullptr;
+}
+
+template <typename T>
+std::vector<size_t> sort_indexes(const std::vector<T> &v) {
+
+	// initialize original index locations
+	std::vector<size_t> idx(v.size());
+	std::iota(idx.begin(), idx.end(), 0);
+
+	// sort indexes based on comparing values in v
+	std::sort(idx.begin(), idx.end(),
+	[&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
+
+	return idx;
 }
 
 void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TString ylabel) {
@@ -55,6 +71,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	}
 	else hist-> SetYTitle(ylabel);
 
+	DrawLumiLabel(c);
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + ".png");
 	c->Write();
@@ -129,6 +146,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 		data->SetXTitle(name);
 	}
 	else data-> SetXTitle(xlabel);
+	DrawLumiLabel(c);
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
@@ -197,7 +215,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	// data->Chi2Test(lastStack, "WWP");
 }
 
-void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::string, int> nameColMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
@@ -206,16 +224,28 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
 	if (log) gPad->SetLogy();
-
 	THStack* stack = new THStack(name, name);
-	int index = 0;
-	for (auto const& x : nameColMap){
-		SetHistoStyle(MC.at(index), x.second, true);
-		MC.at(index)->SetFillColor(x.second);
-		if (normalize) MC.at(index) ->Scale(1 / (MC.size()* MC.at(index)->Integral()));
-		stack->Add(MC.at(index));
-		legend->AddEntry(MC.at(index), TString(x.first), "F");
-		index++;
+
+	//figure out yield and sort correspondingly
+	std::vector<double> MCyield;
+	std::vector<std::string> names;
+	std::vector<std::string> sortedNames;
+	for (auto const& x : nameGenSampleColorMap) {
+		names.push_back(x.first);
+		MCyield.push_back(std::get<0>(x.second)->Integral());
+	}
+	for (auto i : sort_indexes(MCyield)) {
+		sortedNames.push_back(names[i]);
+	}
+	//loop over Bkgs and create stack
+	for (auto const& bkgname : sortedNames) {
+		std::pair<TH1*, int> x = nameGenSampleColorMap.at(bkgname);
+		SetHistoStyle(std::get<0>(x), std::get<1>(x), true);
+		std::get<0>(x)->SetFillColor(std::get<1>(x));
+		std::get<0>(x)->Print();
+		if (normalize) std::get<0>(x) ->Scale(1 / (MC.size()* std::get<0>(x)->Integral()));
+		stack->Add(std::get<0>(x));
+		legend->AddEntry(std::get<0>(x), TString(bkgname), "F");
 	}
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
 	if (normalize) 	data->Scale(1 / data->Integral());
@@ -229,6 +259,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	data->Draw("sameP");
 	legend->Draw("same");
 	data->SetStats(false);
+	DrawLumiLabel(c);
 
 
 	data->SetMarkerStyle(20);
@@ -306,7 +337,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 }
 
 
-void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::map<std::string, int> nameColMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
 	gStyle->SetEndErrorSize(10);
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
@@ -316,16 +347,27 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
 	if (log) gPad->SetLogy();
-
 	THStack* stack = new THStack(name, name);
-	int index = 0;
-	for (auto const& x : nameColMap){
-		SetHistoStyle(MC.at(index), x.second, true);
-		MC.at(index)->SetFillColor(x.second);
-		if (normalize) MC.at(index) ->Scale(1 / (MC.size()* MC.at(index)->Integral()));
-		stack->Add(MC.at(index));
-		legend->AddEntry(MC.at(index), TString(x.first), "F");
-		index++;
+	//figure out yield and sort correspondingly
+	std::vector<double> MCyield;
+	std::vector<std::string> names;
+	std::vector<std::string> sortedNames;
+	for (auto const& x : nameGenSampleColorMap) {
+		names.push_back(x.first);
+		MCyield.push_back(std::get<0>(x.second)->Integral());
+	}
+	for (auto i : sort_indexes(MCyield)) {
+		sortedNames.push_back(names[i]);
+	}
+	//loop over Bkgs and create stack
+	for (auto const& bkgname : sortedNames) {
+		std::pair<TH1*, int> x = nameGenSampleColorMap.at(bkgname);
+		SetHistoStyle(std::get<0>(x), std::get<1>(x), true);
+		std::get<0>(x)->SetFillColor(std::get<1>(x));
+		std::get<0>(x)->Print();
+		if (normalize) std::get<0>(x) ->Scale(1 / (MC.size()* std::get<0>(x)->Integral()));
+		stack->Add(std::get<0>(x));
+		legend->AddEntry(std::get<0>(x), TString(bkgname), "F");
 	}
 	double max_data = TMath::MaxElement(data_syst->GetN(), data_syst->GetX());
 	// float max_data = data->GetMaximum();
@@ -339,6 +381,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	data_stat->SetMarkerStyle(20);
 	data_syst->Draw("same[]");
 	legend->Draw("same");
+	DrawLumiLabel(c);
 
 	if (xlabel == "none") {
 		lastStack->SetXTitle(name);
@@ -428,12 +471,6 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 }
 
 
-
-
-
-
-
-
 void HistDrawer::SetHistoStyle(TH1* histo, int color, bool filled) {
 	if (instanceof<TH1F>(histo)) histo->SetStats(false);
 	histo->GetYaxis()->SetTitleOffset(1.4);
@@ -505,14 +542,12 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad, bool pullpad) {
 	}
 }
 
-
-
-
-
-
-
-
-
+void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
+	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
+	pt->AddText("work in Progress            35.9 fb^{-1} (13 TeV)");
+	pt->SetFillColor(kWhite);
+	pt->Draw("SAME");
+}
 
 TLegend* HistDrawer::getLegend() {
 	TLegend* legend = new TLegend(0.5, 0.7, 0.92, 0.9);

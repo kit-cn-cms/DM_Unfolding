@@ -27,16 +27,16 @@ void UnfoldWrapper::DoIt() {
 	Unfolder Unfolder;
 	HistDrawer Drawer;
 
-	std::map<std::string, int>  nameColMap = {
-		{"#gamma +jets", kViolet + 7},
-		{"QCD", kViolet + 3},
-		{"Single Top", kViolet - 1},
-		{"t#bar{t}", kViolet - 2},
-		{"Diboson", kViolet},
-		{"Z(ll)+jets", kViolet - 7},
-		{"W(l#nu)+jets", kGreen},
-		{"Z(#nu#nu)+jets", kBlue},
-	};
+	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
+	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
+	std::vector<int> color = { kViolet + 7, kViolet + 3, kViolet - 1, kViolet - 2, kViolet, kViolet - 7, kGreen, kBlue};
+	std::vector<std::string> names = {"#gamma +jets", "QCD", "Single Top", "t#bar{t}", "Diboson", "Z(ll)+jets", "W(l#nu)+jets", "Z(#nu#nu)+jets"};
+	int i = 0;
+	for (auto& name : names) {
+		nameGenSampleColorMap[name] = std::make_pair(GenMC.at(0)[i], color.at(i));
+		nameRecoSampleColorMap[name] = std::make_pair(MC.at(0)[i], color.at(i));
+		i++;
+	}
 	//Write important histos to dedicated file
 	FileWriter writer(label);
 
@@ -176,7 +176,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
-	Drawer.DrawDataMC(data, MC.at(0), nameColMap, "MET" + label, log, !normalize,!drawpull, "#slash{E}_{T}", "# Events");
+	Drawer.DrawDataMC(data, MC.at(0), nameRecoSampleColorMap, "MET" + label, log, !normalize, !drawpull, "#slash{E}_{T}", "# Events");
 
 	std::vector<std::string> GenBkgNames;
 	for (const std::string& name : bkgnames) {
@@ -213,7 +213,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.DrawDataMCerror(MET_Stat,
 	                       MET_Syst,
 	                       GenMC.at(0),
-	                       nameColMap,
+	                       nameGenSampleColorMap,
 	                       varName + "UnfoldedvsGenErrors" + label,
 	                       log,
 	                       !normalize,
