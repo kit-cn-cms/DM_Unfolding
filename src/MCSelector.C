@@ -299,7 +299,7 @@ MCSelector::Process(Long64_t entry)
       *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X ||
       *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X) {
     if ((!*GenLeptonVetoSelection || !*GenBTagVetoSelection ||
-         !*GenMonoJetSelection) && !*GenMETSelection) {
+         !*GenMonoJetSelection) && !*GenMETSelection && !*GenmonoVselection) {
       if (random >= split_) {
         h_fake_Split->Fill(*var_reco, weight_);
       }
