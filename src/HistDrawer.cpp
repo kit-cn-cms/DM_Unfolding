@@ -397,8 +397,8 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		data->SetBinContent(i, data_syst->GetY()[i - 1]);
 		float Ehigh = data_syst->GetEYhigh()[i - 1];
 		float Elow = data_syst->GetEYlow()[i - 1];
-		if (Ehigh > Elow) data->SetBinError(i, Ehigh);
-		else data->SetBinError(i, Elow);
+		if (Ehigh > Elow) data->SetBinError(i, 2*Ehigh);
+		else data->SetBinError(i, 2*Elow);
 	}
 	data->SetMarkerStyle(20);
 
@@ -436,8 +436,8 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		TH1* pull = (TH1*) data->Clone();
 		pull->Reset();
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
-			double sigma_d = 2*data->GetBinError(bin);
-			double sigma_mc = 2*lastStack->GetBinError(bin);
+			double sigma_d = data->GetBinError(bin);
+			double sigma_mc = lastStack->GetBinError(bin);
 			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
 			std::cout << content << std::endl;
 			std::cout << "data-MC: " << (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) << std::endl;
