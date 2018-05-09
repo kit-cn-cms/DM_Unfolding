@@ -439,9 +439,6 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 			double sigma_d = data->GetBinError(bin);
 			double sigma_mc = lastStack->GetBinError(bin);
 			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			std::cout << content << std::endl;
-			std::cout << "data-MC: " << (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) << std::endl;
-			std::cout << "error: " << sigma_d << std::endl;
 			pull->SetBinContent(bin, content);
 			pull->SetBinError(bin, 0);
 		}
