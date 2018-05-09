@@ -436,10 +436,12 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		TH1* pull = (TH1*) data->Clone();
 		pull->Reset();
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
-			double sigma_d = data->GetBinError(bin);
-			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
+			double sigma_d = 2*data->GetBinError(bin);
+			double sigma_mc = 2*lastStack->GetBinError(bin);
 			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+			std::cout << content << std::endl;
+			std::cout << "data-MC: " << (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) << std::endl;
+			std::cout << "error: " << sigma_d << std::endl;
 			pull->SetBinContent(bin, content);
 			pull->SetBinError(bin, 0);
 		}
@@ -544,7 +546,7 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad, bool pullpad) {
 
 void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
 	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
-	pt->AddText("work in Progress            35.9 fb^{-1} (13 TeV)");
+	pt->AddText("work in Progress            CMS Simulation");
 	pt->SetFillColor(kWhite);
 	pt->Draw("SAME");
 }

@@ -23,7 +23,10 @@ UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*>
 
 void UnfoldWrapper::DoIt() {
 // Data Input
-	std::cout << "#########Unfolding with label: " << label << "##################" << std::endl;
+	std::cout << "#########################################################################" << std::endl;
+	std::cout << "##################Unfolding with label: " << label << "##################" << std::endl;
+	std::cout << "#########################################################################" << std::endl;
+	
 	Unfolder Unfolder;
 	HistDrawer Drawer;
 

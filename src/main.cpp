@@ -89,7 +89,6 @@ main(int argc, char** argv)
   std::remove(path.GetOutputFilePath());
 
 // Return relevant Histos
-
   // Full Sample
   HistHelper histhelper;
   // Data
@@ -306,6 +305,21 @@ main(int argc, char** argv)
   std::vector<TH1F*> h_DataMinFakes;
   std::vector<TH1F*> h_DummyDataMinFakes;
 
+  std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
+  std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
+  std::map<std::string, std::pair<TH1*, int>> nameTestMETSampleColorMap;
+  std::map<std::string, std::pair<TH1*, int>> nameTestMETSplitSampleColorMap;
+  std::vector<int> color = { kViolet + 7, kViolet + 3, kViolet - 1, kViolet - 2, kViolet, kViolet - 7, kGreen, kBlue};
+  std::vector<std::string> names = {"#gamma +jets", "QCD", "Single Top", "t#bar{t}", "Diboson", "Z(ll)+jets", "W(l#nu)+jets", "Z(#nu#nu)+jets"};
+  int i = 0;
+  for (auto& name : names) {
+    nameGenSampleColorMap[name] = std::make_pair(v_GenMET_bkgs.at(0)[i], color.at(i));
+    nameRecoSampleColorMap[name] = std::make_pair(v_MET_bkgs.at(0)[i], color.at(i));
+    nameTestMETSampleColorMap[name] = std::make_pair(v_testmet_bkgs.at(0)[i], color.at(i));
+    nameTestMETSplitSampleColorMap[name] = std::make_pair(v_testmet_bkgs_Split.at(0)[i], color.at(i));
+    i++;
+  }
+
   for (unsigned int i = 0; i < variation.size(); i++) {
     TH1F* tmp = (TH1F*)MET_data->Clone();
     tmp->Add(fakes_all.at(i), -1);
@@ -338,12 +352,12 @@ main(int argc, char** argv)
   Drawer.DrawRatio(testMETgenBinning_all.at(0), GenMET_all.at(0), "Stability");
   Drawer.DrawDataMC(h_DummyDataMinFakes.at(0),
                     v_testmet_bkgs_Split.at(0),
-                    bkgnames,
+                    nameTestMETSplitSampleColorMap,
                     "DummyDataMinFakesvsTestMET",
                     log);
   Drawer.DrawDataMC(h_DataMinFakes.at(0),
                     v_testmet_bkgs.at(0),
-                    bkgnames,
+                    nameTestMETSampleColorMap,
                     "DataMinFakesvsTestMET",
                     log);
   Drawer.Draw2D(A_equBins_all.at(0), "MigrationMatrix_equBins", log, "MET_Reco", "MET_Gen");
