@@ -72,8 +72,9 @@ void UnfoldWrapper::DoIt() {
 
 // Find Best Tau
 	Unfolder.FindBestTauLcurve(unfold, label);
-// Unfolder.FindBestTau(unfold, "data");
+// Unfolder.FindBestTau(unfold, label);
 // unfold->DoUnfold(0.000316228);
+	
 // Get Output
 // 0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;

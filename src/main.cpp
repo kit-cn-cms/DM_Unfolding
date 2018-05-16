@@ -156,7 +156,7 @@ main(int argc, char** argv)
     A_all.at(nVariation)->Reset();
     A_equBins_all.at(nVariation)->Reset();
 
-    // Pseudata
+    // Pseudodata
     MET_DummyData_all.push_back(histhelper.Get1DHisto(
                                   "DummyData_" + bkgnames.at(0) + "_" + var + "_Split"));
     MET_all_Split.push_back(histhelper.Get1DHisto(
@@ -301,10 +301,6 @@ main(int argc, char** argv)
     nVariation++;
   }
 
-  // Subtract Fakes from Data
-  std::vector<TH1F*> h_DataMinFakes;
-  std::vector<TH1F*> h_DummyDataMinFakes;
-
   std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
   std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
   std::map<std::string, std::pair<TH1*, int>> nameTestMETSampleColorMap;
@@ -320,6 +316,11 @@ main(int argc, char** argv)
     i++;
   }
 
+
+  // Subtract Fakes from Data
+  std::vector<TH1F*> h_DataMinFakes;
+  std::vector<TH1F*> h_DummyDataMinFakes;
+
   for (unsigned int i = 0; i < variation.size(); i++) {
     TH1F* tmp = (TH1F*)MET_data->Clone();
     tmp->Add(fakes_all.at(i), -1);
@@ -331,22 +332,18 @@ main(int argc, char** argv)
   }
   std::vector<std::vector<char>> v;
 
-  // calculate GenOverflow
-  float GenIntegral = 0;
-  for (int i = 0; i < nBins_Gen; i++) {
-    GenIntegral += A_all.at(0)->GetBinContent(0, i);
-  }
-  cout << "A underflow (0,all): " << GenIntegral << endl;
+  // calculate Underflows
+  float RecoUF = A_all.at(0)->Integral(0, 0, 1, nBins_Gen); //inefficency due to misses
+  float GenUF = A_all.at(0)->Integral(0, nBins_Reco, 0, 0); //get unfolded
+
+  cout << "A Gen underflow (all,0) (gets unfolded): " << GenUF << endl;
+  cout << "A Reco underflow (0,all) (inefficency due to misses): " << RecoUF << endl;
   cout << "Fake integral: " << fakes_all.at(0)->Integral() << endl;
 
   cout << "Data integral: " << MET_data->Integral() << endl;
-  cout << "Data-Fake integral: "
-       << h_DataMinFakes.at(0)->Integral(
-         h_DataMinFakes.at(0)->GetXaxis()->FindBin(250), 25)
-       << endl;
+  cout << "Data-Fake integral: " << h_DataMinFakes.at(0)->Integral() << endl;
   cout << "Gen integral: " << GenMET_all.at(0)->Integral() << endl;
-  cout << "Reco (passes GenSelection) integral: "
-       << TestMET_all.at(0)->Integral() << endl;
+  cout << "Reco (passes GenSelection) integral: " << TestMET_all.at(0)->Integral() << endl;
 
   Drawer.DrawRatio(TestMET_all.at(0), MET_all.at(0), "Purity");
   Drawer.DrawRatio(testMETgenBinning_all.at(0), GenMET_all.at(0), "Stability");

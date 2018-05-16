@@ -87,6 +87,8 @@ public:
   TH1F* h_Jet_Eta = 0;
   TH1F* h_Evt_Phi_MET = 0;
   TH1F* h_Evt_Phi_GenMET = 0;
+  TH1F* h_W_Pt = 0;
+  TH1F* h_Z_Pt = 0;
   /////////////////////////////
   // Choose/Add Variables here//
   /////////////////////////////
@@ -126,11 +128,16 @@ public:
   TTreeReaderValue<Float_t> Weight_CSVCErr2up = { fReader, "Weight_CSVCErr2up" };
   TTreeReaderValue<Float_t> Weight_CSVCErr2down = { fReader, "Weight_CSVCErr2down" };
 
+  TTreeReaderValue<Long64_t> Miss = {fReader, "Miss" };
+  TTreeReaderValue<Long64_t> Fake = {fReader, "Fake" };
+  TTreeReaderValue<Long64_t> recoSelected = {fReader, "recoSelected" };
+
   TTreeReaderValue<Long64_t> GenMETSelection = { fReader, "GenMETSelection" };
   TTreeReaderValue<Long64_t> GenBTagVetoSelection = { fReader, "GenBTagVetoSelection" };
   TTreeReaderValue<Long64_t> GenMonoJetSelection = { fReader, "GenMonoJetSelection" };
   TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {fReader, "GenLeptonVetoSelection" };
   TTreeReaderValue<Long64_t> GenmonoVselection = {fReader, "GenmonoVselection" };
+  TTreeReaderValue<Long64_t> GenPhotonVetoSelection = {fReader, "GenPhotonVetoSelection" };
 
   TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X = {fReader, "Triggered_HLT_PFMET170_X"};
   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X" };
@@ -173,6 +180,10 @@ public:
 
   TTreeReaderValue<Float_t> Evt_Phi_MET = { fReader, "Evt_Phi_MET" };
   TTreeReaderValue<Float_t> Evt_Phi_GenMET = { fReader, "Evt_Phi_GenMET" };
+
+  TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
+  TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
+
 
   TFile* histofile = 0;
 

@@ -248,6 +248,14 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Evt_Phi_GenMET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_GenMET);
 
+  h_W_Pt = new TH1F("h_W_Pt" + option, "h_W_Pt", 120, 0, 1200);
+  h_W_Pt->Sumw2();
+  GetOutputList()->Add(h_W_Pt);
+
+  h_Z_Pt = new TH1F("h_Z_Pt" + option, "h_Z_Pt", 120, 0, 1200);
+  h_Z_Pt->Sumw2();
+  GetOutputList()->Add(h_Z_Pt);
+
   std::cout << "All Histos SetUp!" << std::endl;
 }
 
@@ -292,94 +300,101 @@ MCSelector::Process(Long64_t entry)
   float split_ = split / 100.;
   // std::cout << split_ << std::endl;
   double random = rand.Rndm();
+  bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  if (*Triggered_HLT_PFMET170_X ||
-      *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X ||
-      *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X ||
-      *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X ||
-      *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X) {
-    if ((!*GenLeptonVetoSelection || !*GenBTagVetoSelection ||
-         !*GenMonoJetSelection) && !*GenMETSelection && !*GenmonoVselection) {
-      if (random >= split_) {
-        h_fake_Split->Fill(*var_reco, weight_);
+  if (*Miss) A->Fill(-10, *var_gen, weight_);
+
+  if (triggered) {
+    if (*recoSelected) {
+      // if (*Fake) { //is a fake
+        // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection|| !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+        if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+        if (random >= split_) {
+          h_fake_Split->Fill(*var_reco, weight_);
+        }
+        h_fake->Fill(*var_reco, weight_);
       }
-      h_fake->Fill(*var_reco, weight_);
-    } else {
-      if (random >= split_) {
-        h_GenSplit->Fill(*var_gen, weight_);
-        h_testMET_Split->Fill(*var_reco, weight_);
-        h_testMETgenBinning->Fill(*var_reco, weight_);
-        ASplit->Fill(*var_reco, *var_gen, weight_);
-        int n = 0;
+      else { //is not a fake
+        if (random >= split_) {
+          h_GenSplit->Fill(*var_gen, weight_);
+          h_testMET_Split->Fill(*var_reco, weight_);
+          h_testMETgenBinning->Fill(*var_reco, weight_);
+          ASplit->Fill(*var_reco, *var_gen, weight_);
 
-        if (option.Contains("nominal")) {
+          int n = 0;
+          if (option.Contains("nominal")) { //fill systematics only in nominal case
+            for (auto& sys : systematics ) {
+              float tmpweight = weight_ * *(sysweights.find(sys)->second);
+              if (sys == "PUup" || sys == "PUdown") {
+                tmpweight /= *(sysweights.find(sys)->second);
+              }
+              ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+              h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
+            }
+          }
+
+        }
+        h_Gen->Fill(*var_gen, weight_);
+        h_testMET->Fill(*var_reco, weight_);
+        A_equBins->Fill(*var_reco, *var_gen, weight_);
+        A->Fill(*var_reco, *var_gen, weight_);
+
+        if (option.Contains("nominal")) { //fill systematics only in nominal case
           for (auto& sys : systematics ) {
             float tmpweight = weight_ * *(sysweights.find(sys)->second);
             if (sys == "PUup" || sys == "PUdown") {
               tmpweight /= *(sysweights.find(sys)->second);
             }
-            ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-            h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
+            ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+            h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+          }
+        }
+      }
+      //don't touch genselection for "normal" reco histograms
+      if (random >= split_) {
+        h_RecoSplit->Fill(*var_reco, weight_);
+        h_DummyDataSplit->Fill(*var_reco, weight_);
+
+        if (option.Contains("nominal")) {  //fill systematics only in nominal case
+          for (auto& sys : systematics ) {
+            float tmpweight = weight_ * *(sysweights.find(sys)->second);
+            if (sys == "PUup" || sys == "PUdown") {
+              tmpweight /= *(sysweights.find(sys)->second);
+            }
+            h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
           }
         }
 
       }
-      h_Gen->Fill(*var_gen, weight_);
-      h_testMET->Fill(*var_reco, weight_);
-      A_equBins->Fill(*var_reco, *var_gen, weight_);
-      A->Fill(*var_reco, *var_gen, weight_);
+      h_Reco->Fill(*var_reco, weight_);
 
-      if (option.Contains("nominal")) {
+      if (option.Contains("nominal")) {  //fill systematics only in nominal case
         for (auto& sys : systematics ) {
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
           if (sys == "PUup" || sys == "PUdown") {
             tmpweight /= *(sysweights.find(sys)->second);
           }
-          ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-          h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+          h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
         }
       }
 
+      // Additional Variables
+      h_N_Jets->Fill(*N_Jets, weight_);
+      h_Jet_Pt->Fill(*Jet_Pt, weight_);
+      h_Jet_Eta->Fill(*Jet_Eta, weight_);
+      h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
+      h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
+
+      h_W_Pt->Fill(*W_Pt, weight_);
+      h_Z_Pt->Fill(*Z_Pt, weight_);
+
+
+      weight_ = 0;
+      return kTRUE;
     }
-
-    if (random >= split_) {
-      h_RecoSplit->Fill(*var_reco, weight_);
-      h_DummyDataSplit->Fill(*var_reco, weight_);
-
-      if (option.Contains("nominal")) {
-        for (auto& sys : systematics ) {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (sys == "PUup" || sys == "PUdown") {
-            tmpweight /= *(sysweights.find(sys)->second);
-          }
-          h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
-        }
-      }
-
-    }
-    h_Reco->Fill(*var_reco, weight_);
-
-    if (option.Contains("nominal")) {
-      for (auto& sys : systematics ) {
-        float tmpweight = weight_ * *(sysweights.find(sys)->second);
-        if (sys == "PUup" || sys == "PUdown") {
-          tmpweight /= *(sysweights.find(sys)->second);
-        }
-        h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
-      }
-    }
-
-    // Additional Variables
-    h_N_Jets->Fill(*N_Jets, weight_);
-    h_Jet_Pt->Fill(*Jet_Pt, weight_);
-    h_Jet_Eta->Fill(*Jet_Eta, weight_);
-    h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
-    h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
-
-    weight_ = 0;
   }
-  return kTRUE;
 }
+
 
 void
 MCSelector::SlaveTerminate()
