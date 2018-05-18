@@ -239,6 +239,14 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
 
+  h_misses = new TH1F(strippedOption + "misses" + currentJESJERvar, genvar, nBins_Gen, BinEdgesGen.data());
+  h_misses->Sumw2();
+  GetOutputList()->Add(h_misses);
+
+  h_misses_Split = new TH1F(strippedOption + "misses" + currentJESJERvar + "_Split", genvar,  nBins_Gen, BinEdgesGen.data());
+  h_misses_Split->Sumw2();
+  GetOutputList()->Add(h_misses_Split);
+
   // Additional Variables
   h_N_Jets = new TH1F(strippedOption + "N_Jets" + currentJESJERvar, "N_Jets", 15, 0, 15);
   h_N_Jets->Sumw2();
@@ -310,7 +318,10 @@ MCSelector::Process(Long64_t entry)
   double random = rand.Rndm();
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  if (*Miss) A->Fill(-10, *var_gen, weight_);
+  if (*Miss){
+    A->Fill(-10, *var_gen, weight_);
+    h_misses->Fill(*var_gen, weight_);    
+  } 
 
   if (triggered) {
     if (*recoSelected) {
