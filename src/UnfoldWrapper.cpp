@@ -195,7 +195,7 @@ void UnfoldWrapper::DoIt() {
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
 		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
-		NomPlusVar->SetName(TString(var));
+		NomPlusVar->SetName("unfolded" + TString(var));
 		v_NomPlusVar.push_back(NomPlusVar);
 		nVariation += 1;
 	}

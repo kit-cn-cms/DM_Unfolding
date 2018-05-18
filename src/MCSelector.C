@@ -125,134 +125,142 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   xMax_Reco = pt.get<int>("Binning.xMax_Reco");
   split = pt.get<int>("general.split");
   systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
-
-
   std::cout << "Config parsed!" << std::endl;
+
+  std::string currentJESJERvar = "";
+  if (option.Contains("_CMS_scale_jUp")) {
+    strippedOption = option.Copy().ReplaceAll("_CMS_scale_jUp", "");
+    currentJESJERvar = "_CMS_scale_jUp";
+  }
+  else if (option.Contains("_CMS_scale_jDown")) {
+    strippedOption = option.Copy().ReplaceAll("_CMS_scale_jDown", "");
+    currentJESJERvar = "_CMS_scale_jDown";
+  }
+  else if (option.Contains("_CMS_res_jUp")) {
+    strippedOption = option.Copy().ReplaceAll("_CMS_res_jUp", "");
+    currentJESJERvar = "_CMS_res_jUp";
+  }
+  else if (option.Contains("_CMS_res_jDown")) {
+    strippedOption = option.Copy().ReplaceAll("_CMS_res_jDown", "");
+    currentJESJERvar = "_CMS_res_jDown";
+  }
+  else strippedOption = option;
+
+  if (option.Contains("res") || option.Contains("scale")) doadditionalsystematics = false;
+  else doadditionalsystematics = true;
+  std::cout << doadditionalsystematics << std::endl;
 
   TRandom* rand = new TRandom();
   // book histos for split distributions
-  h_GenSplit = new TH1F(
-    genvar + "_" + option + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
+  h_GenSplit = new TH1F(strippedOption + genvar + currentJESJERvar + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
   h_GenSplit->Sumw2();
   GetOutputList()->Add(h_GenSplit);
-  h_RecoSplit = new TH1F(recovar + "_" + option + "_Split",
-                         recovar,
-                         nBins_Reco,
-                         xMin_Reco,
-                         xMax_Reco);
+  h_RecoSplit = new TH1F(strippedOption + recovar + currentJESJERvar + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_RecoSplit->Sumw2();
   GetOutputList()->Add(h_RecoSplit);
-  h_DummyDataSplit = new TH1F("DummyData_" + option + "_Split",
-                              "DummyData",
-                              nBins_Reco,
-                              xMin_Reco,
-                              xMax_Reco);
+  h_DummyDataSplit = new TH1F(strippedOption + "DummyData" +  currentJESJERvar + "_Split", "DummyData", nBins_Reco, xMin_Reco, xMax_Reco);
   h_DummyDataSplit->Sumw2();
   GetOutputList()->Add(h_DummyDataSplit);
-  ASplit = new TH2D("A_" + option + "_Split",
-                    "A",
-                    nBins_Reco,
-                    xMin_Reco,
-                    xMax_Reco,
-                    nBins_Gen,
-                    BinEdgesGen.data());
+
+  ASplit = new TH2D(strippedOption + "A" + currentJESJERvar + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
   ASplit->Sumw2();
   GetOutputList()->Add(ASplit);
 
   // book histos for full distributions
-  h_Gen = new TH1F(genvar + "_" + option, genvar, nBins_Gen, BinEdgesGen.data());
+  h_Gen = new TH1F(strippedOption + genvar + currentJESJERvar, genvar, nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
   GetOutputList()->Add(h_Gen);
-  h_Reco = new TH1F(recovar + "_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_Reco = new TH1F(strippedOption + recovar + currentJESJERvar, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
 
-  A = new TH2D("A_" + option , "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
+  A = new TH2D(strippedOption + "A" + currentJESJERvar , "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
   A->Sumw2();
   GetOutputList()->Add(A);
 
-  if (option.Contains("nominal")) {
+  if (doadditionalsystematics) {
+
     for (auto& sys : systematics) {
-      TH2D* tmp = new TH2D("A_" + option + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
+      TH2D* tmp = new TH2D(strippedOption + "A_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmp->Sumw2();
       ASys[sys] = tmp;
       GetOutputList()->Add(tmp);
 
-      TH1F* Recotmp = new TH1F(recovar + "_" + option + "_" + sys, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+      TH1F* Recotmp = new TH1F(strippedOption + recovar + "_" + sys, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
       Recotmp->Sumw2();
       h_RecoSys[sys] = Recotmp;
       GetOutputList()->Add(Recotmp);
 
-      TH1F* Gentmp = new TH1F(genvar + "_" + option + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
+      TH1F* Gentmp = new TH1F(strippedOption + genvar + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
       Gentmp->Sumw2();
       h_GenSys[sys] = Gentmp;
       GetOutputList()->Add(Gentmp);
 
 
 
-      TH2D* tmpSplit = new TH2D("A_" + option + "_Split" + "_" + sys, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
+      TH2D* tmpSplit = new TH2D(strippedOption + "A_" + sys + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmpSplit->Sumw2();
       ASysSplit[sys] = tmp;
       GetOutputList()->Add(tmpSplit);
 
-      TH1F* RecotmpSplit = new TH1F(recovar + "_" + option + "_Split" + "_" + sys, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+      TH1F* RecotmpSplit = new TH1F(strippedOption + recovar + "_" + sys + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
       RecotmpSplit->Sumw2();
       h_RecoSysSplit[sys] = RecotmpSplit;
       GetOutputList()->Add(RecotmpSplit);
 
-      TH1F* GentmpSplit = new TH1F(genvar + "_" + option + "_Split" + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
+      TH1F* GentmpSplit = new TH1F(strippedOption + genvar + "_" + sys + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
       GentmpSplit->Sumw2();
       h_GenSysSplit[sys] = GentmpSplit;
       GetOutputList()->Add(GentmpSplit);
     }
   }
 
-  A_equBins = new TH2D("A_equBins" + option, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Reco, xMin_Reco, xMax_Reco);
+  A_equBins = new TH2D(strippedOption + "A_equBins" + currentJESJERvar, "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Reco, xMin_Reco, xMax_Reco);
   A_equBins->Sumw2();
   GetOutputList()->Add(A_equBins);
 
-  h_testMET = new TH1F("TestMET" + option, "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
+  h_testMET = new TH1F(strippedOption + "TestMET" + currentJESJERvar, "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
   h_testMET->Sumw2();
   GetOutputList()->Add(h_testMET);
 
-  h_testMETgenBinning = new TH1F("testMETgenBinning" + option, "testMETgenBinning", nBins_Gen, BinEdgesGen.data());
+  h_testMETgenBinning = new TH1F(strippedOption + "testMETgenBinning" + currentJESJERvar, "testMETgenBinning", nBins_Gen, BinEdgesGen.data());
   h_testMETgenBinning->Sumw2();
   GetOutputList()->Add(h_testMETgenBinning);
 
-  h_testMET_Split = new TH1F("TestMET" + option + "_Split", "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
+  h_testMET_Split = new TH1F(strippedOption + "TestMET" + currentJESJERvar + "_Split", "TESTMET", nBins_Reco, xMin_Reco, xMax_Reco);
   h_testMET_Split->Sumw2();
   GetOutputList()->Add(h_testMET_Split);
 
-  h_fake = new TH1F("fakes_" + option, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_fake = new TH1F(strippedOption + "fakes" + currentJESJERvar, recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_fake->Sumw2();
   GetOutputList()->Add(h_fake);
 
-  h_fake_Split = new TH1F( "fakes_" + option + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
+  h_fake_Split = new TH1F(strippedOption + "fakes" + currentJESJERvar + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
 
   // Additional Variables
-  h_N_Jets = new TH1F("N_Jets_" + option, "N_Jets", 15, 0, 15);
+  h_N_Jets = new TH1F(strippedOption + "N_Jets" + currentJESJERvar, "N_Jets", 15, 0, 15);
   h_N_Jets->Sumw2();
   GetOutputList()->Add(h_N_Jets);
-  h_Jet_Pt = new TH1F("Jet_Pt_" + option, "Jets_Pt", 80, 0, 800);
+  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jets_Pt", 80, 0, 800);
   h_Jet_Pt->Sumw2();
   GetOutputList()->Add(h_Jet_Pt);
-  h_Jet_Eta = new TH1F("Jet_Eta_" + option, "Jet_Eta", 40, -4, 4);
+  h_Jet_Eta = new TH1F(strippedOption + "Jet_Eta" + currentJESJERvar, "Jet_Eta", 40, -4, 4);
   h_Jet_Eta->Sumw2();
   GetOutputList()->Add(h_Jet_Eta);
-  h_Evt_Phi_MET = new TH1F("Evt_Phi_MET_" + option, "Evt_Phi_MET", 50, -3.2, 3.2);
+  h_Evt_Phi_MET = new TH1F(strippedOption + "Evt_Phi_MET" + currentJESJERvar, "Evt_Phi_MET", 50, -3.2, 3.2);
   h_Evt_Phi_MET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_MET);
-  h_Evt_Phi_GenMET = new TH1F("Evt_Phi_GenMET_" + option, "Evt_Phi_GenMET", 50, -3.2, 3.2);
+  h_Evt_Phi_GenMET = new TH1F(strippedOption + "Evt_Phi_GenMET" + currentJESJERvar, "Evt_Phi_GenMET", 50, -3.2, 3.2);
   h_Evt_Phi_GenMET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_GenMET);
 
-  h_W_Pt = new TH1F("h_W_Pt" + option, "h_W_Pt", 120, 0, 1200);
+  h_W_Pt = new TH1F(strippedOption + "h_W_Pt" + currentJESJERvar, "h_W_Pt", 120, 0, 1200);
   h_W_Pt->Sumw2();
   GetOutputList()->Add(h_W_Pt);
 
-  h_Z_Pt = new TH1F("h_Z_Pt" + option, "h_Z_Pt", 120, 0, 1200);
+  h_Z_Pt = new TH1F(strippedOption + "h_Z_Pt" + currentJESJERvar, "h_Z_Pt", 120, 0, 1200);
   h_Z_Pt->Sumw2();
   GetOutputList()->Add(h_Z_Pt);
 
@@ -307,8 +315,8 @@ MCSelector::Process(Long64_t entry)
   if (triggered) {
     if (*recoSelected) {
       // if (*Fake) { //is a fake
-        // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection|| !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
-        if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+      // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection|| !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+      if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
         if (random >= split_) {
           h_fake_Split->Fill(*var_reco, weight_);
         }
@@ -322,7 +330,7 @@ MCSelector::Process(Long64_t entry)
           ASplit->Fill(*var_reco, *var_gen, weight_);
 
           int n = 0;
-          if (option.Contains("nominal")) { //fill systematics only in nominal case
+          if (doadditionalsystematics) { //fill systematics only in nominal case
             for (auto& sys : systematics ) {
               float tmpweight = weight_ * *(sysweights.find(sys)->second);
               if (sys == "PUup" || sys == "PUdown") {
@@ -339,7 +347,7 @@ MCSelector::Process(Long64_t entry)
         A_equBins->Fill(*var_reco, *var_gen, weight_);
         A->Fill(*var_reco, *var_gen, weight_);
 
-        if (option.Contains("nominal")) { //fill systematics only in nominal case
+        if (doadditionalsystematics) { //fill systematics only in nominal case
           for (auto& sys : systematics ) {
             float tmpweight = weight_ * *(sysweights.find(sys)->second);
             if (sys == "PUup" || sys == "PUdown") {
@@ -355,7 +363,7 @@ MCSelector::Process(Long64_t entry)
         h_RecoSplit->Fill(*var_reco, weight_);
         h_DummyDataSplit->Fill(*var_reco, weight_);
 
-        if (option.Contains("nominal")) {  //fill systematics only in nominal case
+        if (doadditionalsystematics) {  //fill systematics only in nominal case
           for (auto& sys : systematics ) {
             float tmpweight = weight_ * *(sysweights.find(sys)->second);
             if (sys == "PUup" || sys == "PUdown") {
@@ -368,7 +376,7 @@ MCSelector::Process(Long64_t entry)
       }
       h_Reco->Fill(*var_reco, weight_);
 
-      if (option.Contains("nominal")) {  //fill systematics only in nominal case
+      if (doadditionalsystematics) {  //fill systematics only in nominal case
         for (auto& sys : systematics ) {
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
           if (sys == "PUup" || sys == "PUdown") {

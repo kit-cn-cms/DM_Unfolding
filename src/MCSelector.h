@@ -39,6 +39,7 @@ public:
   TTree* fChain = 0;   //! pointer to the analyzed TTree or TChain
 
   TString variation;
+  TString strippedOption;
   int nBins_Gen;
   int nBins_Reco;
   int xMin_Gen;
@@ -55,6 +56,7 @@ public:
   std::vector<std::string> systematics;
   std::vector<double> BinEdgesGen;
   std::vector<double> BinEdgesReco;
+  bool doadditionalsystematics = true;
 
   // book histos
   // Full Sample

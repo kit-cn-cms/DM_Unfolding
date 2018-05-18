@@ -26,7 +26,7 @@ void HistMaker::MakeHistos() {
 	std::vector<std::vector<TChain*>> BkgChainsVariations;
 	std::vector<TChain*> BkgChains;
 
-	for (auto& var : variation) {
+	for (auto& var : variationFileNames) {
 		cout << "chaining files for " << var << " variation" << endl;
 
 		cout << "Getting Signal Files:" << endl;
@@ -113,6 +113,7 @@ void HistMaker::ParseConfig() {
 	genvar = pt.get<string>("vars.gen");
 	recovar = pt.get<string>("vars.reco");
 	variation = to_array<std::string>(pt.get<std::string>("general.variation"));
+	variationFileNames = to_array<std::string>(pt.get<std::string>("general.variationFileNames"));
 	useBatch = pt.get<bool>("general.useBatch");
 
 	cout << "Config parsed!" << endl;
