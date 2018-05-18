@@ -50,6 +50,67 @@ void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TStri
 	output->Close();
 }
 
+void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, TString xlabel, TString ylabel) {
+	TFile *output = new TFile(path.GetOutputFilePath(), "update");
+	TCanvas* c = getCanvas(name, false, false);
+	TLegend* legend = getLegend();
+	gStyle->SetErrorX(0.);
+	gStyle->SetOptStat(0);
+	gStyle->SetOptTitle(0);
+	if (log) gPad->SetLogy();
+	THStack* stack = new THStack(name, name);
+
+	//figure out yield and sort correspondingly
+	std::vector<double> MCyield;
+	std::vector<std::string> names;
+	std::vector<std::string> sortedNames;
+	for (auto const& x : nameGenSampleColorMap) {
+		names.push_back(x.first);
+		MCyield.push_back(std::get<0>(x.second)->Integral());
+	}
+	for (auto i : sort_indexes(MCyield)) {
+		sortedNames.push_back(names[i]);
+	}
+	//loop over Bkgs and create stack
+	for (auto const& bkgname : sortedNames) {
+		std::pair<TH1*, int> x = nameGenSampleColorMap.at(bkgname);
+		SetHistoStyle(std::get<0>(x), std::get<1>(x), true);
+		std::get<0>(x)->SetFillColor(std::get<1>(x));
+		std::get<0>(x)->Print();
+		if (normalize) std::get<0>(x) ->Scale(1 / (MC.size()* std::get<0>(x)->Integral()));
+		stack->Add(std::get<0>(x));
+		legend->AddEntry(std::get<0>(x), TString(bkgname), "F");
+	}
+	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
+
+	std::cout << "Stack Integral: " << lastStack->Integral() << std::endl;
+
+	float max_Stack = lastStack->GetMaximum();
+	// stack->SetMaximum(max_Stack);
+	stack->SetMinimum(10);
+	stack->Draw("hist");
+	legend->Draw("same");
+	DrawLumiLabel(c);
+
+	if (xlabel == "none") {
+		stack->GetXaxis()->SetTitle(name);
+	}
+	else stack->GetXaxis()->SetTitle(xlabel);
+
+	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetXaxis()->SetLabelSize(stack->GetXaxis()->GetLabelSize() * 1.2);
+	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
+	stack->GetXaxis()->SetTitleSize(stack->GetXaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitleOffset(1);
+	stack->SetTitle("");
+	stack->GetYaxis()->SetNdivisions(505);
+	c->SaveAs(path.GetPdfPath() + name + "_stacked.pdf");
+	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
+	c->Write();
+	output->Close();
+}
+
 void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TString ylabel) {
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
@@ -127,6 +188,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 		fillcolor += 1;
 	}
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
+	std::cout << "Stack Integral: " << lastStack->Integral() << std::endl;;
 	if (normalize) 	data->Scale(1 / data->Integral());
 
 	float max_data = data->GetMaximum();
@@ -211,7 +273,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
 	output->Close();
-	std::cout << name << ": ";
+	// std::cout << name << ": ";
 	// data->Chi2Test(lastStack, "WWP");
 }
 
@@ -248,6 +310,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 		legend->AddEntry(std::get<0>(x), TString(bkgname), "F");
 	}
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
+	std::cout << "Stack Integral: " << lastStack->Integral() << std::endl;;
 	if (normalize) 	data->Scale(1 / data->Integral());
 
 	float max_data = data->GetMaximum();
@@ -332,7 +395,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
 	output->Close();
-	std::cout << name << ": ";
+	// std::cout << name << ": ";
 	// data->Chi2Test(lastStack, "WWP");
 }
 
@@ -372,6 +435,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	double max_data = TMath::MaxElement(data_syst->GetN(), data_syst->GetX());
 	// float max_data = data->GetMaximum();
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
+	std::cout << "Stack Integral: " << lastStack->Integral() << std::endl;;
 	float max_Stack = lastStack->GetMaximum();
 	if (max_data > max_Stack) stack->SetMaximum(max_data);
 	else stack->SetMaximum(max_Stack);
@@ -397,8 +461,8 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		data->SetBinContent(i, data_syst->GetY()[i - 1]);
 		float Ehigh = data_syst->GetEYhigh()[i - 1];
 		float Elow = data_syst->GetEYlow()[i - 1];
-		if (Ehigh > Elow) data->SetBinError(i, 2*Ehigh);
-		else data->SetBinError(i, 2*Elow);
+		if (Ehigh > Elow) data->SetBinError(i, 2 * Ehigh);
+		else data->SetBinError(i, 2 * Elow);
 	}
 	data->SetMarkerStyle(20);
 
@@ -465,7 +529,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + "_stacked.png");
 	c->Write();
 	output->Close();
-	std::cout << name << ": ";
+	// std::cout << name << ": ";
 	// data->Chi2Test(lastStack, "WWP");
 }
 
