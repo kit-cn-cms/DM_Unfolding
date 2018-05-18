@@ -365,7 +365,7 @@ main(int argc, char** argv) {
 
   if (DoUnfolding) {
 //Do the unfolding
-    for (auto& sys : systematics) variation.push_back(sys);
+    for (auto& sys : systematics) variation.push_back("_" + sys);
 
     UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, variation, bkgnames, BinEdgesGen);
     Wrapper.DoIt();

@@ -2,6 +2,11 @@
 #include "../interface/Unfolder.hpp"
 #include "../interface/HistDrawer.hpp"
 #include "../interface/FileWriter.hpp"
+#include "../interface/PathHelper.hpp"
+
+#include "boost/lexical_cast.hpp"
+#include <boost/property_tree/ini_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 
 #include <iostream>
@@ -26,9 +31,15 @@ void UnfoldWrapper::DoIt() {
 	std::cout << "#########################################################################" << std::endl;
 	std::cout << "##################Unfolding with label: " << label << "##################" << std::endl;
 	std::cout << "#########################################################################" << std::endl;
-	
+
 	Unfolder Unfolder;
 	HistDrawer Drawer;
+	PathHelper path;
+
+	boost::property_tree::ptree pt;
+	boost::property_tree::ini_parser::read_ini(std::string(path.GetConfigPath()), pt);
+	TString genvar = pt.get<std::string>("vars.gen");
+	TString recovar = pt.get<std::string>("vars.reco");
 
 	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
 	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
@@ -52,8 +63,7 @@ void UnfoldWrapper::DoIt() {
 	TUnfoldDensity* unfold = Unfolder.SetUp(A.at(0), data);
 	TH2* ProbMatrix = (TH2*)A.at(0)->Clone();
 	ProbMatrix->Reset();
-	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix,
-	                                      TUnfoldDensity::kHistMapOutputVert);
+	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
 	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
 
 	unfold->SubtractBackground(fakes, "fakes" + label, 1, 0.0); // subtract fakes
@@ -74,7 +84,7 @@ void UnfoldWrapper::DoIt() {
 	Unfolder.FindBestTauLcurve(unfold, label);
 // Unfolder.FindBestTau(unfold, label);
 // unfold->DoUnfold(0.000316228);
-	
+
 // Get Output
 // 0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
@@ -195,7 +205,7 @@ void UnfoldWrapper::DoIt() {
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
 		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
-		NomPlusVar->SetName("unfolded" + varName + TString(var));
+		NomPlusVar->SetName("unfolded_" + genvar + TString(var));
 		v_NomPlusVar.push_back(NomPlusVar);
 		nVariation += 1;
 	}
