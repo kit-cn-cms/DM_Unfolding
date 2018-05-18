@@ -316,25 +316,30 @@ MCSelector::Process(Long64_t entry)
   float split_ = split / 100.;
   // std::cout << split_ << std::endl;
   double random = rand.Rndm();
+  bool isPseudoData = random < split_;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  if (*Miss){
+  if (*Miss) {
     A->Fill(-10, *var_gen, weight_);
-    h_misses->Fill(*var_gen, weight_);    
-  } 
+    h_misses->Fill(*var_gen, weight_);
+    if (isPseudoData) {
+      ASplit->Fill(-10, *var_gen, weight_);
+      h_misses_Split->Fill(*var_gen, weight_);
+    }
+  }
 
   if (triggered) {
     if (*recoSelected) {
       // if (*Fake) { //is a fake
       // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection|| !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
       if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
-        if (random >= split_) {
+        if (!isPseudoData) {
           h_fake_Split->Fill(*var_reco, weight_);
         }
         h_fake->Fill(*var_reco, weight_);
       }
       else { //is not a fake
-        if (random >= split_) {
+        if (!isPseudoData) {
           h_GenSplit->Fill(*var_gen, weight_);
           h_testMET_Split->Fill(*var_reco, weight_);
           h_testMETgenBinning->Fill(*var_reco, weight_);
@@ -370,7 +375,7 @@ MCSelector::Process(Long64_t entry)
         }
       }
       //don't touch genselection for "normal" reco histograms
-      if (random >= split_) {
+      if (isPseudoData) {
         h_RecoSplit->Fill(*var_reco, weight_);
         h_DummyDataSplit->Fill(*var_reco, weight_);
 
