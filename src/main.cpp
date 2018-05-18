@@ -213,7 +213,7 @@ main(int argc, char** argv) {
 
       tmphist = histhelper.Get1DHisto(name + "_fakes" + var);
       v_fakes_bkgs.at(nVariation).push_back(tmphist);
-      fakes_all.at(nVariation)->Add(tmphist);  
+      fakes_all.at(nVariation)->Add(tmphist);
 
       tmphist = histhelper.Get1DHisto(name + "_misses" + var);
       v_misses_bkgs.at(nVariation).push_back(tmphist);
@@ -288,16 +288,32 @@ main(int argc, char** argv) {
 
   std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
   std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
+
   std::map<std::string, std::pair<TH1*, int>> nameTestMETSampleColorMap;
   std::map<std::string, std::pair<TH1*, int>> nameTestMETSplitSampleColorMap;
+
+  std::map<std::string, std::pair<TH1*, int>> namefakesSplitSampleColorMap;
+  std::map<std::string, std::pair<TH1*, int>> namefakesSampleColorMap;
+
+  std::map<std::string, std::pair<TH1*, int>> namemissesSplitSampleColorMap;
+  std::map<std::string, std::pair<TH1*, int>> namemissesSampleColorMap;
+
   std::vector<int> color = { kViolet + 7, kViolet + 3, kViolet - 1, kViolet - 2, kViolet, kViolet - 7, kGreen, kBlue};
   std::vector<std::string> names = {"#gamma +jets", "QCD", "Single Top", "t#bar{t}", "Diboson", "Z(ll)+jets", "W(l#nu)+jets", "Z(#nu#nu)+jets"};
   int i = 0;
   for (auto& name : names) {
     nameGenSampleColorMap[name] = std::make_pair(v_GenMET_bkgs.at(0)[i], color.at(i));
     nameRecoSampleColorMap[name] = std::make_pair(v_MET_bkgs.at(0)[i], color.at(i));
+
     nameTestMETSampleColorMap[name] = std::make_pair(v_testmet_bkgs.at(0)[i], color.at(i));
     nameTestMETSplitSampleColorMap[name] = std::make_pair(v_testmet_bkgs_Split.at(0)[i], color.at(i));
+
+    namefakesSampleColorMap[name] = std::make_pair(v_fakes_bkgs.at(0)[i], color.at(i));
+    namefakesSplitSampleColorMap[name] = std::make_pair(v_fakes_bkgs_Split.at(0)[i], color.at(i));
+
+    namemissesSampleColorMap[name] = std::make_pair(v_misses_bkgs.at(0)[i], color.at(i));
+    namemissesSplitSampleColorMap[name] = std::make_pair(v_misses_bkgs_Split.at(0)[i], color.at(i));
+
     i++;
   }
 
@@ -329,19 +345,17 @@ main(int argc, char** argv) {
   std::cout << "Data-Fake integral: " << h_DataMinFakes.at(0)->Integral() << std::endl;
   std::cout << "Gen integral: " << GenMET_all.at(0)->Integral() << std::endl;
   std::cout << "Reco (passes GenSelection) integral: " << TestMET_all.at(0)->Integral() << std::endl;
+  bool normalize=true;
+  Drawer.DrawStack(v_fakes_bkgs.at(0), namefakesSampleColorMap, "fakes", log, !normalize, "#slash{E}_{T}");
+  Drawer.DrawStack(v_fakes_bkgs_Split.at(0), namefakesSplitSampleColorMap, "fakeSplit", log, !normalize, "#slash{E}_{T}");
+
+  Drawer.DrawStack(v_misses_bkgs.at(0), namemissesSampleColorMap, "misses", log, !normalize, "#slash{E}_{T}");
+  Drawer.DrawStack(v_misses_bkgs_Split.at(0), namemissesSplitSampleColorMap, "missesSplit", log, !normalize, "#slash{E}_{T}");
 
   Drawer.DrawRatio(TestMET_all.at(0), MET_all.at(0), "Purity");
   Drawer.DrawRatio(testMETgenBinning_all.at(0), GenMET_all.at(0), "Stability");
-  Drawer.DrawDataMC(h_DummyDataMinFakes.at(0),
-                    v_testmet_bkgs_Split.at(0),
-                    nameTestMETSplitSampleColorMap,
-                    "DummyDataMinFakesvsTestMET",
-                    log);
-  Drawer.DrawDataMC(h_DataMinFakes.at(0),
-                    v_testmet_bkgs.at(0),
-                    nameTestMETSampleColorMap,
-                    "DataMinFakesvsTestMET",
-                    log);
+  Drawer.DrawDataMC(h_DummyDataMinFakes.at(0), v_testmet_bkgs_Split.at(0), nameTestMETSplitSampleColorMap, "DummyDataMinFakesvsTestMET", log, !normalize, "#slash{E}_{T}");
+  Drawer.DrawDataMC(h_DataMinFakes.at(0), v_testmet_bkgs.at(0), nameTestMETSampleColorMap, "DataMinFakesvsTestMET", log, !normalize, "#slash{E}_{T}");
   Drawer.Draw2D(A_equBins_all.at(0), "MigrationMatrix_equBins", log, "MET_Reco", "MET_Gen");
 
   if (FindBinning) {
