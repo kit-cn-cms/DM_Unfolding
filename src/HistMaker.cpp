@@ -257,7 +257,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	TStopwatch watch;
 	watch.Start();
 	//SetUp TProof
-	TProof *pl = TProof::Open("workers=10");
+	TProof *pl = TProof::Open("workers=6");
 	if (useBatch) {
 		pl->Close();
 		TString connect = gSystem->GetFromPipe("pod-info -c");
