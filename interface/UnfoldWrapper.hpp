@@ -5,6 +5,8 @@
 #include <TH2.h>
 #include <TH1.h>
 #include "TUnfoldDensity.h"
+#include "FileWriter.hpp"
+
 
 
 
@@ -15,6 +17,7 @@ public:
 	UnfoldWrapper(TString varName, TString label, std::vector<TH2*> A, TH1F* data, TH1* fakes, std::vector<std::vector<TH1*>> MC, std::vector<std::vector<TH1*>> GenMC, std::vector<std::string> variations, std::vector<std::string> bkgnames,std::vector<double> BinEdgesGen);
 	void DoIt();
 	// ~UnfoldWrapper();
+	FileWriter writer;
 
 	TString varName;
 	TString label;
@@ -26,6 +29,7 @@ public:
 	std::vector<std::vector<TH1*>> MC;
 	std::vector<std::vector<TH1*>> GenMC;
 	std::vector<double> BinEdgesGen;
+
 
 };
 

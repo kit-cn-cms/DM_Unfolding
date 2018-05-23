@@ -1,4 +1,4 @@
-#include <TUnfoldDensity.h>
+#include "TUnfoldDensity.h"
 #include "TUnfoldSys.h"
 #include "boost/lexical_cast.hpp"
 #include <boost/property_tree/ini_parser.hpp>
@@ -22,9 +22,7 @@
 
 #ifndef Main_CPP_
 #define Main_CPP_
-template<typename T>
-std::vector<T>
-to_array(const std::string& s)
+template<typename T> std::vector<T>to_array(const std::string& s)
 {
   std::vector<T> result;
   std::stringstream ss(s);
@@ -369,6 +367,7 @@ main(int argc, char** argv) {
 
     UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, variation, bkgnames, BinEdgesGen);
     Wrapper.DoIt();
+    for (auto& histo: GenMET_signal) Wrapper.writer.addToFile(histo);
 
     UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
     Wrapper_Split.DoIt();
@@ -383,6 +382,7 @@ main(int argc, char** argv) {
 
     // General Distributions
     Drawer.Draw1D(MET_signal.at(0), "MET_signal");
+    Drawer.Draw1D(GenMET_signal.at(0), "MET_signal");
     // Drawer.Draw1D(MET_all_Split.at(0), "MET_all_Split");
     // Drawer.Draw1D(GenMET_all.at(0), "GenMET_all");
     // Drawer.Draw1D(GenMET_all_Split.at(0), "GenMET_all_Split");

@@ -8,11 +8,10 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-
 #include <iostream>
 
 
-UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, TH1* fakes_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_) {
+UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, TH1* fakes_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_): writer(label_) {
 	varName = varName_;
 	label = label_;
 	A = A_;
@@ -51,8 +50,7 @@ void UnfoldWrapper::DoIt() {
 		nameRecoSampleColorMap[name] = std::make_pair(MC.at(0)[i], color.at(i));
 		i++;
 	}
-	//Write important histos to dedicated file
-	FileWriter writer(label);
+
 
 	// Subtract Fakes from Data
 	TH1F* h_DataMinFakes = (TH1F*)data->Clone();
