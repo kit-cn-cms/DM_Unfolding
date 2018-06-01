@@ -145,6 +145,7 @@ void UnfoldWrapper::DoIt() {
 		TH1* Delta = (TH1*) GenMC[0].at(0)->Clone();
 		Delta->Reset();
 		Delta->Sumw2();
+		Delta->SetName(TString("shift_") + var);
 		unfold->TUnfoldSys::GetDeltaSysSource(Delta, TString(var));
 		v_ShiftVariations.push_back(Delta);
 		Drawer.Draw1D(Delta, "Shift_" + TString(var) + label, false, "unfolded " + varName);
@@ -165,6 +166,7 @@ void UnfoldWrapper::DoIt() {
 
 	//calculate errors on unfolded Points -> all systematic
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
+		std::cout << "claculating error in Bin " << bin << std::endl;
 		// create templates of error from Covariance Matrices
 		ShiftInputUp->AddBinContent(bin, sqrt(ErrorMatrix_input->GetBinContent(bin, bin)));
 		ShiftInputDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_input->GetBinContent(bin, bin))));
@@ -184,11 +186,12 @@ void UnfoldWrapper::DoIt() {
 		systerrorH = 0;
 		for (auto shift : v_ShiftVariations) {
 			double error = shift->GetBinContent(bin);
+			std::cout << "error from shift " << shift->GetName() << ": " << error << std::endl;
 			if (error > 0) systerrorH += error * error;
-			else systerrorL += error * error ;
+			else systerrorL += error * error;
 		}
-		systerrorH += symerror ;
-		systerrorL += symerror ;
+		systerrorH += symerror;
+		systerrorL += symerror;
 
 		ESystH.push_back(sqrt(systerrorH));
 		ESystL.push_back(sqrt(systerrorL));
