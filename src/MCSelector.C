@@ -404,42 +404,42 @@ MCSelector::Process(Long64_t entry)
   bool isPseudoData = random < split_;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  // if (*Miss) {
-  if (!(*recoSelected)) {
-    if (*GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection) {
+  if (*Miss) {
+    // if (!(*recoSelected)) {
+    // if (*GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection) {
 
-      A->Fill(-10, *var_gen, weight_);
-      h_misses->Fill(*var_gen, weight_);
+    A->Fill(-10, *var_gen, weight_);
+    h_misses->Fill(*var_gen, weight_);
 
-      h_Gen->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
+    h_Gen->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
+    if (doadditionalsystematics) { //fill systematics only in nominal case
+      for (auto& sys : systematics ) {
+        float tmpweight = weight_ * *(sysweights.find(sys)->second);
+        if (sys == "PUup" || sys == "PUdown") {
+          tmpweight /= *(sysweights.find(sys)->second);
+        }
+        ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
+        h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+      }
+    }
+
+    if (isPseudoData) {
+      ASplit->Fill(-10, *var_gen, weight_);
+      h_misses_Split->Fill(*var_gen, weight_);
+      h_GenSplit->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
+
       if (doadditionalsystematics) { //fill systematics only in nominal case
         for (auto& sys : systematics ) {
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
           if (sys == "PUup" || sys == "PUdown") {
             tmpweight /= *(sysweights.find(sys)->second);
           }
-          ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
-          h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-        }
-      }
-
-      if (isPseudoData) {
-        ASplit->Fill(-10, *var_gen, weight_);
-        h_misses_Split->Fill(*var_gen, weight_);
-        h_GenSplit->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
-
-        if (doadditionalsystematics) { //fill systematics only in nominal case
-          for (auto& sys : systematics ) {
-            float tmpweight = weight_ * *(sysweights.find(sys)->second);
-            if (sys == "PUup" || sys == "PUdown") {
-              tmpweight /= *(sysweights.find(sys)->second);
-            }
-            ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
-            h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-          }
+          ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
+          h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
         }
       }
     }
+    // }
   }
   if (triggered) {
     if (*recoSelected) {
@@ -481,8 +481,8 @@ MCSelector::Process(Long64_t entry)
       h_Z_Pt->Fill(*Z_Pt, weight_);
 
 
-      // if (*Fake) { //is a fake
-      if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+      if (*Fake) { //is a fake
+      // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
         if (!isPseudoData) {
           h_fake_Split->Fill(*var_reco, weight_);
         }
