@@ -470,11 +470,13 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 	data->ResetAttMarker();
 	data->Reset();
 	for (int i = 1; i <= lastStack->GetNbinsX() ; i++) {
-		data->SetBinContent(i, dataTGraph->GetY()[i - 1]);
-		float Ehigh = dataTGraph->GetEYhigh()[i - 1];
-		float Elow = dataTGraph->GetEYlow()[i - 1];
-		if (Ehigh > Elow) data->SetBinError(i, Ehigh);
-		else data->SetBinError(i, Elow);
+		if (dataTGraph->GetY()[i - 1] > 0) {
+			data->SetBinContent(i, dataTGraph->GetY()[i - 1]);
+			float Ehigh = dataTGraph->GetEYhigh()[i - 1];
+			float Elow = dataTGraph->GetEYlow()[i - 1];
+			if (Ehigh > Elow) data->SetBinError(i, Ehigh);
+			else data->SetBinError(i, Elow);
+		}
 	}
 	data->SetMarkerStyle(20);
 
@@ -514,9 +516,12 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
 			double sigma_d = data->GetBinError(bin);
 			double sigma_mc = lastStack->GetBinError(bin);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			pull->SetBinContent(bin, content);
-			pull->SetBinError(bin, 0);
+			if (sigma_d != 0) {
+				double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+				pull->SetBinContent(bin, content);
+				pull->SetBinError(bin, 0);
+			}
+			else pull ->SetBinContent(bin, -10);
 		}
 		pull->Draw("P");
 		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
