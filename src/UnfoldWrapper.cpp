@@ -69,6 +69,7 @@ void UnfoldWrapper::DoIt() {
 // addsys variations of MigrationMatrix
 	int nVariation = 0;
 	for (auto& var : variations) {
+		std::cout << "adding " << var << " as systematik" << std::endl;
 		unfold->AddSysError(A.at(nVariation),
 		                    TString(var),
 		                    TUnfoldDensity::kHistMapOutputVert,
@@ -82,23 +83,27 @@ void UnfoldWrapper::DoIt() {
 	Unfolder.FindBestTauLcurve(unfold, label);
 // Unfolder.FindBestTau(unfold, label);
 // unfold->DoUnfold(0.000316228);
+// unfold->DoUnfold(0.0);
 
 // Get Output
 // 0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
+	TH1* unfolded_nominal = std::get<0>(unfold_output);
 
 // Visualize ERRORS
 	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix" + label);
+	Drawer.Draw2D(ErrorMatrix, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 
 // STAT SOURCES
-	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input" + label);
-	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+
 
 // SYST SOURCES
+	//input data stat error
+	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input" + label);
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 // subtracted bkgs
-	TH2* ErrorMatrix_subBKGuncorr =
-	    unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
+	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
 	// Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
@@ -106,6 +111,26 @@ void UnfoldWrapper::DoIt() {
 	// Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
 	// Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+
+	//create shift Histos from MatrixErrors
+	TH1* ShiftInputUp = (TH1*) unfolded_nominal->Clone();
+	ShiftInputUp->SetName("unfolded_DataStatUp");
+	TH1* ShiftInputDown = (TH1*) unfolded_nominal->Clone();
+	ShiftInputDown->SetName("unfolded_DataStatDown");
+	TH1* ShiftsubBKGuncorrUp = (TH1*) unfolded_nominal->Clone();
+	ShiftsubBKGuncorrUp->SetName("unfolded_fakeStatUp");
+	TH1* ShiftsubBKGuncorrDown = (TH1*) unfolded_nominal->Clone();
+	ShiftsubBKGuncorrDown->SetName("unfolded_fakeStatDown");
+	TH1* ShiftsubBKGscaleUp = (TH1*) unfolded_nominal->Clone();
+	ShiftsubBKGscaleUp->SetName("unfolded_fakeScaleUp");
+	TH1* ShiftsubBKGscaleDown = (TH1*) unfolded_nominal->Clone();
+	ShiftsubBKGscaleDown->SetName("unfolded_fakeScaleDown");
+	TH1* ShiftMCstatUp = (TH1*) unfolded_nominal->Clone();
+	ShiftMCstatUp->SetName("unfolded_MCStatUp");
+	TH1* ShiftMCstatDown = (TH1*) unfolded_nominal->Clone();
+	ShiftMCstatDown->SetName("unfolded_MCStatDown");
+
+
 
 // Variations of MigrationMatrix
 	std::vector<TH2*> v_ErrorMatrixVariations;
@@ -126,47 +151,65 @@ void UnfoldWrapper::DoIt() {
 	}
 
 	TH1D* METTotalError = new TH1D("TotalError", +varName + label, nBins_Gen, BinEdgesGen.data());
-	std::vector<double> EStat;
 	std::vector<double> ESystL;
 	std::vector<double> ESystH;
 	std::vector<double> BinCenters;
 	std::vector<double> BinContents;
-	std::vector<double> TotalError;
 	std::vector<double> zeros;
+	std::vector<double> EDataStat;
+	std::vector<double> EMCStat;
+	std::vector<double> EfakeStat;
+	std::vector<double> EfakeScale;
 	double systerrorL;
 	double systerrorH;
 
+	//calculate errors on unfolded Points -> all systematic
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
-		double staterror = ErrorMatrix_input->GetBinContent(bin, bin);
-		EStat.push_back(sqrt(staterror));
-		double systerror = ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin) +
-		                   ErrorMatrix_subBKGscale->GetBinContent(bin, bin) +
-		                   ErrorMatrix_MCstat->GetBinContent(bin, bin);
-
+		// create templates of error from Covariance Matrices
+		ShiftInputUp->AddBinContent(bin, sqrt(ErrorMatrix_input->GetBinContent(bin, bin)));
+		ShiftInputDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_input->GetBinContent(bin, bin))));
+		ShiftsubBKGuncorrUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
+		ShiftsubBKGuncorrDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin))));
+		ShiftsubBKGscaleUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGscale->GetBinContent(bin, bin)));
+		ShiftsubBKGscaleDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_subBKGscale->GetBinContent(bin, bin))));
+		ShiftMCstatUp->AddBinContent(bin, sqrt(ErrorMatrix_MCstat->GetBinContent(bin, bin)));
+		ShiftMCstatDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_MCstat->GetBinContent(bin, bin))));
+		//Get errors from covariance matrices (symmetric errors)
+		double symerror = ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin) +
+		                  ErrorMatrix_subBKGscale->GetBinContent(bin, bin) +
+		                  ErrorMatrix_MCstat->GetBinContent(bin, bin) +
+		                  ErrorMatrix_input->GetBinContent(bin, bin);
+		//get errors from Shifts (-> Variations of migrationmatrix)
+		systerrorL = 0;
+		systerrorH = 0;
 		for (auto shift : v_ShiftVariations) {
-			float error = shift->GetBinContent(bin, bin);
-			if (error > 0) systerrorH = error * error;
-			else systerrorL = error * error ;
+			double error = shift->GetBinContent(bin);
+			if (error > 0) systerrorH += error * error;
+			else systerrorL += error * error ;
 		}
-		systerrorH += systerror + staterror ;
-		systerrorL += systerror + staterror ;
+		systerrorH += symerror ;
+		systerrorL += symerror ;
 
 		ESystH.push_back(sqrt(systerrorH));
 		ESystL.push_back(sqrt(systerrorL));
 		zeros.push_back(0);
-		TotalError.push_back(sqrt(staterror + systerror));
 		TAxis *xaxis = std::get<0>(unfold_output)->GetXaxis();
 		Double_t binCenter = xaxis->GetBinCenter(bin);
 		BinCenters.push_back(binCenter);
 		BinContents.push_back(std::get<0>(unfold_output)->GetBinContent(bin));
 	}
 
-	TGraphErrors* MET_Stat = new TGraphErrors(nBins_Gen,
-	        BinCenters.data(),
-	        BinContents.data(),
-	        zeros.data(),
-	        EStat.data());
-	TGraphAsymmErrors* MET_Syst = new TGraphAsymmErrors(nBins_Gen,
+	writer.addToFile(ShiftInputUp);
+	writer.addToFile(ShiftInputDown);
+	writer.addToFile(ShiftsubBKGuncorrUp);
+	writer.addToFile(ShiftsubBKGuncorrDown);
+	writer.addToFile(ShiftsubBKGscaleUp);
+	writer.addToFile(ShiftsubBKGscaleDown);
+	writer.addToFile(ShiftMCstatUp);
+	writer.addToFile(ShiftMCstatDown);
+
+
+	TGraphAsymmErrors* MET_TGraph = new TGraphAsymmErrors(nBins_Gen,
 	        BinCenters.data(),
 	        BinContents.data(),
 	        zeros.data(),
@@ -210,7 +253,7 @@ void UnfoldWrapper::DoIt() {
 
 	nVariation = 0;
 	for (auto& var : variations) {
-		Drawer.DrawDataMC(v_NomPlusVar.at(nVariation), {std::get<0>(unfold_output)}, {"nominal+" + var}, var + "vsNominal" + label, log, !normalize, drawpull);
+		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "NominalvsNominal+" + var + label, log, !normalize, drawpull);
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
@@ -222,8 +265,8 @@ void UnfoldWrapper::DoIt() {
 		}
 	}
 
-	Drawer.DrawDataMCerror(MET_Stat,
-	                       MET_Syst,
+
+	Drawer.DrawDataMCerror(MET_TGraph,
 	                       GenMC.at(0),
 	                       nameGenSampleColorMap,
 	                       varName + "UnfoldedvsGenErrors" + label,

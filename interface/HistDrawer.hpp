@@ -21,7 +21,7 @@ public:
 
 	void DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log = false, bool normalize = false, bool drawpull = false, TString xlabel = "none", TString ylabel = "# Events");
 	void DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log = false, bool normalize = false, bool drawpull = false, TString xlabel = "none", TString ylabel = "# Events");
-	void DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log = false, bool normalize = false, bool drawpull = false, TString xlabel = "none", TString ylabel = "# Events");
+	void DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log = false, bool normalize = false, bool drawpull = false, TString xlabel = "none", TString ylabel = "# Events");
 
 	void SetHistoStyle(TH1 * histo, int color, bool filled = false);
 	TCanvas* getCanvas(TString name, bool ratiopad = false, bool pullpad = false);

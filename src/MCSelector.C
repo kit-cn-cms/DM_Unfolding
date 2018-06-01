@@ -126,6 +126,46 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   split = pt.get<int>("general.split");
   systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
   std::cout << "Config parsed!" << std::endl;
+  TString WFileName = pt.get<std::string>("Boson.WFileName");
+  TString ZFileName = pt.get<std::string>("Boson.ZFileName");
+
+  TString path_to_sf_file_W = path.GetRootFilePathforSlaves() + WFileName;
+  TString path_to_sf_file_Z = path.GetRootFilePathforSlaves() + ZFileName;
+
+  fWeightsW = TFile::Open(path_to_sf_file_W);
+  hWbosonWeight_nominal =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n");
+  hWbosonWeight_QCD1Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_unn_nnn_n");
+  hWbosonWeight_QCD1Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_dnn_nnn_n");
+  hWbosonWeight_QCD2Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nun_nnn_n");
+  hWbosonWeight_QCD2Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_ndn_nnn_n");
+  hWbosonWeight_QCD3Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnu_nnn_n");
+  hWbosonWeight_QCD3Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnd_nnn_n");
+  hWbosonWeight_EW1Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_unn_n");
+  hWbosonWeight_EW1Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_dnn_n");
+  hWbosonWeight_EW2Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nun_n");
+  hWbosonWeight_EW2Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_ndn_n");
+  hWbosonWeight_EW3Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnu_n");
+  hWbosonWeight_EW3Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnd_n");
+  hWbosonWeight_MixedUp =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_u");
+  hWbosonWeight_MixedDown = (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_d");
+
+  fWeightsZ = TFile::Open(path_to_sf_file_Z);
+  hZbosonWeight_nominal =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n");
+  hZbosonWeight_QCD1Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_unn_nnn_n");
+  hZbosonWeight_QCD1Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_dnn_nnn_n");
+  hZbosonWeight_QCD2Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nun_nnn_n");
+  hZbosonWeight_QCD2Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_ndn_nnn_n");
+  hZbosonWeight_QCD3Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnu_nnn_n");
+  hZbosonWeight_QCD3Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnd_nnn_n");
+  hZbosonWeight_EW1Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_unn_n");
+  hZbosonWeight_EW1Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_dnn_n");
+  hZbosonWeight_EW2Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nun_n");
+  hZbosonWeight_EW2Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_ndn_n");
+  hZbosonWeight_EW3Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnu_n");
+  hZbosonWeight_EW3Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnd_n");
+  hZbosonWeight_MixedUp =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_u");
+  hZbosonWeight_MixedDown = (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_d");
+
 
   std::string currentJESJERvar = "";
   if (option.Contains("_CMS_scale_jUp")) {
@@ -148,7 +188,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   if (option.Contains("res") || option.Contains("scale")) doadditionalsystematics = false;
   else doadditionalsystematics = true;
-  std::cout << doadditionalsystematics << std::endl;
+  std::cout << "doing additional systematics?? " << doadditionalsystematics << std::endl;
 
   TRandom* rand = new TRandom();
   // book histos for split distributions
@@ -299,69 +339,94 @@ MCSelector::Process(Long64_t entry)
   //////////////////////
   // Add weights here!!//
   //////////////////////
+
+  WbosonWeight_nominal   = hWbosonWeight_nominal->GetBinContent(hWbosonWeight_nominal->FindBin(*W_Pt));
+  WbosonWeight_QCD1Up    = hWbosonWeight_QCD1Up->GetBinContent(hWbosonWeight_QCD1Up->FindBin(*W_Pt));
+  WbosonWeight_QCD1Down  = hWbosonWeight_QCD1Down->GetBinContent(hWbosonWeight_QCD1Down->FindBin(*W_Pt));
+  WbosonWeight_QCD2Up    = hWbosonWeight_QCD2Up->GetBinContent(hWbosonWeight_QCD2Up->FindBin(*W_Pt));
+  WbosonWeight_QCD2Down  = hWbosonWeight_QCD2Down->GetBinContent(hWbosonWeight_QCD2Down->FindBin(*W_Pt));
+  WbosonWeight_QCD3Up    = hWbosonWeight_QCD3Up->GetBinContent(hWbosonWeight_QCD3Up->FindBin(*W_Pt));
+  WbosonWeight_QCD3Down  = hWbosonWeight_QCD3Down->GetBinContent(hWbosonWeight_QCD3Down->FindBin(*W_Pt));
+  WbosonWeight_EW1Up     = hWbosonWeight_EW1Up->GetBinContent(hWbosonWeight_EW1Up->FindBin(*W_Pt));
+  WbosonWeight_EW1Down   = hWbosonWeight_EW1Down->GetBinContent(hWbosonWeight_EW1Down->FindBin(*W_Pt));
+  WbosonWeight_EW2Up     = hWbosonWeight_EW2Up->GetBinContent(hWbosonWeight_EW2Up->FindBin(*W_Pt));
+  WbosonWeight_EW2Down   = hWbosonWeight_EW2Down->GetBinContent(hWbosonWeight_EW2Down->FindBin(*W_Pt));
+  WbosonWeight_EW3Up     = hWbosonWeight_EW3Up->GetBinContent(hWbosonWeight_EW3Up->FindBin(*W_Pt));
+  WbosonWeight_EW3Down   = hWbosonWeight_EW3Down->GetBinContent(hWbosonWeight_EW3Down->FindBin(*W_Pt));
+  WbosonWeight_MixedUp   = hWbosonWeight_MixedUp->GetBinContent(hWbosonWeight_MixedUp->FindBin(*W_Pt));
+  WbosonWeight_MixedDown = hWbosonWeight_MixedDown->GetBinContent(hWbosonWeight_MixedDown->FindBin(*W_Pt));
+
+  ZbosonWeight_nominal   = hZbosonWeight_nominal->GetBinContent(hZbosonWeight_nominal->FindBin(*Z_Pt));
+  ZbosonWeight_QCD1Up    = hZbosonWeight_QCD1Up->GetBinContent(hZbosonWeight_QCD1Up->FindBin(*Z_Pt));
+  ZbosonWeight_QCD1Down  = hZbosonWeight_QCD1Down->GetBinContent(hZbosonWeight_QCD1Down->FindBin(*Z_Pt));
+  ZbosonWeight_QCD2Up    = hZbosonWeight_QCD2Up->GetBinContent(hZbosonWeight_QCD2Up->FindBin(*Z_Pt));
+  ZbosonWeight_QCD2Down  = hZbosonWeight_QCD2Down->GetBinContent(hZbosonWeight_QCD2Down->FindBin(*Z_Pt));
+  ZbosonWeight_QCD3Up    = hZbosonWeight_QCD3Up->GetBinContent(hZbosonWeight_QCD3Up->FindBin(*Z_Pt));
+  ZbosonWeight_QCD3Down  = hZbosonWeight_QCD3Down->GetBinContent(hZbosonWeight_QCD3Down->FindBin(*Z_Pt));
+  ZbosonWeight_EW1Up     = hZbosonWeight_EW1Up->GetBinContent(hZbosonWeight_EW1Up->FindBin(*Z_Pt));
+  ZbosonWeight_EW1Down   = hZbosonWeight_EW1Down->GetBinContent(hZbosonWeight_EW1Down->FindBin(*Z_Pt));
+  ZbosonWeight_EW2Up     = hZbosonWeight_EW2Up->GetBinContent(hZbosonWeight_EW2Up->FindBin(*Z_Pt));
+  ZbosonWeight_EW2Down   = hZbosonWeight_EW2Down->GetBinContent(hZbosonWeight_EW2Down->FindBin(*Z_Pt));
+  ZbosonWeight_EW3Up     = hZbosonWeight_EW3Up->GetBinContent(hZbosonWeight_EW3Up->FindBin(*Z_Pt));
+  ZbosonWeight_EW3Down   = hZbosonWeight_EW3Down->GetBinContent(hZbosonWeight_EW3Down->FindBin(*Z_Pt));
+  ZbosonWeight_MixedUp   = hZbosonWeight_MixedUp->GetBinContent(hZbosonWeight_MixedUp->FindBin(*Z_Pt));
+  ZbosonWeight_MixedDown = hZbosonWeight_MixedDown->GetBinContent(hZbosonWeight_MixedDown->FindBin(*Z_Pt));
+
   weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
   // if (*Weight_GenValue > 0)
   //   weight_ *= 1;
   // else
   //   weight_ *= -1;
   // weight_ = *Weight;
-  if (!option.Contains("data"))
-    weight_ *= 35.91823;
-  if (option.Contains("z_nunu_jets"))
-    weight_ *= 3 * 0.971;
+  double random = rand.Rndm();
 
+  if (!option.Contains("data")) weight_ *= 35.91823;
+  if (option.Contains("z_nunu_jets")) {
+    weight_ *= 3 * 0.971;
+    if (*Z_Pt > 30) {
+      // weight_ *= (ZbosonWeight_nominal + 0.1);
+      weight_ *= (ZbosonWeight_nominal);
+      // std::cout << "applying additional Z Boson Weight " <<  ZbosonWeight_nominal << std::endl;
+    }
+  }
+  if (option.Contains("w_lnu_jets")) {
+    if (*W_Pt > 30) {
+      // weight_ *= (WbosonWeight_nominal+0.1);
+      weight_ *= (WbosonWeight_nominal);
+      // std::cout << "applying additional W Boson Weight " <<  WbosonWeight_nominal << std::endl;
+    }
+  }
   // Calculate split
   // std::cout << "WARNING split > 50, therefore not working correctly ->
   // Proceeding with split =50" << std::endl;
   float split_ = split / 100.;
   // std::cout << split_ << std::endl;
-  double random = rand.Rndm();
   bool isPseudoData = random < split_;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  if (*Miss) {
-    A->Fill(-10, *var_gen, weight_);
-    h_misses->Fill(*var_gen, weight_);
-    if (isPseudoData) {
-      ASplit->Fill(-10, *var_gen, weight_);
-      h_misses_Split->Fill(*var_gen, weight_);
-    }
-  }
+  // if (*Miss) {
+  if (!(*recoSelected)) {
+    if (*GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection) {
 
-  if (triggered) {
-    if (*recoSelected) {
-      // if (*Fake) { //is a fake
-      // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection|| !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
-      if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
-        if (!isPseudoData) {
-          h_fake_Split->Fill(*var_reco, weight_);
-        }
-        h_fake->Fill(*var_reco, weight_);
-      }
-      else { //is not a fake
-        if (!isPseudoData) {
-          h_GenSplit->Fill(*var_gen, weight_);
-          h_testMET_Split->Fill(*var_reco, weight_);
-          h_testMETgenBinning->Fill(*var_reco, weight_);
-          ASplit->Fill(*var_reco, *var_gen, weight_);
+      A->Fill(-10, *var_gen, weight_);
+      h_misses->Fill(*var_gen, weight_);
 
-          int n = 0;
-          if (doadditionalsystematics) { //fill systematics only in nominal case
-            for (auto& sys : systematics ) {
-              float tmpweight = weight_ * *(sysweights.find(sys)->second);
-              if (sys == "PUup" || sys == "PUdown") {
-                tmpweight /= *(sysweights.find(sys)->second);
-              }
-              ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-              h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-            }
+      h_Gen->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
+      if (doadditionalsystematics) { //fill systematics only in nominal case
+        for (auto& sys : systematics ) {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (sys == "PUup" || sys == "PUdown") {
+            tmpweight /= *(sysweights.find(sys)->second);
           }
-
+          ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
+          h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
         }
-        h_Gen->Fill(*var_gen, weight_);
-        h_testMET->Fill(*var_reco, weight_);
-        A_equBins->Fill(*var_reco, *var_gen, weight_);
-        A->Fill(*var_reco, *var_gen, weight_);
+      }
+
+      if (isPseudoData) {
+        ASplit->Fill(-10, *var_gen, weight_);
+        h_misses_Split->Fill(*var_gen, weight_);
+        h_GenSplit->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
 
         if (doadditionalsystematics) { //fill systematics only in nominal case
           for (auto& sys : systematics ) {
@@ -369,11 +434,15 @@ MCSelector::Process(Long64_t entry)
             if (sys == "PUup" || sys == "PUdown") {
               tmpweight /= *(sysweights.find(sys)->second);
             }
-            ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-            h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+            ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
+            h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
           }
         }
       }
+    }
+  }
+  if (triggered) {
+    if (*recoSelected) {
       //don't touch genselection for "normal" reco histograms
       if (isPseudoData) {
         h_RecoSplit->Fill(*var_reco, weight_);
@@ -391,7 +460,6 @@ MCSelector::Process(Long64_t entry)
 
       }
       h_Reco->Fill(*var_reco, weight_);
-
       if (doadditionalsystematics) {  //fill systematics only in nominal case
         for (auto& sys : systematics ) {
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
@@ -413,10 +481,58 @@ MCSelector::Process(Long64_t entry)
       h_Z_Pt->Fill(*Z_Pt, weight_);
 
 
-      weight_ = 0;
-      return kTRUE;
+      // if (*Fake) { //is a fake
+      if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+        if (!isPseudoData) {
+          h_fake_Split->Fill(*var_reco, weight_);
+        }
+        h_fake->Fill(*var_reco, weight_);
+        if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
+        if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
+        if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
+        if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
+        if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
+        if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
+      }
+      // else if (*genSelected) { //is not a fake
+      else { //is not a fake
+        if (!isPseudoData) {
+          h_GenSplit->Fill(*var_gen, weight_);
+          h_testMET_Split->Fill(*var_reco, weight_);
+          h_testMETgenBinning->Fill(*var_reco, weight_);
+          ASplit->Fill(*var_reco, *var_gen, weight_);
+
+          if (doadditionalsystematics) { //fill systematics only in nominal case
+            for (auto& sys : systematics ) {
+              float tmpweight = weight_ * *(sysweights.find(sys)->second);
+              if (sys == "PUup" || sys == "PUdown") {
+                tmpweight /= *(sysweights.find(sys)->second);
+              }
+              ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+              h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
+            }
+          }
+        }
+        h_Gen->Fill(*var_gen, weight_);
+        h_testMET->Fill(*var_reco, weight_);
+        A_equBins->Fill(*var_reco, *var_gen, weight_);
+        A->Fill(*var_reco, *var_gen, weight_);
+
+        if (doadditionalsystematics) { //fill systematics only in nominal case
+          for (auto& sys : systematics ) {
+            float tmpweight = weight_ * *(sysweights.find(sys)->second);
+            if (sys == "PUup" || sys == "PUdown") {
+              tmpweight /= *(sysweights.find(sys)->second);
+            }
+            ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+            h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+          }
+        }
+      }
+
     }
   }
+  return kTRUE;
 }
 
 
@@ -426,6 +542,12 @@ MCSelector::SlaveTerminate()
   // The SlaveTerminate() function is called after all entries or objects
   // have been processed. When running with PROOF SlaveTerminate() is called
   // on each slave server.
+  std::cout << "failedGenMonoJetSelection " << failedGenMonoJetSelection << std::endl;
+  std::cout << "failedGenLeptonVetoSelection " << failedGenLeptonVetoSelection << std::endl;
+  std::cout << "failedGenBTagVetoSelection " << failedGenBTagVetoSelection << std::endl;
+  std::cout << "failedGenMETSelection " << failedGenMETSelection << std::endl;
+  std::cout << "failedGenmonoVselection " << failedGenmonoVselection << std::endl;
+  std::cout << "failedGenPhotonVetoSelection " << failedGenPhotonVetoSelection << std::endl;
   std::cout << " Slave finished" << std::endl;
 }
 
@@ -448,5 +570,10 @@ MCSelector::Terminate()
 
   histofile->Close();
   delete histofile;
+  std::cout << "failedGenMonoJetSelection " << failedGenMonoJetSelection << std::endl;
+  std::cout << "failedGenLeptonVetoSelection " << failedGenLeptonVetoSelection << std::endl;
+  std::cout << "failedGenBTagVetoSelection " << failedGenBTagVetoSelection << std::endl;
+  std::cout << "failedGenMETSelection " << failedGenMETSelection << std::endl;
+  std::cout << "failedGenmonoVselection " << failedGenmonoVselection << std::endl;
   std::cout << "Master finished" << std::endl;
 }

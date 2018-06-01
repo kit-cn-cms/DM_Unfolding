@@ -17,6 +17,8 @@ public:
 	TString GetSourcePath() ;
 	TString GetIncludePath() ;
 	TString GetRootFilesPath();
+	TString GetRootFilePathforSlaves();
+
 
 
 

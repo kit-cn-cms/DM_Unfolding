@@ -58,6 +58,16 @@ public:
   std::vector<double> BinEdgesReco;
   bool doadditionalsystematics = true;
 
+  double failedGenMonoJetSelection = 0.;
+  double failedGenPhotonVetoSelection = 0.;
+  double failedGenLeptonVetoSelection = 0.;
+  double failedGenBTagVetoSelection = 0.;
+  double failedGenMETSelection = 0.;
+  double failedGenmonoVselection = 0.;
+
+  TFile *fWeightsW = 0;
+  TFile *fWeightsZ = 0;
+
   // book histos
   // Full Sample
   TH1F* h_Reco = 0;
@@ -93,12 +103,81 @@ public:
   TH1F* h_Evt_Phi_GenMET = 0;
   TH1F* h_W_Pt = 0;
   TH1F* h_Z_Pt = 0;
+
+  // histograms containing the scale factors for electron and muon channel separately
+  TH1D* hWbosonWeight_nominal = 0;
+  TH1D* hWbosonWeight_QCD1Up = 0;
+  TH1D* hWbosonWeight_QCD1Down = 0;
+  TH1D* hWbosonWeight_QCD2Up = 0;
+  TH1D* hWbosonWeight_QCD2Down = 0;
+  TH1D* hWbosonWeight_QCD3Up = 0;
+  TH1D* hWbosonWeight_QCD3Down = 0;
+  TH1D* hWbosonWeight_EW1Up = 0;
+  TH1D* hWbosonWeight_EW1Down = 0;
+  TH1D* hWbosonWeight_EW2Up = 0;
+  TH1D* hWbosonWeight_EW2Down = 0;
+  TH1D* hWbosonWeight_EW3Up = 0;
+  TH1D* hWbosonWeight_EW3Down = 0;
+  TH1D* hWbosonWeight_MixedUp = 0;
+  TH1D* hWbosonWeight_MixedDown = 0;
+
+  TH1D* hZbosonWeight_nominal = 0;
+  TH1D* hZbosonWeight_QCD1Up = 0;
+  TH1D* hZbosonWeight_QCD1Down = 0;
+  TH1D* hZbosonWeight_QCD2Up = 0;
+  TH1D* hZbosonWeight_QCD2Down = 0;
+  TH1D* hZbosonWeight_QCD3Up = 0;
+  TH1D* hZbosonWeight_QCD3Down = 0;
+  TH1D* hZbosonWeight_EW1Up = 0;
+  TH1D* hZbosonWeight_EW1Down = 0;
+  TH1D* hZbosonWeight_EW2Up = 0;
+  TH1D* hZbosonWeight_EW2Down = 0;
+  TH1D* hZbosonWeight_EW3Up = 0;
+  TH1D* hZbosonWeight_EW3Down = 0;
+  TH1D* hZbosonWeight_MixedUp = 0;
+  TH1D* hZbosonWeight_MixedDown = 0;
+
+
+  double WbosonWeight_nominal = 0;
+  double WbosonWeight_QCD1Up = 0;
+  double WbosonWeight_QCD1Down = 0;
+  double WbosonWeight_QCD2Up = 0;
+  double WbosonWeight_QCD2Down = 0;
+  double WbosonWeight_QCD3Up = 0;
+  double WbosonWeight_QCD3Down = 0;
+  double WbosonWeight_EW1Up = 0;
+  double WbosonWeight_EW1Down = 0;
+  double WbosonWeight_EW2Up = 0;
+  double WbosonWeight_EW2Down = 0;
+  double WbosonWeight_EW3Up = 0;
+  double WbosonWeight_EW3Down = 0;
+  double WbosonWeight_MixedUp = 0;
+  double WbosonWeight_MixedDown = 0;
+
+  double ZbosonWeight_nominal = 0;
+  double ZbosonWeight_QCD1Up = 0;
+  double ZbosonWeight_QCD1Down = 0;
+  double ZbosonWeight_QCD2Up = 0;
+  double ZbosonWeight_QCD2Down = 0;
+  double ZbosonWeight_QCD3Up = 0;
+  double ZbosonWeight_QCD3Down = 0;
+  double ZbosonWeight_EW1Up = 0;
+  double ZbosonWeight_EW1Down = 0;
+  double ZbosonWeight_EW2Up = 0;
+  double ZbosonWeight_EW2Down = 0;
+  double ZbosonWeight_EW3Up = 0;
+  double ZbosonWeight_EW3Down = 0;
+  double ZbosonWeight_MixedUp = 0;
+  double ZbosonWeight_MixedDown = 0;
   /////////////////////////////
   // Choose/Add Variables here//
   /////////////////////////////
   // Readers to access the data (delete the ones you do not need).
   TTreeReaderValue<Float_t> var_reco = { fReader, "Evt_Pt_MET" };
   TTreeReaderValue<Float_t> var_gen = { fReader, "Evt_Pt_GenMET" };
+
+  TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
+  TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
 
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
@@ -135,6 +214,7 @@ public:
   TTreeReaderValue<Long64_t> Miss = {fReader, "Miss" };
   TTreeReaderValue<Long64_t> Fake = {fReader, "Fake" };
   TTreeReaderValue<Long64_t> recoSelected = {fReader, "recoSelected" };
+  TTreeReaderValue<Long64_t> genSelected = {fReader, "genSelected" };
 
   TTreeReaderValue<Long64_t> GenMETSelection = { fReader, "GenMETSelection" };
   TTreeReaderValue<Long64_t> GenBTagVetoSelection = { fReader, "GenBTagVetoSelection" };
@@ -185,13 +265,10 @@ public:
   TTreeReaderValue<Float_t> Evt_Phi_MET = { fReader, "Evt_Phi_MET" };
   TTreeReaderValue<Float_t> Evt_Phi_GenMET = { fReader, "Evt_Phi_GenMET" };
 
-  TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
-  TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
 
 
   TFile* histofile = 0;
-
-  MCSelector(TTree* /*tree*/ = 0) {}
+  MCSelector(TTree * = 0) { }
   virtual ~MCSelector() {}
   virtual Int_t Version() const { return 2; }
   virtual void Begin(TTree* tree);

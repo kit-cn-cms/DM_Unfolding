@@ -67,6 +67,13 @@ TString PathHelper::GetConfigPathforSlaves() {
 	return "/nfs/dust/cms/user/swieland/Darkmatter/DM_Unfolding/Config/DMConfig.ini";
 }
 
+TString PathHelper::GetRootFilePathforSlaves() {
+	////////////////////////////////////////////
+	/////EDIT THIS FOR DIFFERENT CONFIGS!!!/////
+	////////////////////////////////////////////
+	return "/nfs/dust/cms/user/swieland/Darkmatter/DM_Unfolding/rootfiles/";
+}
+
 
 TString PathHelper::GetPdfPath() {
 	char currentdir[1024];

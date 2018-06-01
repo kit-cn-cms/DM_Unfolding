@@ -302,8 +302,8 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 			chain->SetProof();
 			chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
 			pl->ClearCache();
-			j += 1;
 			delete chain;
+			j += 1;
 		}
 		nVariation += 1;
 	}

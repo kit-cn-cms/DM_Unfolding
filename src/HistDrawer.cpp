@@ -32,6 +32,7 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 }
 
 void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name);
 	if (log) gPad->SetLogy();
@@ -51,6 +52,7 @@ void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TStri
 }
 
 void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, false, false);
 	TLegend* legend = getLegend();
@@ -112,6 +114,7 @@ void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair
 }
 
 void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
 	gStyle->SetStatY(0.9);
@@ -140,6 +143,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 }
 
 void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name);
 	TH1F* ratio = (TH1F*) hist1->Clone();
@@ -166,6 +170,7 @@ void HistDrawer::DrawRatio(TH1* hist1, TH1* hist2, TString name, TString xlabel,
 }
 
 void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::string> names, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
@@ -278,6 +283,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 }
 
 void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
@@ -400,12 +406,13 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 }
 
 
-void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* data_syst, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*> MC, std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap, TString name, bool log, bool normalize, bool drawpull, TString xlabel, TString ylabel) {
+	std::cout << "Making Plot: " << name << std::endl;
 	gStyle->SetEndErrorSize(10);
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = getCanvas(name, true, drawpull);
 	TLegend* legend = getLegend();
-	legend->AddEntry(data_stat, "Data", "P");
+	legend->AddEntry(dataTGraph, "Data", "P");
 	gStyle->SetErrorX(0.);
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
@@ -432,7 +439,7 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 		stack->Add(std::get<0>(x));
 		legend->AddEntry(std::get<0>(x), TString(bkgname), "F");
 	}
-	double max_data = TMath::MaxElement(data_syst->GetN(), data_syst->GetX());
+	double max_data = TMath::MaxElement(dataTGraph->GetN(), dataTGraph->GetY());
 	// float max_data = data->GetMaximum();
 	TH1F* lastStack = (TH1F*) (TH1*)stack->GetStack()->Last();
 	std::cout << "Stack Integral: " << lastStack->Integral() << std::endl;;
@@ -441,9 +448,14 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	else stack->SetMaximum(max_Stack);
 	stack->SetMinimum(10);
 	stack->Draw("hist");
-	data_stat->Draw("Psame");
-	data_stat->SetMarkerStyle(20);
-	data_syst->Draw("same[]");
+
+	dataTGraph->Draw("samePE1");
+	dataTGraph->SetMarkerStyle(20);
+	dataTGraph->SetMarkerSize(1.3);
+	dataTGraph->SetLineWidth(3);
+	dataTGraph->SetMarkerColor(kBlack);
+	dataTGraph->SetLineColor(kBlack);
+
 	legend->Draw("same");
 	DrawLumiLabel(c);
 
@@ -458,11 +470,11 @@ void HistDrawer::DrawDataMCerror(TGraphErrors* data_stat, TGraphAsymmErrors* dat
 	data->ResetAttMarker();
 	data->Reset();
 	for (int i = 1; i <= lastStack->GetNbinsX() ; i++) {
-		data->SetBinContent(i, data_syst->GetY()[i - 1]);
-		float Ehigh = data_syst->GetEYhigh()[i - 1];
-		float Elow = data_syst->GetEYlow()[i - 1];
-		if (Ehigh > Elow) data->SetBinError(i, 2 * Ehigh);
-		else data->SetBinError(i, 2 * Elow);
+		data->SetBinContent(i, dataTGraph->GetY()[i - 1]);
+		float Ehigh = dataTGraph->GetEYhigh()[i - 1];
+		float Elow = dataTGraph->GetEYlow()[i - 1];
+		if (Ehigh > Elow) data->SetBinError(i, Ehigh);
+		else data->SetBinError(i, Elow);
 	}
 	data->SetMarkerStyle(20);
 

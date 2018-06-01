@@ -49,8 +49,7 @@ main(int argc, char** argv) {
   std::vector<double> BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
   int nBins_Gen = BinEdgesGen.size() - 1;
   int nBins_Reco = pt.get<int>("Binning.nBins_Reco");
-  std::vector<std::string> variation =
-    to_array<std::string>(pt.get<std::string>("general.variation"));
+  std::vector<std::string> variation = to_array<std::string>(pt.get<std::string>("general.variation"));
   std::vector<std::string> systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
 
   std::vector<std::string> bkgnames =
@@ -340,10 +339,11 @@ main(int argc, char** argv) {
   std::cout << "Fake integral: " << fakes_all.at(0)->Integral() << std::endl;
 
   std::cout << "Data integral: " << MET_data->Integral() << std::endl;
+  std::cout << "MC integral: " << MET_all.at(0)->Integral() << std::endl;
   std::cout << "Data-Fake integral: " << h_DataMinFakes.at(0)->Integral() << std::endl;
   std::cout << "Gen integral: " << GenMET_all.at(0)->Integral() << std::endl;
   std::cout << "Reco (passes GenSelection) integral: " << TestMET_all.at(0)->Integral() << std::endl;
-  bool normalize=true;
+  bool normalize = true;
   Drawer.DrawStack(v_fakes_bkgs.at(0), namefakesSampleColorMap, "fakes", log, !normalize, "#slash{E}_{T}");
   Drawer.DrawStack(v_fakes_bkgs_Split.at(0), namefakesSplitSampleColorMap, "fakeSplit", log, !normalize, "#slash{E}_{T}");
 
@@ -362,15 +362,17 @@ main(int argc, char** argv) {
   }
 
   if (DoUnfolding) {
+    std::vector<std::string> allvar;
+    allvar.insert(std::end(allvar), std::begin(variation), std::end(variation));
+    allvar.insert(std::end(allvar), std::begin(systematics), std::end(systematics));
+    allvar.erase(allvar.begin());
 //Do the unfolding
-    for (auto& sys : systematics) variation.push_back("_" + sys);
-
-    UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, variation, bkgnames, BinEdgesGen);
+    UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, allvar, bkgnames, BinEdgesGen);
     Wrapper.DoIt();
-    for (auto& histo: GenMET_signal) Wrapper.writer.addToFile(histo);
+    // for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
 
-    UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
-    Wrapper_Split.DoIt();
+    // UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
+    // Wrapper_Split.DoIt();
 
     // TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();
     // MET_signal.at(0)->Scale(0.1);
@@ -379,25 +381,21 @@ main(int argc, char** argv) {
     // UnfoldWrapper Wrapper_Split_Signal = UnfoldWrapper("MET", "SplitSignal", A_all_Split,  InputwithSignal, fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
     // Wrapper_Split_Signal.DoIt();
 // Draw Stuff
-
-    // General Distributions
-    Drawer.Draw1D(MET_signal.at(0), "MET_signal");
-    Drawer.Draw1D(GenMET_signal.at(0), "MET_signal");
-    // Drawer.Draw1D(MET_all_Split.at(0), "MET_all_Split");
-    // Drawer.Draw1D(GenMET_all.at(0), "GenMET_all");
-    // Drawer.Draw1D(GenMET_all_Split.at(0), "GenMET_all_Split");
-    // Drawer.Draw1D(MET_data, "MET_data");
-    // Drawer.Draw1D(fakes_all.at(0), "fakes_all");
-    // Drawer.Draw1D(fakes_all_Split.at(0), "fakes_all_Split");
-    // Drawer.Draw1D(METTotalError, "MET_unfolded_errors");
-    // Drawer.Draw1D(METTotalError_Split, "MET_unfolded_errors_Split");
-
     nVariation = 0;
     for (auto& var : variation) {
       Drawer.Draw2D(A_all.at(nVariation), "A_all" + var, log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
       Drawer.Draw2D(A_all_Split.at(nVariation), "A_all_" + var + "_Split", log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
       nVariation += 1;
     }
+    // nVariation = 0;
+    for (auto& var : systematics) {
+      Drawer.Draw2D(A_all.at(nVariation), "A_all" + var, log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
+      Drawer.Draw2D(A_all_Split.at(nVariation), "A_all_" + var + "_Split", log, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
+      nVariation += 1;
+    }   // General Distributions
+    // Drawer.Draw1D(MET_signal.at(0), "MET_signal");
+    // Drawer.Draw1D(GenMET_signal.at(0), "MET_signal");
+
   }
 
   return (0);
