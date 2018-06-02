@@ -257,7 +257,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	TStopwatch watch;
 	watch.Start();
 	//SetUp TProof
-	TProof *pl = TProof::Open("workers=6");
+	TProof *pl = TProof::Open("workers=10");
 	if (useBatch) {
 		pl->Close();
 		TString connect = gSystem->GetFromPipe("pod-info -c");
@@ -314,6 +314,9 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	p->Save("*", "filewithlogs.txt");
 	pl->ClearCache();
 	pl->Close();
+
+//kill all proofslave processes
+	system ("pkill -f proof");
 
 //Stop Timer
 	cout << "Time for Filling Histo Procedure:" << endl;

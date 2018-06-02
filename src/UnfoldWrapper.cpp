@@ -114,21 +114,21 @@ void UnfoldWrapper::DoIt() {
 
 	//create shift Histos from MatrixErrors
 	TH1* ShiftInputUp = (TH1*) unfolded_nominal->Clone();
-	ShiftInputUp->SetName("unfolded_DataStatUp");
+	ShiftInputUp->SetName("unfolded_"+genvar+"_DataStatUp");
 	TH1* ShiftInputDown = (TH1*) unfolded_nominal->Clone();
-	ShiftInputDown->SetName("unfolded_DataStatDown");
+	ShiftInputDown->SetName("unfolded_"+genvar+"_DataStatDown");
 	TH1* ShiftsubBKGuncorrUp = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGuncorrUp->SetName("unfolded_fakeStatUp");
+	ShiftsubBKGuncorrUp->SetName("unfolded_"+genvar+"_fakeStatUp");
 	TH1* ShiftsubBKGuncorrDown = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGuncorrDown->SetName("unfolded_fakeStatDown");
+	ShiftsubBKGuncorrDown->SetName("unfolded_"+genvar+"_fakeStatDown");
 	TH1* ShiftsubBKGscaleUp = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGscaleUp->SetName("unfolded_fakeScaleUp");
+	ShiftsubBKGscaleUp->SetName("unfolded_"+genvar+"_fakeScaleUp");
 	TH1* ShiftsubBKGscaleDown = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGscaleDown->SetName("unfolded_fakeScaleDown");
+	ShiftsubBKGscaleDown->SetName("unfolded_"+genvar+"_fakeScaleDown");
 	TH1* ShiftMCstatUp = (TH1*) unfolded_nominal->Clone();
-	ShiftMCstatUp->SetName("unfolded_MCStatUp");
+	ShiftMCstatUp->SetName("unfolded_"+genvar+"_MCStatUp");
 	TH1* ShiftMCstatDown = (TH1*) unfolded_nominal->Clone();
-	ShiftMCstatDown->SetName("unfolded_MCStatDown");
+	ShiftMCstatDown->SetName("unfolded_"+genvar+"_MCStatDown");
 
 
 
@@ -243,20 +243,22 @@ void UnfoldWrapper::DoIt() {
 
 	Drawer.Draw1D(std::get<0>(unfold_output), varName + "_unfolded" + label, log);
 	Drawer.Draw1D(std::get<1>(unfold_output), varName + "_foldedback" + label, log);
-
+	unfolded_nominal->SetName("unfolded_" + genvar);
+	writer.addToFile(unfolded_nominal);
 	nVariation = 0;
 	std::vector<TH1*> v_NomPlusVar;
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
 		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
-		NomPlusVar->SetName("unfolded_" + genvar + TString(var));
+		if (TString(var).Contains("CMS_res") || TString(var).Contains("CMS_scale")) NomPlusVar->SetName("unfolded_" + genvar + TString(var));
+		else  NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
 		v_NomPlusVar.push_back(NomPlusVar);
 		nVariation += 1;
 	}
 
 	nVariation = 0;
 	for (auto& var : variations) {
-		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "NominalvsNominal+" + var + label, log, !normalize, drawpull);
+		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "Nominalvs(Nominal+" + var + label + ")", log, !normalize, !drawpull);
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}

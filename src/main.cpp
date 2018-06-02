@@ -51,9 +51,10 @@ main(int argc, char** argv) {
   int nBins_Reco = pt.get<int>("Binning.nBins_Reco");
   std::vector<std::string> variation = to_array<std::string>(pt.get<std::string>("general.variation"));
   std::vector<std::string> systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
+  std::vector<std::string> BosonSystematics = to_array<std::string>(pt.get<std::string>("general.BosonSystematics"));
 
-  std::vector<std::string> bkgnames =
-    to_array<std::string>(pt.get<std::string>("Bkg.names"));
+  systematics.insert(std::end(systematics), std::begin(BosonSystematics), std::end(BosonSystematics));
+  std::vector<std::string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
   bool fillhistos = true;
   bool DoUnfolding = pt.get<bool>("general.doUnfolding");
   bool FindBinning = pt.get<bool>("general.FindBinning");
@@ -369,9 +370,9 @@ main(int argc, char** argv) {
 //Do the unfolding
     UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, allvar, bkgnames, BinEdgesGen);
     Wrapper.DoIt();
-    // for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
+    for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
 
-    // UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
+    // UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, allvar, bkgnames, BinEdgesGen);
     // Wrapper_Split.DoIt();
 
     // TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();

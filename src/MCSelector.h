@@ -54,6 +54,8 @@ public:
   TString recovar;
   std::vector<std::string> bkgnames;
   std::vector<std::string> systematics;
+  std::vector<std::string> BosonSystematics;
+  std::vector<std::string> allSystematics;
   std::vector<double> BinEdgesGen;
   std::vector<double> BinEdgesReco;
   bool doadditionalsystematics = true;
@@ -256,6 +258,7 @@ public:
     {"CMS_btag_cferr2Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down}
   };
 
+  std::map<std::string, double> BosonSystematicWeights;
 
   // Additional Variables
   TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
