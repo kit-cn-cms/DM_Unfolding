@@ -140,7 +140,7 @@ public:
   TH1D* hZbosonWeight_MixedDown = 0;
 
 
-  double WbosonWeight_nominal = 0;
+  double WbosonWeight_nominal = 1;
   double WbosonWeight_QCD1Up = 0;
   double WbosonWeight_QCD1Down = 0;
   double WbosonWeight_QCD2Up = 0;
@@ -156,7 +156,7 @@ public:
   double WbosonWeight_MixedUp = 0;
   double WbosonWeight_MixedDown = 0;
 
-  double ZbosonWeight_nominal = 0;
+  double ZbosonWeight_nominal = 1;
   double ZbosonWeight_QCD1Up = 0;
   double ZbosonWeight_QCD1Down = 0;
   double ZbosonWeight_QCD2Up = 0;
