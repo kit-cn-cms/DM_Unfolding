@@ -114,21 +114,21 @@ void UnfoldWrapper::DoIt() {
 
 	//create shift Histos from MatrixErrors
 	TH1* ShiftInputUp = (TH1*) unfolded_nominal->Clone();
-	ShiftInputUp->SetName("unfolded_"+genvar+"_DataStatUp");
+	ShiftInputUp->SetName("unfolded_" + genvar + "_DataStatUp");
 	TH1* ShiftInputDown = (TH1*) unfolded_nominal->Clone();
-	ShiftInputDown->SetName("unfolded_"+genvar+"_DataStatDown");
+	ShiftInputDown->SetName("unfolded_" + genvar + "_DataStatDown");
 	TH1* ShiftsubBKGuncorrUp = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGuncorrUp->SetName("unfolded_"+genvar+"_fakeStatUp");
+	ShiftsubBKGuncorrUp->SetName("unfolded_" + genvar + "_fakeStatUp");
 	TH1* ShiftsubBKGuncorrDown = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGuncorrDown->SetName("unfolded_"+genvar+"_fakeStatDown");
+	ShiftsubBKGuncorrDown->SetName("unfolded_" + genvar + "_fakeStatDown");
 	TH1* ShiftsubBKGscaleUp = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGscaleUp->SetName("unfolded_"+genvar+"_fakeScaleUp");
+	ShiftsubBKGscaleUp->SetName("unfolded_" + genvar + "_fakeScaleUp");
 	TH1* ShiftsubBKGscaleDown = (TH1*) unfolded_nominal->Clone();
-	ShiftsubBKGscaleDown->SetName("unfolded_"+genvar+"_fakeScaleDown");
+	ShiftsubBKGscaleDown->SetName("unfolded_" + genvar + "_fakeScaleDown");
 	TH1* ShiftMCstatUp = (TH1*) unfolded_nominal->Clone();
-	ShiftMCstatUp->SetName("unfolded_"+genvar+"_MCStatUp");
+	ShiftMCstatUp->SetName("unfolded_" + genvar + "_MCStatUp");
 	TH1* ShiftMCstatDown = (TH1*) unfolded_nominal->Clone();
-	ShiftMCstatDown->SetName("unfolded_"+genvar+"_MCStatDown");
+	ShiftMCstatDown->SetName("unfolded_" + genvar + "_MCStatDown");
 
 
 
@@ -258,7 +258,7 @@ void UnfoldWrapper::DoIt() {
 
 	nVariation = 0;
 	for (auto& var : variations) {
-		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "Nominalvs(Nominal+" + var + label + ")", log, !normalize, !drawpull);
+		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "Nominalvs(Nominal+" + var + ")" + label, log, !normalize, !drawpull);
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
