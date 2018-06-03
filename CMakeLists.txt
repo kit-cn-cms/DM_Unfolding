@@ -71,7 +71,8 @@ link_directories(${ROOT_LIBRARY_DIR})
 #---Set Flags-------------------------------------------------------------------------------------
 add_definitions(${ROOT_DEFINITIONS})
 set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS} ${ROOT_CXX_FLAGS} -Wextra -g  -std=c++0x -std=c++17 -lstdc++ -lUnfold  -lProof -Iboost_root/boost -Lboost_root/boost/stage/lib/ -l boost_program_options  -lm"  )
-
+SET (CMAKE_MODULE_LINKER_FLAGS ${CMAKE_MODULE_LINKER_FLAGS_INIT} $ENV{LDFLAGS} "-g"
+     CACHE STRING "Flags used by the linker during the creation of modules.")
 
 macro(install_symlink filepath sympath)
     install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
