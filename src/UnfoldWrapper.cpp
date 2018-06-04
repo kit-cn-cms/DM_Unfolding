@@ -35,6 +35,10 @@ void UnfoldWrapper::DoIt() {
 	HistDrawer Drawer;
 	PathHelper path;
 
+	bool log = true;
+	bool drawpull = true;
+	bool normalize = true;
+
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini(std::string(path.GetConfigPath()), pt);
 	TString genvar = pt.get<std::string>("vars.gen");
@@ -203,13 +207,21 @@ void UnfoldWrapper::DoIt() {
 	}
 
 	writer.addToFile(ShiftInputUp);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftInputUp}, {"nominal+InputUp"}, "UnfoldedNominalvs(UnfoldedNominal+InputUp)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftInputDown);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftInputDown}, {"nominal+InputDown"}, "UnfoldedNominalvs(UnfoldedNominal+InputDown)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftsubBKGuncorrUp);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftsubBKGuncorrUp}, {"nominal+subBKGuncorrUp"}, "UnfoldedNominalvs(UnfoldedNominal+subBKGuncorrUp)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftsubBKGuncorrDown);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftsubBKGuncorrDown}, {"nominal+subBKGuncorrDown"}, "UnfoldedNominalvs(UnfoldedNominal+subBKGuncorrDown)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftsubBKGscaleUp);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftsubBKGscaleUp}, {"nominal+subBKGscaleUp"}, "UnfoldedNominalvs(UnfoldedNominal+subBKGscaleUp)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftsubBKGscaleDown);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftsubBKGscaleDown}, {"nominal+subBKGscaleDown"}, "UnfoldedNominalvs(UnfoldedNominal+subBKGscaleDown)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftMCstatUp);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftMCstatUp}, {"nominal+MCstatUp"}, "UnfoldedNominalvs(UnfoldedNominal+MCstatUp)" + label, log, !normalize, !drawpull);
 	writer.addToFile(ShiftMCstatDown);
+	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftMCstatDown}, {"nominal+MCstatDown"}, "UnfoldedNominalvs(UnfoldedNominal+MCstatDown)" + label, log, !normalize, !drawpull);
 
 
 	TGraphAsymmErrors* MET_TGraph = new TGraphAsymmErrors(nBins_Gen,
@@ -227,9 +239,7 @@ void UnfoldWrapper::DoIt() {
 	          << "chi**2_Sys/Ndf = "
 	          << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n";
 
-	bool log = true;
-	bool drawpull = true;
-	bool normalize = true;
+
 	// Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
@@ -258,11 +268,10 @@ void UnfoldWrapper::DoIt() {
 
 	nVariation = 0;
 	for (auto& var : variations) {
-		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "Nominalvs(Nominal+" + var + ")" + label, log, !normalize, !drawpull);
+		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "UnfoldedNominalvs(UnfoldedNominal+" + var + ")" + label, log, !normalize, !drawpull);
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
-
 
 	for (const auto& sysvar : GenMC) {
 		for (const auto& bkg : sysvar) {
