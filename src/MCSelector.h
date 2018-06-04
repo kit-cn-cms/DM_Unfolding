@@ -181,6 +181,10 @@ public:
   TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
   TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
 
+  TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
+  Float_t varDeltaPhi_Jet_MET[100];
+  TBranch *BrDeltaPhi_Jet_MET;
+
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
   TTreeReaderValue<Float_t> Weight_GEN_nom = { fReader, "Weight_GEN_nom" };
@@ -261,7 +265,6 @@ public:
   std::map<std::string, double> BosonSystematicWeights;
 
   // Additional Variables
-  TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
   TTreeReaderValue<Float_t> Jet_Pt = { fReader, "Jet_Pt" };
   TTreeReaderValue<Float_t> Jet_Eta = { fReader, "Jet_Eta" };
 
@@ -313,7 +316,7 @@ public:
 //    // The Notify() function is called when a new file is opened. This
 //    // can be either for a new TTree in a TChain or when when a new TTree
 //    // is started when using PROOF. It is normally not necessary to make
-//    changes
+//    // changes
 //    // to the generated code, but the routine can be extended by the
 //    // user if needed. The return value is currently not used.
 

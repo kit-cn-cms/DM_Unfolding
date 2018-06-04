@@ -63,6 +63,7 @@ MCSelector::Init(TTree* tree)
   // (once per file to be processed).
   // tree->Print();
   fReader.SetTree(tree);
+  tree->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET, &BrDeltaPhi_Jet_MET);
 }
 
 Bool_t
@@ -341,48 +342,90 @@ MCSelector::Process(Long64_t entry)
   // The return value is currently not used.
   TString option = GetOption();
   fReader.SetLocalEntry(entry);
-
+  
+  BrDeltaPhi_Jet_MET->GetEntry(entry);
   //////////////////////
   // Add weights here!!//
   //////////////////////
   bool isWlnuSample = option.Contains("w_lnu_jets");
   bool isZnunuSample = option.Contains("z_nunu_jets");
 
-  if (isWlnuSample && *W_Pt > 30) {
-    WbosonWeight_nominal   = hWbosonWeight_nominal->GetBinContent(hWbosonWeight_nominal->FindBin(*W_Pt));
-    WbosonWeight_QCD1Up    = hWbosonWeight_QCD1Up->GetBinContent(hWbosonWeight_QCD1Up->FindBin(*W_Pt));
-    WbosonWeight_QCD1Down  = hWbosonWeight_QCD1Down->GetBinContent(hWbosonWeight_QCD1Down->FindBin(*W_Pt));
-    WbosonWeight_QCD2Up    = hWbosonWeight_QCD2Up->GetBinContent(hWbosonWeight_QCD2Up->FindBin(*W_Pt));
-    WbosonWeight_QCD2Down  = hWbosonWeight_QCD2Down->GetBinContent(hWbosonWeight_QCD2Down->FindBin(*W_Pt));
-    WbosonWeight_QCD3Up    = hWbosonWeight_QCD3Up->GetBinContent(hWbosonWeight_QCD3Up->FindBin(*W_Pt));
-    WbosonWeight_QCD3Down  = hWbosonWeight_QCD3Down->GetBinContent(hWbosonWeight_QCD3Down->FindBin(*W_Pt));
-    WbosonWeight_EW1Up     = hWbosonWeight_EW1Up->GetBinContent(hWbosonWeight_EW1Up->FindBin(*W_Pt));
-    WbosonWeight_EW1Down   = hWbosonWeight_EW1Down->GetBinContent(hWbosonWeight_EW1Down->FindBin(*W_Pt));
-    WbosonWeight_EW2Up     = hWbosonWeight_EW2Up->GetBinContent(hWbosonWeight_EW2Up->FindBin(*W_Pt));
-    WbosonWeight_EW2Down   = hWbosonWeight_EW2Down->GetBinContent(hWbosonWeight_EW2Down->FindBin(*W_Pt));
-    WbosonWeight_EW3Up     = hWbosonWeight_EW3Up->GetBinContent(hWbosonWeight_EW3Up->FindBin(*W_Pt));
-    WbosonWeight_EW3Down   = hWbosonWeight_EW3Down->GetBinContent(hWbosonWeight_EW3Down->FindBin(*W_Pt));
-    WbosonWeight_MixedUp   = hWbosonWeight_MixedUp->GetBinContent(hWbosonWeight_MixedUp->FindBin(*W_Pt));
-    WbosonWeight_MixedDown = hWbosonWeight_MixedDown->GetBinContent(hWbosonWeight_MixedDown->FindBin(*W_Pt));
+  if (isWlnuSample) {
+    if ( *W_Pt > 30) {
+      WbosonWeight_nominal   = hWbosonWeight_nominal->GetBinContent(hWbosonWeight_nominal->FindBin(*W_Pt));
+      WbosonWeight_QCD1Up    = hWbosonWeight_QCD1Up->GetBinContent(hWbosonWeight_QCD1Up->FindBin(*W_Pt));
+      WbosonWeight_QCD1Down  = hWbosonWeight_QCD1Down->GetBinContent(hWbosonWeight_QCD1Down->FindBin(*W_Pt));
+      WbosonWeight_QCD2Up    = hWbosonWeight_QCD2Up->GetBinContent(hWbosonWeight_QCD2Up->FindBin(*W_Pt));
+      WbosonWeight_QCD2Down  = hWbosonWeight_QCD2Down->GetBinContent(hWbosonWeight_QCD2Down->FindBin(*W_Pt));
+      WbosonWeight_QCD3Up    = hWbosonWeight_QCD3Up->GetBinContent(hWbosonWeight_QCD3Up->FindBin(*W_Pt));
+      WbosonWeight_QCD3Down  = hWbosonWeight_QCD3Down->GetBinContent(hWbosonWeight_QCD3Down->FindBin(*W_Pt));
+      WbosonWeight_EW1Up     = hWbosonWeight_EW1Up->GetBinContent(hWbosonWeight_EW1Up->FindBin(*W_Pt));
+      WbosonWeight_EW1Down   = hWbosonWeight_EW1Down->GetBinContent(hWbosonWeight_EW1Down->FindBin(*W_Pt));
+      WbosonWeight_EW2Up     = hWbosonWeight_EW2Up->GetBinContent(hWbosonWeight_EW2Up->FindBin(*W_Pt));
+      WbosonWeight_EW2Down   = hWbosonWeight_EW2Down->GetBinContent(hWbosonWeight_EW2Down->FindBin(*W_Pt));
+      WbosonWeight_EW3Up     = hWbosonWeight_EW3Up->GetBinContent(hWbosonWeight_EW3Up->FindBin(*W_Pt));
+      WbosonWeight_EW3Down   = hWbosonWeight_EW3Down->GetBinContent(hWbosonWeight_EW3Down->FindBin(*W_Pt));
+      WbosonWeight_MixedUp   = hWbosonWeight_MixedUp->GetBinContent(hWbosonWeight_MixedUp->FindBin(*W_Pt));
+      WbosonWeight_MixedDown = hWbosonWeight_MixedDown->GetBinContent(hWbosonWeight_MixedDown->FindBin(*W_Pt));
+    }
+    else {
+      WbosonWeight_nominal = 1;
+      WbosonWeight_QCD1Up = 0;
+      WbosonWeight_QCD1Down = 0;
+      WbosonWeight_QCD2Up = 0;
+      WbosonWeight_QCD2Down = 0;
+      WbosonWeight_QCD3Up = 0;
+      WbosonWeight_QCD3Down = 0;
+      WbosonWeight_EW1Up = 0;
+      WbosonWeight_EW1Down = 0;
+      WbosonWeight_EW2Up = 0;
+      WbosonWeight_EW2Down = 0;
+      WbosonWeight_EW3Up = 0;
+      WbosonWeight_EW3Down = 0;
+      WbosonWeight_MixedUp = 0;
+      WbosonWeight_MixedDown = 0;
+    }
   }
 
+
   if (isZnunuSample && *Z_Pt > 30) {
-    ZbosonWeight_nominal   = hZbosonWeight_nominal->GetBinContent(hZbosonWeight_nominal->FindBin(*Z_Pt));
-    ZbosonWeight_QCD1Up    = hZbosonWeight_QCD1Up->GetBinContent(hZbosonWeight_QCD1Up->FindBin(*Z_Pt));
-    ZbosonWeight_QCD1Down  = hZbosonWeight_QCD1Down->GetBinContent(hZbosonWeight_QCD1Down->FindBin(*Z_Pt));
-    ZbosonWeight_QCD2Up    = hZbosonWeight_QCD2Up->GetBinContent(hZbosonWeight_QCD2Up->FindBin(*Z_Pt));
-    ZbosonWeight_QCD2Down  = hZbosonWeight_QCD2Down->GetBinContent(hZbosonWeight_QCD2Down->FindBin(*Z_Pt));
-    ZbosonWeight_QCD3Up    = hZbosonWeight_QCD3Up->GetBinContent(hZbosonWeight_QCD3Up->FindBin(*Z_Pt));
-    ZbosonWeight_QCD3Down  = hZbosonWeight_QCD3Down->GetBinContent(hZbosonWeight_QCD3Down->FindBin(*Z_Pt));
-    ZbosonWeight_EW1Up     = hZbosonWeight_EW1Up->GetBinContent(hZbosonWeight_EW1Up->FindBin(*Z_Pt));
-    ZbosonWeight_EW1Down   = hZbosonWeight_EW1Down->GetBinContent(hZbosonWeight_EW1Down->FindBin(*Z_Pt));
-    ZbosonWeight_EW2Up     = hZbosonWeight_EW2Up->GetBinContent(hZbosonWeight_EW2Up->FindBin(*Z_Pt));
-    ZbosonWeight_EW2Down   = hZbosonWeight_EW2Down->GetBinContent(hZbosonWeight_EW2Down->FindBin(*Z_Pt));
-    ZbosonWeight_EW3Up     = hZbosonWeight_EW3Up->GetBinContent(hZbosonWeight_EW3Up->FindBin(*Z_Pt));
-    ZbosonWeight_EW3Down   = hZbosonWeight_EW3Down->GetBinContent(hZbosonWeight_EW3Down->FindBin(*Z_Pt));
-    ZbosonWeight_MixedUp   = hZbosonWeight_MixedUp->GetBinContent(hZbosonWeight_MixedUp->FindBin(*Z_Pt));
-    ZbosonWeight_MixedDown = hZbosonWeight_MixedDown->GetBinContent(hZbosonWeight_MixedDown->FindBin(*Z_Pt));
+    if (*Z_Pt > 30) {
+      ZbosonWeight_nominal   = hZbosonWeight_nominal->GetBinContent(hZbosonWeight_nominal->FindBin(*Z_Pt));
+      ZbosonWeight_QCD1Up    = hZbosonWeight_QCD1Up->GetBinContent(hZbosonWeight_QCD1Up->FindBin(*Z_Pt));
+      ZbosonWeight_QCD1Down  = hZbosonWeight_QCD1Down->GetBinContent(hZbosonWeight_QCD1Down->FindBin(*Z_Pt));
+      ZbosonWeight_QCD2Up    = hZbosonWeight_QCD2Up->GetBinContent(hZbosonWeight_QCD2Up->FindBin(*Z_Pt));
+      ZbosonWeight_QCD2Down  = hZbosonWeight_QCD2Down->GetBinContent(hZbosonWeight_QCD2Down->FindBin(*Z_Pt));
+      ZbosonWeight_QCD3Up    = hZbosonWeight_QCD3Up->GetBinContent(hZbosonWeight_QCD3Up->FindBin(*Z_Pt));
+      ZbosonWeight_QCD3Down  = hZbosonWeight_QCD3Down->GetBinContent(hZbosonWeight_QCD3Down->FindBin(*Z_Pt));
+      ZbosonWeight_EW1Up     = hZbosonWeight_EW1Up->GetBinContent(hZbosonWeight_EW1Up->FindBin(*Z_Pt));
+      ZbosonWeight_EW1Down   = hZbosonWeight_EW1Down->GetBinContent(hZbosonWeight_EW1Down->FindBin(*Z_Pt));
+      ZbosonWeight_EW2Up     = hZbosonWeight_EW2Up->GetBinContent(hZbosonWeight_EW2Up->FindBin(*Z_Pt));
+      ZbosonWeight_EW2Down   = hZbosonWeight_EW2Down->GetBinContent(hZbosonWeight_EW2Down->FindBin(*Z_Pt));
+      ZbosonWeight_EW3Up     = hZbosonWeight_EW3Up->GetBinContent(hZbosonWeight_EW3Up->FindBin(*Z_Pt));
+      ZbosonWeight_EW3Down   = hZbosonWeight_EW3Down->GetBinContent(hZbosonWeight_EW3Down->FindBin(*Z_Pt));
+      ZbosonWeight_MixedUp   = hZbosonWeight_MixedUp->GetBinContent(hZbosonWeight_MixedUp->FindBin(*Z_Pt));
+      ZbosonWeight_MixedDown = hZbosonWeight_MixedDown->GetBinContent(hZbosonWeight_MixedDown->FindBin(*Z_Pt));
+    }
+    else {
+      ZbosonWeight_nominal = 1;
+      ZbosonWeight_QCD1Up = 0;
+      ZbosonWeight_QCD1Down = 0;
+      ZbosonWeight_QCD2Up = 0;
+      ZbosonWeight_QCD2Down = 0;
+      ZbosonWeight_QCD3Up = 0;
+      ZbosonWeight_QCD3Down = 0;
+      ZbosonWeight_EW1Up = 0;
+      ZbosonWeight_EW1Down = 0;
+      ZbosonWeight_EW2Up = 0;
+      ZbosonWeight_EW2Down = 0;
+      ZbosonWeight_EW3Up = 0;
+      ZbosonWeight_EW3Down = 0;
+      ZbosonWeight_MixedUp = 0;
+      ZbosonWeight_MixedDown = 0;
+    }
   }
+
+
   BosonSystematicWeights = {
     {"WbosonWeight_QCD1Up", WbosonWeight_QCD1Up / WbosonWeight_nominal},
     {"WbosonWeight_QCD1Down", WbosonWeight_QCD1Down / WbosonWeight_nominal},
@@ -432,6 +475,8 @@ MCSelector::Process(Long64_t entry)
   if (isWlnuSample) {
     weight_ *= (WbosonWeight_nominal);
   }
+
+  bool dPhiCut = varDeltaPhi_Jet_MET[0] > 1.0;
   // Calculate split
   // std::cout << "WARNING split > 50, therefore not working correctly ->
   // Proceeding with split =50" << std::endl;
@@ -439,23 +484,22 @@ MCSelector::Process(Long64_t entry)
   // std::cout << split_ << std::endl;
   bool isPseudoData = random < split_;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
-  if (*Miss) {
+  if (*Miss && !triggered && !dPhiCut) {
     // if (!(*recoSelected)) {
     // if (*GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection) {
 
     A->Fill(-10, *var_gen, weight_);
     h_misses->Fill(*var_gen, weight_);
-
     h_Gen->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
+
     if (doadditionalsystematics) { //fill systematics only in nominal case
       for (auto& sys : allSystematics ) {
-        float tmpweight = weight_;
         if (BosonSystematicWeights.count(sys)) {
           if (isZnunuSample || isWlnuSample) {
             double bosonweight = BosonSystematicWeights.find(sys)->second;
             if (isnan(bosonweight)) bosonweight = 0;
             float tmpweight = weight_ * bosonweight;
-            std::cout << "applying boson weight " <<  bosonweight << " for " << sys << "in Sample " << option << std::endl;
+            // std::cout << "applying boson weight " <<  bosonweight << " for " << sys << " in Sample " << option << "with W_Pt " << *W_Pt << std::endl;
             ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
             h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
           }
@@ -469,7 +513,7 @@ MCSelector::Process(Long64_t entry)
       }
     }
 
-    if (isPseudoData) {
+    if (!isPseudoData) {
       ASplit->Fill(-10, *var_gen, weight_);
       h_misses_Split->Fill(*var_gen, weight_);
       h_GenSplit->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
@@ -498,7 +542,7 @@ MCSelector::Process(Long64_t entry)
   }
 
   if (triggered) {
-    if (*recoSelected) {
+    if (*recoSelected && dPhiCut ) {
       //don't touch genselection for "normal" reco histograms
       if (isPseudoData) {
         h_RecoSplit->Fill(*var_reco, weight_);
