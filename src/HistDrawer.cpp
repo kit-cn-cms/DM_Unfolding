@@ -249,11 +249,12 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 		pull->Reset();
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
 			double sigma_d = data->GetBinError(bin);
-			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			pull->SetBinContent(bin, content);
-			pull->SetBinError(bin, 0);
+			if (sigma_d != 0) {
+				double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+				pull->SetBinContent(bin, content);
+				pull->SetBinError(bin, 0);
+			}
+			else pull ->SetBinContent(bin, -10);
 		}
 		pull->Draw("P");
 		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
@@ -338,6 +339,9 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	}
 	else data-> SetXTitle(xlabel);
 
+	data->SetMarkerStyle(20);
+
+
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
 	ratio->Divide( (TH1*)stack->GetStack()->Last());
@@ -372,11 +376,12 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 		pull->Reset();
 		for (Int_t bin = 1; bin <= data->GetNbinsX(); bin++) {
 			double sigma_d = data->GetBinError(bin);
-			double sigma_mc = lastStack->GetBinError(bin);
-			double error = sqrt(sigma_d * sigma_d - sigma_mc * sigma_mc);
-			double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
-			pull->SetBinContent(bin, content);
-			pull->SetBinError(bin, 0);
+			if (sigma_d != 0) {
+				double content = (data->GetBinContent(bin) - lastStack->GetBinContent(bin)) / sigma_d;
+				pull->SetBinContent(bin, content);
+				pull->SetBinError(bin, 0);
+			}
+			else pull ->SetBinContent(bin, -10);
 		}
 		pull->Draw("P");
 		pull->GetYaxis()->SetTitle("#frac{Data-MC}{#sigma}");
