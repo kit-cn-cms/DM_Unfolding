@@ -363,7 +363,7 @@ MCSelector::Process(Long64_t entry)
   bool isZnunuSample = option.Contains("z_nunu_jets");
 
   if (isWlnuSample) {
-    if ( *W_Pt > 30) {
+    if (*W_Pt > 30) {
       WbosonWeight_nominal   = hWbosonWeight_nominal->GetBinContent(hWbosonWeight_nominal->FindBin(*W_Pt));
       WbosonWeight_QCD1Up    = hWbosonWeight_QCD1Up->GetBinContent(hWbosonWeight_QCD1Up->FindBin(*W_Pt));
       WbosonWeight_QCD1Down  = hWbosonWeight_QCD1Down->GetBinContent(hWbosonWeight_QCD1Down->FindBin(*W_Pt));
@@ -388,31 +388,31 @@ MCSelector::Process(Long64_t entry)
     }
     else {
       WbosonWeight_nominal = 1;
-      WbosonWeight_QCD1Up = 0;
-      WbosonWeight_QCD1Down = 0;
-      WbosonWeight_QCD2Up = 0;
-      WbosonWeight_QCD2Down = 0;
-      WbosonWeight_QCD3Up = 0;
-      WbosonWeight_QCD3Down = 0;
-      WbosonWeight_EW1Up = 0;
-      WbosonWeight_EW1Down = 0;
-      WbosonWeight_EW2Up = 0;
-      WbosonWeight_EW2Down = 0;
-      WbosonWeight_EW3Up = 0;
-      WbosonWeight_EW3Down = 0;
-      WbosonWeight_MixedUp = 0;
-      WbosonWeight_MixedDown = 0;
-      WbosonWeight_AlphaUp = 0;
-      WbosonWeight_AlphaDown = 0;
-      WbosonWeight_muRUp = 0;
-      WbosonWeight_muRDown = 0;
-      WbosonWeight_muFUp = 0;
-      WbosonWeight_muFDown = 0;
+      WbosonWeight_QCD1Up = 1;
+      WbosonWeight_QCD1Down = 1;
+      WbosonWeight_QCD2Up = 1;
+      WbosonWeight_QCD2Down = 1;
+      WbosonWeight_QCD3Up = 1;
+      WbosonWeight_QCD3Down = 1;
+      WbosonWeight_EW1Up = 1;
+      WbosonWeight_EW1Down = 1;
+      WbosonWeight_EW2Up = 1;
+      WbosonWeight_EW2Down = 1;
+      WbosonWeight_EW3Up = 1;
+      WbosonWeight_EW3Down = 1;
+      WbosonWeight_MixedUp = 1;
+      WbosonWeight_MixedDown = 1;
+      WbosonWeight_AlphaUp = 1;
+      WbosonWeight_AlphaDown = 1;
+      WbosonWeight_muRUp = 1;
+      WbosonWeight_muRDown = 1;
+      WbosonWeight_muFUp = 1;
+      WbosonWeight_muFDown = 1;
     }
   }
 
 
-  if (isZnunuSample && *Z_Pt > 30) {
+  if (isZnunuSample) {
     if (*Z_Pt > 30) {
       ZbosonWeight_nominal   = hZbosonWeight_nominal->GetBinContent(hZbosonWeight_nominal->FindBin(*Z_Pt));
       ZbosonWeight_QCD1Up    = hZbosonWeight_QCD1Up->GetBinContent(hZbosonWeight_QCD1Up->FindBin(*Z_Pt));
@@ -438,26 +438,26 @@ MCSelector::Process(Long64_t entry)
     }
     else {
       ZbosonWeight_nominal = 1;
-      ZbosonWeight_QCD1Up = 0;
-      ZbosonWeight_QCD1Down = 0;
-      ZbosonWeight_QCD2Up = 0;
-      ZbosonWeight_QCD2Down = 0;
-      ZbosonWeight_QCD3Up = 0;
-      ZbosonWeight_QCD3Down = 0;
-      ZbosonWeight_EW1Up = 0;
-      ZbosonWeight_EW1Down = 0;
-      ZbosonWeight_EW2Up = 0;
-      ZbosonWeight_EW2Down = 0;
-      ZbosonWeight_EW3Up = 0;
-      ZbosonWeight_EW3Down = 0;
-      ZbosonWeight_MixedUp = 0;
-      ZbosonWeight_MixedDown = 0;
-      ZbosonWeight_AlphaUp = 0;
-      ZbosonWeight_AlphaDown = 0;
-      ZbosonWeight_muRUp = 0;
-      ZbosonWeight_muRDown = 0;
-      ZbosonWeight_muFUp = 0;
-      ZbosonWeight_muFDown = 0;
+      ZbosonWeight_QCD1Up = 1;
+      ZbosonWeight_QCD1Down = 1;
+      ZbosonWeight_QCD2Up = 1;
+      ZbosonWeight_QCD2Down = 1;
+      ZbosonWeight_QCD3Up = 1;
+      ZbosonWeight_QCD3Down = 1;
+      ZbosonWeight_EW1Up = 1;
+      ZbosonWeight_EW1Down = 1;
+      ZbosonWeight_EW2Up = 1;
+      ZbosonWeight_EW2Down = 1;
+      ZbosonWeight_EW3Up = 1;
+      ZbosonWeight_EW3Down = 1;
+      ZbosonWeight_MixedUp = 1;
+      ZbosonWeight_MixedDown = 1;
+      ZbosonWeight_AlphaUp = 1;
+      ZbosonWeight_AlphaDown = 1;
+      ZbosonWeight_muRUp = 1;
+      ZbosonWeight_muRDown = 1;
+      ZbosonWeight_muFUp = 1;
+      ZbosonWeight_muFDown = 1;
     }
   }
 
@@ -497,12 +497,12 @@ MCSelector::Process(Long64_t entry)
     {"ZbosonWeight_EW3Down", ZbosonWeight_EW3Down / ZbosonWeight_nominal},
     {"ZbosonWeight_MixedUp", ZbosonWeight_MixedUp / ZbosonWeight_nominal},
     {"ZbosonWeight_MixedDown", ZbosonWeight_MixedDown / ZbosonWeight_nominal},
-    {"ZbosonWeight_AlphaUp", ZbosonWeight_AlphaUp / WbosonWeight_nominal},
-    {"ZbosonWeight_AlphaDown", ZbosonWeight_AlphaDown / WbosonWeight_nominal},
-    {"ZbosonWeight_scale_variation_muRUp", ZbosonWeight_muRUp / WbosonWeight_nominal},
-    {"ZbosonWeight_scale_variation_muRDown", ZbosonWeight_muRDown / WbosonWeight_nominal},
-    {"ZbosonWeight_scale_variation_muFUp", ZbosonWeight_muFUp / WbosonWeight_nominal},
-    {"ZbosonWeight_scale_variation_muFDown", ZbosonWeight_muFDown / WbosonWeight_nominal},
+    {"ZbosonWeight_AlphaUp", ZbosonWeight_AlphaUp / ZbosonWeight_nominal},
+    {"ZbosonWeight_AlphaDown", ZbosonWeight_AlphaDown / ZbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muRUp", ZbosonWeight_muRUp / ZbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muRDown", ZbosonWeight_muRDown / ZbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muFUp", ZbosonWeight_muFUp / ZbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muFDown", ZbosonWeight_muFDown / ZbosonWeight_nominal},
   };
 
   weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
@@ -544,7 +544,7 @@ MCSelector::Process(Long64_t entry)
         if (BosonSystematicWeights.count(sys)) {
           if (isZnunuSample || isWlnuSample) {
             double bosonweight = BosonSystematicWeights.find(sys)->second;
-            if (isnan(bosonweight)) bosonweight = 0;
+            //if (isnan(bosonweight)) bosonweight = 0;
             float tmpweight = weight_ * bosonweight;
             // std::cout << "applying boson weight " <<  bosonweight << " for " << sys << " in Sample " << option << "with W_Pt " << *W_Pt << std::endl;
             ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
@@ -575,7 +575,7 @@ MCSelector::Process(Long64_t entry)
           if (BosonSystematicWeights.count(sys)) {
             if (isZnunuSample || isWlnuSample) {
               double bosonweight = BosonSystematicWeights.find(sys)->second;
-              if (isnan(bosonweight)) bosonweight = 0;
+              //if (isnan(bosonweight)) bosonweight = 0;
               float tmpweight = weight_ * bosonweight;
               ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
               h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
@@ -607,7 +607,7 @@ MCSelector::Process(Long64_t entry)
             if (BosonSystematicWeights.count(sys)) {
               if (isZnunuSample || isWlnuSample) {
                 double bosonweight = BosonSystematicWeights.find(sys)->second;
-                if (isnan(bosonweight)) bosonweight = 0;
+                //if (isnan(bosonweight)) bosonweight = 0;
                 float tmpweight = weight_ * bosonweight;
                 h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
               }
@@ -631,7 +631,7 @@ MCSelector::Process(Long64_t entry)
           if (BosonSystematicWeights.count(sys)) {
             if (isZnunuSample || isWlnuSample) {
               double bosonweight = BosonSystematicWeights.find(sys)->second;
-              if (isnan(bosonweight)) bosonweight = 0;
+              //if (isnan(bosonweight)) bosonweight = 0;
               float tmpweight = weight_ * bosonweight;
               h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
             }
@@ -685,7 +685,7 @@ MCSelector::Process(Long64_t entry)
               if (BosonSystematicWeights.count(sys)) {
                 if (isZnunuSample || isWlnuSample) {
                   double bosonweight = BosonSystematicWeights.find(sys)->second;
-                  if (isnan(bosonweight)) bosonweight = 0;
+                  //if (isnan(bosonweight)) bosonweight = 0;
                   float tmpweight = weight_ * bosonweight;
                   ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
                   h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
@@ -714,7 +714,7 @@ MCSelector::Process(Long64_t entry)
             if (BosonSystematicWeights.count(sys)) {
               if (isZnunuSample || isWlnuSample) {
                 double bosonweight = BosonSystematicWeights.find(sys)->second;
-                if (isnan(bosonweight)) bosonweight = 0;
+                //if (isnan(bosonweight)) bosonweight = 0;
                 float tmpweight = weight_ * bosonweight;
                 ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
                 h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
