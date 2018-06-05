@@ -461,7 +461,6 @@ MCSelector::Process(Long64_t entry)
     }
   }
 
-
   BosonSystematicWeights = {
     {"WbosonWeight_QCD1Up", WbosonWeight_QCD1Up / WbosonWeight_nominal},
     {"WbosonWeight_QCD1Down", WbosonWeight_QCD1Down / WbosonWeight_nominal},
@@ -479,10 +478,10 @@ MCSelector::Process(Long64_t entry)
     {"WbosonWeight_MixedDown", WbosonWeight_MixedDown / WbosonWeight_nominal},
     {"WbosonWeight_AlphaUp", WbosonWeight_AlphaUp / WbosonWeight_nominal},
     {"WbosonWeight_AlphaDown", WbosonWeight_AlphaDown / WbosonWeight_nominal},
-    {"WbosonWeight_muRUp", WbosonWeight_muRUp / WbosonWeight_nominal},
-    {"WbosonWeight_muRDown", WbosonWeight_muRDown / WbosonWeight_nominal},
-    {"WbosonWeight_muFUp", WbosonWeight_muFUp / WbosonWeight_nominal},
-    {"WbosonWeight_muFDown", WbosonWeight_muFDown / WbosonWeight_nominal},
+    {"WbosonWeight_scale_variation_muRUp", WbosonWeight_muRUp / WbosonWeight_nominal},
+    {"WbosonWeight_scale_variation_muRDown", WbosonWeight_muRDown / WbosonWeight_nominal},
+    {"WbosonWeight_scale_variation_muFUp", WbosonWeight_muFUp / WbosonWeight_nominal},
+    {"WbosonWeight_scale_variation_muFDown", WbosonWeight_muFDown / WbosonWeight_nominal},
 
     {"ZbosonWeight_QCD1Up", ZbosonWeight_QCD1Up / ZbosonWeight_nominal},
     {"ZbosonWeight_QCD1Down", ZbosonWeight_QCD1Down / ZbosonWeight_nominal},
@@ -500,10 +499,10 @@ MCSelector::Process(Long64_t entry)
     {"ZbosonWeight_MixedDown", ZbosonWeight_MixedDown / ZbosonWeight_nominal},
     {"ZbosonWeight_AlphaUp", ZbosonWeight_AlphaUp / WbosonWeight_nominal},
     {"ZbosonWeight_AlphaDown", ZbosonWeight_AlphaDown / WbosonWeight_nominal},
-    {"ZbosonWeight_muRUp", ZbosonWeight_muRUp / WbosonWeight_nominal},
-    {"ZbosonWeight_muRDown", ZbosonWeight_muRDown / WbosonWeight_nominal},
-    {"ZbosonWeight_muFUp", ZbosonWeight_muFUp / WbosonWeight_nominal},
-    {"ZbosonWeight_muFDown", ZbosonWeight_muFDown / WbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muRUp", ZbosonWeight_muRUp / WbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muRDown", ZbosonWeight_muRDown / WbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muFUp", ZbosonWeight_muFUp / WbosonWeight_nominal},
+    {"ZbosonWeight_scale_variation_muFDown", ZbosonWeight_muFDown / WbosonWeight_nominal},
   };
 
   weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
@@ -555,6 +554,10 @@ MCSelector::Process(Long64_t entry)
         else {
           float tmpweight = weight_ * *(sysweights.find(sys)->second);
           if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+          if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+            if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+            else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+          }
           ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
           h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
         }
@@ -581,6 +584,10 @@ MCSelector::Process(Long64_t entry)
           else {
             float tmpweight = weight_ * *(sysweights.find(sys)->second);
             if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+            if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+              if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+              else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+            }
             ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
             h_GenSysSplit.find(sys)->second->Fill( *var_gen, tmpweight );
           }
@@ -595,7 +602,6 @@ MCSelector::Process(Long64_t entry)
       if (isPseudoData) {
         h_RecoSplit->Fill(*var_reco, weight_);
         h_DummyDataSplit->Fill(*var_reco, weight_);
-
         if (doadditionalsystematics) {  //fill systematics only in nominal case
           for (auto& sys : allSystematics ) {
             if (BosonSystematicWeights.count(sys)) {
@@ -609,6 +615,10 @@ MCSelector::Process(Long64_t entry)
             else {
               float tmpweight = weight_ * *(sysweights.find(sys)->second);
               if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+              if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+                if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+                else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+              }
               h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
 
             }
@@ -628,8 +638,10 @@ MCSelector::Process(Long64_t entry)
           }
           else {
             float tmpweight = weight_ * *(sysweights.find(sys)->second);
-            if (sys == "PUup" || sys == "PUdown") {
-              tmpweight /= *(sysweights.find(sys)->second);
+            if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+            if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+              if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+              else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
             }
             h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
           }
@@ -682,6 +694,10 @@ MCSelector::Process(Long64_t entry)
               else {
                 float tmpweight = weight_ * *(sysweights.find(sys)->second);
                 if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+                if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+                  if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+                  else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+                }
                 ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
                 h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
               }
@@ -707,6 +723,10 @@ MCSelector::Process(Long64_t entry)
             else {
               float tmpweight = weight_ * *(sysweights.find(sys)->second);
               if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+              if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+                if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+                else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+              }
               ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
               h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
             }

@@ -265,7 +265,7 @@ public:
 
   std::map<std::string, TTreeReaderValue<Float_t> > sysweights = {
     {"Weight_PUUp", ((MCSelector*)this)->MCSelector::Weight_PUup},
-    {"WeightPUDown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
+    {"Weight_PUDown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
     {"Weight_scale_variation_muRUp", ((MCSelector*)this)->MCSelector::Weight_MuRup},
     {"Weight_scale_variation_muRDown", ((MCSelector*)this)->MCSelector::Weight_MuRdown},
     {"Weight_scale_variation_muFUp", ((MCSelector*)this)->MCSelector::Weight_MuFup},
