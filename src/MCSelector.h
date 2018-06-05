@@ -122,6 +122,13 @@ public:
   TH1D* hWbosonWeight_EW3Down = 0;
   TH1D* hWbosonWeight_MixedUp = 0;
   TH1D* hWbosonWeight_MixedDown = 0;
+  TH1D* hWbosonWeight_AlphaUp = 0;
+  TH1D* hWbosonWeight_AlphaDown = 0;
+  TH1D* hWbosonWeight_muRUp = 0;
+  TH1D* hWbosonWeight_muRDown = 0;
+  TH1D* hWbosonWeight_muFUp = 0;
+  TH1D* hWbosonWeight_muFDown = 0;
+
 
   TH1D* hZbosonWeight_nominal = 0;
   TH1D* hZbosonWeight_QCD1Up = 0;
@@ -138,6 +145,12 @@ public:
   TH1D* hZbosonWeight_EW3Down = 0;
   TH1D* hZbosonWeight_MixedUp = 0;
   TH1D* hZbosonWeight_MixedDown = 0;
+  TH1D* hZbosonWeight_AlphaUp = 0;
+  TH1D* hZbosonWeight_AlphaDown = 0;
+  TH1D* hZbosonWeight_muRUp = 0;
+  TH1D* hZbosonWeight_muRDown = 0;
+  TH1D* hZbosonWeight_muFUp = 0;
+  TH1D* hZbosonWeight_muFDown = 0;
 
 
   double WbosonWeight_nominal = 1;
@@ -155,6 +168,13 @@ public:
   double WbosonWeight_EW3Down = 0;
   double WbosonWeight_MixedUp = 0;
   double WbosonWeight_MixedDown = 0;
+  double WbosonWeight_AlphaUp = 0;
+  double WbosonWeight_AlphaDown = 0;
+  double WbosonWeight_muRUp = 0;
+  double WbosonWeight_muRDown = 0;
+  double WbosonWeight_muFUp = 0;
+  double WbosonWeight_muFDown = 0;
+
 
   double ZbosonWeight_nominal = 1;
   double ZbosonWeight_QCD1Up = 0;
@@ -171,6 +191,12 @@ public:
   double ZbosonWeight_EW3Down = 0;
   double ZbosonWeight_MixedUp = 0;
   double ZbosonWeight_MixedDown = 0;
+  double ZbosonWeight_AlphaUp = 0;
+  double ZbosonWeight_AlphaDown = 0;
+  double ZbosonWeight_muRUp = 0;
+  double ZbosonWeight_muRDown = 0;
+  double ZbosonWeight_muFUp = 0;
+  double ZbosonWeight_muFDown = 0;
   /////////////////////////////
   // Choose/Add Variables here//
   /////////////////////////////

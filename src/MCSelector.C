@@ -156,6 +156,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   hWbosonWeight_EW3Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnd_n");
   hWbosonWeight_MixedUp =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_u");
   hWbosonWeight_MixedDown = (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_d");
+  hWbosonWeight_AlphaUp =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_alpha_up");
+  hWbosonWeight_AlphaDown = (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_alpha_down");
+  hWbosonWeight_muRUp =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_2p0_muF_1p0");
+  hWbosonWeight_muRDown =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_0p5_muF_1p0");
+  hWbosonWeight_muFUp =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_2p0");
+  hWbosonWeight_muFDown =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_0p5");
 
   fWeightsZ = TFile::Open(path_to_sf_file_Z);
   hZbosonWeight_nominal =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n");
@@ -173,6 +179,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   hZbosonWeight_EW3Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnd_n");
   hZbosonWeight_MixedUp =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_u");
   hZbosonWeight_MixedDown = (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_d");
+  hZbosonWeight_AlphaUp =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_alpha_up");
+  hZbosonWeight_AlphaDown = (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_alpha_down");
+  hZbosonWeight_muRUp =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_2p0_muF_1p0");
+  hZbosonWeight_muRDown =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_0p5_muF_1p0");
+  hZbosonWeight_muFUp =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_2p0");
+  hZbosonWeight_muFDown =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_0p5");
 
   std::string currentJESJERvar = "";
   if (option.Contains("_CMS_scale_jUp")) {
@@ -342,7 +354,7 @@ MCSelector::Process(Long64_t entry)
   // The return value is currently not used.
   TString option = GetOption();
   fReader.SetLocalEntry(entry);
-  
+
   BrDeltaPhi_Jet_MET->GetEntry(entry);
   //////////////////////
   // Add weights here!!//
@@ -367,6 +379,12 @@ MCSelector::Process(Long64_t entry)
       WbosonWeight_EW3Down   = hWbosonWeight_EW3Down->GetBinContent(hWbosonWeight_EW3Down->FindBin(*W_Pt));
       WbosonWeight_MixedUp   = hWbosonWeight_MixedUp->GetBinContent(hWbosonWeight_MixedUp->FindBin(*W_Pt));
       WbosonWeight_MixedDown = hWbosonWeight_MixedDown->GetBinContent(hWbosonWeight_MixedDown->FindBin(*W_Pt));
+      WbosonWeight_AlphaUp   = hWbosonWeight_AlphaUp->GetBinContent(hWbosonWeight_AlphaUp->FindBin(*W_Pt));
+      WbosonWeight_AlphaDown = hWbosonWeight_AlphaDown->GetBinContent(hWbosonWeight_AlphaDown->FindBin(*W_Pt));
+      WbosonWeight_muRUp     = hWbosonWeight_muRUp->GetBinContent(hWbosonWeight_muRUp->FindBin(*W_Pt));
+      WbosonWeight_muRDown   = hWbosonWeight_muRDown->GetBinContent(hWbosonWeight_muRDown->FindBin(*W_Pt));
+      WbosonWeight_muFUp     = hWbosonWeight_muFUp->GetBinContent(hWbosonWeight_muFUp->FindBin(*W_Pt));
+      WbosonWeight_muFDown   = hWbosonWeight_muFDown->GetBinContent(hWbosonWeight_muFDown->FindBin(*W_Pt));
     }
     else {
       WbosonWeight_nominal = 1;
@@ -384,6 +402,12 @@ MCSelector::Process(Long64_t entry)
       WbosonWeight_EW3Down = 0;
       WbosonWeight_MixedUp = 0;
       WbosonWeight_MixedDown = 0;
+      WbosonWeight_AlphaUp = 0;
+      WbosonWeight_AlphaDown = 0;
+      WbosonWeight_muRUp = 0;
+      WbosonWeight_muRDown = 0;
+      WbosonWeight_muFUp = 0;
+      WbosonWeight_muFDown = 0;
     }
   }
 
@@ -405,6 +429,12 @@ MCSelector::Process(Long64_t entry)
       ZbosonWeight_EW3Down   = hZbosonWeight_EW3Down->GetBinContent(hZbosonWeight_EW3Down->FindBin(*Z_Pt));
       ZbosonWeight_MixedUp   = hZbosonWeight_MixedUp->GetBinContent(hZbosonWeight_MixedUp->FindBin(*Z_Pt));
       ZbosonWeight_MixedDown = hZbosonWeight_MixedDown->GetBinContent(hZbosonWeight_MixedDown->FindBin(*Z_Pt));
+      ZbosonWeight_AlphaUp   = hZbosonWeight_AlphaUp->GetBinContent(hZbosonWeight_AlphaUp->FindBin(*Z_Pt));
+      ZbosonWeight_AlphaDown = hZbosonWeight_AlphaDown->GetBinContent(hZbosonWeight_AlphaDown->FindBin(*Z_Pt));
+      ZbosonWeight_muRUp     = hZbosonWeight_muRUp->GetBinContent(hZbosonWeight_muRUp->FindBin(*Z_Pt));
+      ZbosonWeight_muRDown   = hZbosonWeight_muRDown->GetBinContent(hZbosonWeight_muRDown->FindBin(*Z_Pt));
+      ZbosonWeight_muFUp     = hZbosonWeight_muFUp->GetBinContent(hZbosonWeight_muFUp->FindBin(*Z_Pt));
+      ZbosonWeight_muFDown   = hZbosonWeight_muFDown->GetBinContent(hZbosonWeight_muFDown->FindBin(*Z_Pt));
     }
     else {
       ZbosonWeight_nominal = 1;
@@ -422,6 +452,12 @@ MCSelector::Process(Long64_t entry)
       ZbosonWeight_EW3Down = 0;
       ZbosonWeight_MixedUp = 0;
       ZbosonWeight_MixedDown = 0;
+      ZbosonWeight_AlphaUp = 0;
+      ZbosonWeight_AlphaDown = 0;
+      ZbosonWeight_muRUp = 0;
+      ZbosonWeight_muRDown = 0;
+      ZbosonWeight_muFUp = 0;
+      ZbosonWeight_muFDown = 0;
     }
   }
 
@@ -441,6 +477,12 @@ MCSelector::Process(Long64_t entry)
     {"WbosonWeight_EW3Down", WbosonWeight_EW3Down / WbosonWeight_nominal},
     {"WbosonWeight_MixedUp", WbosonWeight_MixedUp / WbosonWeight_nominal},
     {"WbosonWeight_MixedDown", WbosonWeight_MixedDown / WbosonWeight_nominal},
+    {"WbosonWeight_AlphaUp", WbosonWeight_AlphaUp / WbosonWeight_nominal},
+    {"WbosonWeight_AlphaDown", WbosonWeight_AlphaDown / WbosonWeight_nominal},
+    {"WbosonWeight_muRUp", WbosonWeight_muRUp / WbosonWeight_nominal},
+    {"WbosonWeight_muRDown", WbosonWeight_muRDown / WbosonWeight_nominal},
+    {"WbosonWeight_muFUp", WbosonWeight_muFUp / WbosonWeight_nominal},
+    {"WbosonWeight_muFDown", WbosonWeight_muFDown / WbosonWeight_nominal},
 
     {"ZbosonWeight_QCD1Up", ZbosonWeight_QCD1Up / ZbosonWeight_nominal},
     {"ZbosonWeight_QCD1Down", ZbosonWeight_QCD1Down / ZbosonWeight_nominal},
@@ -456,6 +498,12 @@ MCSelector::Process(Long64_t entry)
     {"ZbosonWeight_EW3Down", ZbosonWeight_EW3Down / ZbosonWeight_nominal},
     {"ZbosonWeight_MixedUp", ZbosonWeight_MixedUp / ZbosonWeight_nominal},
     {"ZbosonWeight_MixedDown", ZbosonWeight_MixedDown / ZbosonWeight_nominal},
+    {"ZbosonWeight_AlphaUp", ZbosonWeight_AlphaUp / WbosonWeight_nominal},
+    {"ZbosonWeight_AlphaDown", ZbosonWeight_AlphaDown / WbosonWeight_nominal},
+    {"ZbosonWeight_muRUp", ZbosonWeight_muRUp / WbosonWeight_nominal},
+    {"ZbosonWeight_muRDown", ZbosonWeight_muRDown / WbosonWeight_nominal},
+    {"ZbosonWeight_muFUp", ZbosonWeight_muFUp / WbosonWeight_nominal},
+    {"ZbosonWeight_muFDown", ZbosonWeight_muFDown / WbosonWeight_nominal},
   };
 
   weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
