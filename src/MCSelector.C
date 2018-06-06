@@ -259,7 +259,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
       TH2D* tmpSplit = new TH2D(strippedOption + "A_" + sys + "_Split", "A", nBins_Reco, xMin_Reco, xMax_Reco, nBins_Gen, BinEdgesGen.data());
       tmpSplit->Sumw2();
-      ASysSplit[sys] = tmp;
+      ASysSplit[sys] = tmpSplit;
       GetOutputList()->Add(tmpSplit);
 
       TH1F* RecotmpSplit = new TH1F(strippedOption + recovar + "_" + sys + "_Split", recovar, nBins_Reco, xMin_Reco, xMax_Reco);
@@ -571,11 +571,9 @@ MCSelector::Process(Long64_t entry)
 
       if (doadditionalsystematics) { //fill systematics only in nominal case
         for (auto& sys : allSystematics ) {
-          // std::cout << "filling systematic " << sys << std::endl;
           if (BosonSystematicWeights.count(sys)) {
             if (isZnunuSample || isWlnuSample) {
               double bosonweight = BosonSystematicWeights.find(sys)->second;
-              //if (isnan(bosonweight)) bosonweight = 0;
               float tmpweight = weight_ * bosonweight;
               ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
               h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
@@ -607,7 +605,6 @@ MCSelector::Process(Long64_t entry)
             if (BosonSystematicWeights.count(sys)) {
               if (isZnunuSample || isWlnuSample) {
                 double bosonweight = BosonSystematicWeights.find(sys)->second;
-                //if (isnan(bosonweight)) bosonweight = 0;
                 float tmpweight = weight_ * bosonweight;
                 h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
               }
@@ -631,7 +628,6 @@ MCSelector::Process(Long64_t entry)
           if (BosonSystematicWeights.count(sys)) {
             if (isZnunuSample || isWlnuSample) {
               double bosonweight = BosonSystematicWeights.find(sys)->second;
-              //if (isnan(bosonweight)) bosonweight = 0;
               float tmpweight = weight_ * bosonweight;
               h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
             }
@@ -685,7 +681,6 @@ MCSelector::Process(Long64_t entry)
               if (BosonSystematicWeights.count(sys)) {
                 if (isZnunuSample || isWlnuSample) {
                   double bosonweight = BosonSystematicWeights.find(sys)->second;
-                  //if (isnan(bosonweight)) bosonweight = 0;
                   float tmpweight = weight_ * bosonweight;
                   ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
                   h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
@@ -714,7 +709,6 @@ MCSelector::Process(Long64_t entry)
             if (BosonSystematicWeights.count(sys)) {
               if (isZnunuSample || isWlnuSample) {
                 double bosonweight = BosonSystematicWeights.find(sys)->second;
-                //if (isnan(bosonweight)) bosonweight = 0;
                 float tmpweight = weight_ * bosonweight;
                 ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
                 h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
