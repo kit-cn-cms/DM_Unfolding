@@ -96,8 +96,9 @@ void UnfoldWrapper::DoIt() {
 	TH1* unfolded_nominal = std::get<0>(unfold_output);
 
 // Visualize ERRORS
-	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix" + label);
+	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
 	Drawer.Draw2D(ErrorMatrix, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	writer.addToFile(ErrorMatrix);
 
 // STAT SOURCES
 

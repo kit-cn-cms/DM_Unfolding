@@ -531,10 +531,11 @@ MCSelector::Process(Long64_t entry)
   // std::cout << split_ << std::endl;
   bool isPseudoData = random < split_;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
-  if (*Miss && !triggered && !dPhiCut) {
-    // if (!(*recoSelected)) {
+  bool miss = *genSelected && (!*recoSelected || !dPhiCut || !triggered);
+  
+  // if ((*Miss && !dPhiCut) || !triggered) {
+  if (miss) { //is a miss
     // if (*GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection) {
-
     A->Fill(-10, *var_gen, weight_);
     h_misses->Fill(*var_gen, weight_);
     h_Gen->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
@@ -594,42 +595,18 @@ MCSelector::Process(Long64_t entry)
     }
   }
 
-  if (triggered) {
-    if (*recoSelected && dPhiCut ) {
-      //don't touch genselection for "normal" reco histograms
-      if (isPseudoData) {
-        h_RecoSplit->Fill(*var_reco, weight_);
-        h_DummyDataSplit->Fill(*var_reco, weight_);
-        if (doadditionalsystematics) {  //fill systematics only in nominal case
-          for (auto& sys : allSystematics ) {
-            if (BosonSystematicWeights.count(sys)) {
-              if (isZnunuSample || isWlnuSample) {
-                double bosonweight = BosonSystematicWeights.find(sys)->second;
-                float tmpweight = weight_ * bosonweight;
-                h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
-              }
-            }
-            else {
-              float tmpweight = weight_ * *(sysweights.find(sys)->second);
-              if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
-              if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
-                if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
-                else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
-              }
-              h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
-
-            }
-          }
-        }
-      }
-      h_Reco->Fill(*var_reco, weight_);
+  if (triggered && *recoSelected && dPhiCut ) { // "normal" selection on reco level
+    //don't touch genselection for "normal" reco histograms
+    if (isPseudoData) {
+      h_RecoSplit->Fill(*var_reco, weight_);
+      h_DummyDataSplit->Fill(*var_reco, weight_);
       if (doadditionalsystematics) {  //fill systematics only in nominal case
         for (auto& sys : allSystematics ) {
           if (BosonSystematicWeights.count(sys)) {
             if (isZnunuSample || isWlnuSample) {
               double bosonweight = BosonSystematicWeights.find(sys)->second;
               float tmpweight = weight_ * bosonweight;
-              h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
+              h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
             }
           }
           else {
@@ -639,70 +616,66 @@ MCSelector::Process(Long64_t entry)
               if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
               else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
             }
+            h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
+
+          }
+        }
+      }
+    }
+    h_Reco->Fill(*var_reco, weight_);
+    if (doadditionalsystematics) {  //fill systematics only in nominal case
+      for (auto& sys : allSystematics ) {
+        if (BosonSystematicWeights.count(sys)) {
+          if (isZnunuSample || isWlnuSample) {
+            double bosonweight = BosonSystematicWeights.find(sys)->second;
+            float tmpweight = weight_ * bosonweight;
             h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
           }
         }
-      }
-
-      // Additional Variables
-      h_N_Jets->Fill(*N_Jets, weight_);
-      h_Jet_Pt->Fill(*Jet_Pt, weight_);
-      h_Jet_Eta->Fill(*Jet_Eta, weight_);
-      h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
-      h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
-
-      h_W_Pt->Fill(*W_Pt, weight_);
-      h_Z_Pt->Fill(*Z_Pt, weight_);
-
-
-      if (*Fake) { //is a fake
-        // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
-        if (!isPseudoData) {
-          h_fake_Split->Fill(*var_reco, weight_);
-        }
-        h_fake->Fill(*var_reco, weight_);
-        if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
-        if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
-        if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
-        if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
-        if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
-        if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
-      }
-      // else if (*genSelected) { //is not a fake
-      else { //is not a fake
-        if (!isPseudoData) {
-          h_GenSplit->Fill(*var_gen, weight_);
-          h_testMET_Split->Fill(*var_reco, weight_);
-          h_testMETgenBinning->Fill(*var_reco, weight_);
-          ASplit->Fill(*var_reco, *var_gen, weight_);
-
-          if (doadditionalsystematics) { //fill systematics only in nominal case
-            for (auto& sys : allSystematics ) {
-              if (BosonSystematicWeights.count(sys)) {
-                if (isZnunuSample || isWlnuSample) {
-                  double bosonweight = BosonSystematicWeights.find(sys)->second;
-                  float tmpweight = weight_ * bosonweight;
-                  ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-                  h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-                }
-              }
-              else {
-                float tmpweight = weight_ * *(sysweights.find(sys)->second);
-                if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
-                if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
-                  if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
-                  else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
-                }
-                ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-                h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-              }
-            }
+        else {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+          if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+            if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+            else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
           }
+          h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
         }
-        h_Gen->Fill(*var_gen, weight_);
-        h_testMET->Fill(*var_reco, weight_);
-        A_equBins->Fill(*var_reco, *var_gen, weight_);
-        A->Fill(*var_reco, *var_gen, weight_);
+      }
+    }
+
+    // Additional Variables
+    h_N_Jets->Fill(*N_Jets, weight_);
+    h_Jet_Pt->Fill(*Jet_Pt, weight_);
+    h_Jet_Eta->Fill(*Jet_Eta, weight_);
+    h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
+    h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
+
+    h_W_Pt->Fill(*W_Pt, weight_);
+    h_Z_Pt->Fill(*Z_Pt, weight_);
+
+
+    // if (*Fake) { //is a fake
+    if (!*genSelected) { //is a fake
+      // if ( !*GenMonoJetSelection || !*GenLeptonVetoSelection || !*GenBTagVetoSelection || !*GenPhotonVetoSelection || !*GenMETSelection || !*GenmonoVselection) { //is a fake; GenPhotonVeto bugged?!
+      if (!isPseudoData) {
+        h_fake_Split->Fill(*var_reco, weight_);
+      }
+      h_fake->Fill(*var_reco, weight_);
+      if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
+      if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
+      if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
+      if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
+      if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
+      if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
+    }
+    // else if (*genSelected) { //is not a fake
+    else { //is not a fake
+      if (!isPseudoData) {
+        h_GenSplit->Fill(*var_gen, weight_);
+        h_testMET_Split->Fill(*var_reco, weight_);
+        h_testMETgenBinning->Fill(*var_reco, weight_);
+        ASplit->Fill(*var_reco, *var_gen, weight_);
 
         if (doadditionalsystematics) { //fill systematics only in nominal case
           for (auto& sys : allSystematics ) {
@@ -710,8 +683,8 @@ MCSelector::Process(Long64_t entry)
               if (isZnunuSample || isWlnuSample) {
                 double bosonweight = BosonSystematicWeights.find(sys)->second;
                 float tmpweight = weight_ * bosonweight;
-                ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-                h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
+                ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+                h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
               }
             }
             else {
@@ -721,9 +694,36 @@ MCSelector::Process(Long64_t entry)
                 if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
                 else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
               }
+              ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+              h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
+            }
+          }
+        }
+      }
+      h_Gen->Fill(*var_gen, weight_);
+      h_testMET->Fill(*var_reco, weight_);
+      A_equBins->Fill(*var_reco, *var_gen, weight_);
+      A->Fill(*var_reco, *var_gen, weight_);
+
+      if (doadditionalsystematics) { //fill systematics only in nominal case
+        for (auto& sys : allSystematics ) {
+          if (BosonSystematicWeights.count(sys)) {
+            if (isZnunuSample || isWlnuSample) {
+              double bosonweight = BosonSystematicWeights.find(sys)->second;
+              float tmpweight = weight_ * bosonweight;
               ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
               h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
             }
+          }
+          else {
+            float tmpweight = weight_ * *(sysweights.find(sys)->second);
+            if (sys == "PUup" || sys == "PUdown") tmpweight /= *(sysweights.find(sys)->second);
+            if ((TString(sys).Contains("muR")) || TString(sys).Contains("muF")) {
+              if (isWlnuSample) tmpweight *= BosonSystematicWeights.find("Wboson" + sys)->second;
+              else if (isZnunuSample) tmpweight *= BosonSystematicWeights.find("Zboson" + sys)->second;
+            }
+            ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
+            h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
           }
         }
       }

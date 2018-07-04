@@ -3,6 +3,7 @@
 
 #include <TString.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <PathHelper.hpp>
 #include <TFile.h>
 
@@ -13,6 +14,7 @@ public:
 	FileWriter(TString filename);
 	~FileWriter(){};
     void addToFile(TH1*);
+    void addToFile(TH2*);
 
 	PathHelper path;
     TFile* file;

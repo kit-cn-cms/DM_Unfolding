@@ -12,3 +12,9 @@ void FileWriter::addToFile(TH1* histo) {
 	histo->Write();
 	file->Close();
 }
+
+void FileWriter::addToFile(TH2* histo) {
+	file = new TFile(thisFile, "UPDATE");
+	histo->Write();
+	file->Close();
+}

@@ -127,6 +127,9 @@ main(int argc, char** argv) {
   // Signal
   std::vector<TH1F*> GenMET_signal;
   std::vector<TH1F*> MET_signal;
+
+  std::vector<TH1F*> GenMET_signal_Split;
+  std::vector<TH1F*> MET_signal_Split;
   int nVariation = 0;
   for (auto& var : variation) {
     // backgrounds
@@ -168,6 +171,9 @@ main(int argc, char** argv) {
     // Signal
     GenMET_signal.push_back(histhelper.Get1DHisto("signal_Evt_Pt_GenMET" + var));
     MET_signal.push_back(histhelper.Get1DHisto("signal_Evt_Pt_MET" + var));
+
+    GenMET_signal_Split.push_back(histhelper.Get1DHisto("signal_Evt_Pt_GenMET" + var + "_Split"));
+    MET_signal_Split.push_back(histhelper.Get1DHisto("signal_Evt_Pt_MET" + var + "_Split"));
     nVariation += 1;
   }
 
@@ -193,6 +199,9 @@ main(int argc, char** argv) {
 
     GenMET_signal.push_back(histhelper.Get1DHisto("signal_Evt_Pt_GenMET_" + sys));
     MET_signal.push_back(histhelper.Get1DHisto("signal_Evt_Pt_MET_" + sys));
+
+    GenMET_signal_Split.push_back(histhelper.Get1DHisto("signal_Evt_Pt_GenMET_" + sys + "_Split"));
+    MET_signal_Split.push_back(histhelper.Get1DHisto("signal_Evt_Pt_MET_" + sys + "_Split"));
 
     nVariation++;
 
@@ -335,6 +344,12 @@ main(int argc, char** argv) {
   float RecoUF = A_all.at(0)->Integral(0, 0, 1, nBins_Gen); //inefficency due to misses
   float GenUF = A_all.at(0)->Integral(0, nBins_Reco, 0, 0); //get unfolded
 
+  // TH1* RecoMinFakeMC = (TH1F*) MET_all.at(0)->Clone();
+  // for(auto& h: v_fakes_bkgs.at(0))
+  // RecoMinFakeMC->Add(h,-1);
+  // Drawer.DrawDataMC(h_DataMinFakes.at(0), {RecoMinFakeMC}, nameTestMETSampleColorMap, "DataMinFakesvsTestMET", log, !normalize, "#slash{E}_{T}");
+
+
   std::cout << "A Gen underflow (all,0) (gets unfolded): " << GenUF << std::endl;
   std::cout << "A Reco underflow (0,all) (inefficency due to misses): " << RecoUF << std::endl;
   std::cout << "Fake integral: " << fakes_all.at(0)->Integral() << std::endl;
@@ -372,8 +387,9 @@ main(int argc, char** argv) {
     Wrapper.DoIt();
     for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
 
-    // UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, allvar, bkgnames, BinEdgesGen);
-    // Wrapper_Split.DoIt();
+    UnfoldWrapper Wrapper_Split = UnfoldWrapper("MET", "Split", A_all_Split,  MET_DummyData_all.at(0), fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, allvar, bkgnames, BinEdgesGen);
+    Wrapper_Split.DoIt();
+    for (auto& histo : GenMET_signal_Split) Wrapper_Split.writer.addToFile(histo);
 
     // TH1F* InputwithSignal = (TH1F*) MET_DummyData_all.at(0)->Clone();
     // MET_signal.at(0)->Scale(0.1);
