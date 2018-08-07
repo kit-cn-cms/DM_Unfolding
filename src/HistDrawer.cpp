@@ -113,7 +113,7 @@ void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair
 	output->Close();
 }
 
-void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TString ylabel) {
+void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString xlabel, TString ylabel) {
 	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
@@ -121,19 +121,26 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, TString xlabel, TStri
 	gStyle->SetStatX(0.9);
 	gStyle->SetOptStat(0);
 
-	hist->Draw("COLZ1");
-	hist->SetTitle(name);
+	TH2* histClone = (TH2*) hist->Clone();
+	histClone->Draw("COLZ1");
+	histClone->SetTitle(name);
 	if (log) gPad->SetLogz();
 
 	if (xlabel == "none") {
-		hist->SetXTitle(name);
+		histClone->SetXTitle(name);
 	}
-	else hist-> SetXTitle(xlabel);
+	else histClone-> SetXTitle(xlabel);
 
 	if (ylabel == "none") {
-		hist->SetYTitle(name);
+		histClone->SetYTitle(name);
 	}
-	else hist-> SetYTitle(ylabel);
+	else histClone-> SetYTitle(ylabel);
+
+	// if (moveUF) {
+	// 	for (Int_t iBin = 0; iBin <= histClone->GetNbinsY(); iBin++) {
+	// 		histClone->SetBinContent(1, iBin, histClone->GetBinContent(0, iBin));
+	// 	}
+	// }
 
 	DrawLumiLabel(c);
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
@@ -220,7 +227,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	ratio->Divide( (TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
-	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio->GetYaxis()->SetRangeUser(0.45, 1.65);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
@@ -347,7 +354,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	ratio->Divide( (TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
-	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio->GetYaxis()->SetRangeUser(0.45, 1.65);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
@@ -491,7 +498,7 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 	ratio->Divide( (TH1*)stack->GetStack()->Last());
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
-	ratio->GetYaxis()->SetRangeUser(0.5, 1.5);
+	ratio->GetYaxis()->SetRangeUser(0.45, 1.65);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
 	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.5);

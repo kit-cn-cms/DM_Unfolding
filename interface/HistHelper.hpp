@@ -17,6 +17,8 @@ class HistHelper
 public:
 	TH1F* Get1DHisto(TString name);
 	TH2F* Get2DHisto(TString name);
+	std::vector<TH1*> getAllVariations(TString bkgname, std::vector<TString> variations);
+
 
 
 	PathHelper path;

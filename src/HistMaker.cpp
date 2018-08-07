@@ -285,7 +285,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 		nVariation += 1;
 		delete chain;
 	}
-	//Signal
+	// Signal
 	nVariation = 0;
 	for (auto& chain : SignalChains) {
 		chain->SetProof();

@@ -90,6 +90,7 @@ public:
   std::map<std::string, TH2D*> ASysSplit;
   TH1F* h_testMET = 0;
   TH1F* h_testMETgenBinning = 0;
+  TH1F* h_GenRecoMET = 0;
 
   TH1F* h_testMET_Split = 0;
   TH1F* h_fake = 0;
@@ -106,7 +107,7 @@ public:
   TH1F* h_W_Pt = 0;
   TH1F* h_Z_Pt = 0;
 
-  // histograms containing the scale factors for electron and muon channel separately
+
   TH1D* hWbosonWeight_nominal = 0;
   TH1D* hWbosonWeight_QCD1Up = 0;
   TH1D* hWbosonWeight_QCD1Down = 0;
@@ -153,50 +154,28 @@ public:
   TH1D* hZbosonWeight_muFDown = 0;
 
 
-  double WbosonWeight_nominal = 1;
-  double WbosonWeight_QCD1Up = 0;
-  double WbosonWeight_QCD1Down = 0;
-  double WbosonWeight_QCD2Up = 0;
-  double WbosonWeight_QCD2Down = 0;
-  double WbosonWeight_QCD3Up = 0;
-  double WbosonWeight_QCD3Down = 0;
-  double WbosonWeight_EW1Up = 0;
-  double WbosonWeight_EW1Down = 0;
-  double WbosonWeight_EW2Up = 0;
-  double WbosonWeight_EW2Down = 0;
-  double WbosonWeight_EW3Up = 0;
-  double WbosonWeight_EW3Down = 0;
-  double WbosonWeight_MixedUp = 0;
-  double WbosonWeight_MixedDown = 0;
-  double WbosonWeight_AlphaUp = 0;
-  double WbosonWeight_AlphaDown = 0;
-  double WbosonWeight_muRUp = 0;
-  double WbosonWeight_muRDown = 0;
-  double WbosonWeight_muFUp = 0;
-  double WbosonWeight_muFDown = 0;
+  double BosonWeight_nominal = 1;
+  double BosonWeight_QCD1Up = 1;
+  double BosonWeight_QCD1Down = 1;
+  double BosonWeight_QCD2Up = 1;
+  double BosonWeight_QCD2Down = 1;
+  double BosonWeight_QCD3Up = 1;
+  double BosonWeight_QCD3Down = 1;
+  double BosonWeight_EW1Up = 1;
+  double BosonWeight_EW1Down = 1;
+  double BosonWeight_EW2Up = 1;
+  double BosonWeight_EW2Down = 1;
+  double BosonWeight_EW3Up = 1;
+  double BosonWeight_EW3Down = 1;
+  double BosonWeight_MixedUp = 1;
+  double BosonWeight_MixedDown = 1;
+  double BosonWeight_AlphaUp = 1;
+  double BosonWeight_AlphaDown = 1;
+  double BosonWeight_muRUp = 1;
+  double BosonWeight_muRDown = 1;
+  double BosonWeight_muFUp = 1;
+  double BosonWeight_muFDown = 1;
 
-
-  double ZbosonWeight_nominal = 1;
-  double ZbosonWeight_QCD1Up = 0;
-  double ZbosonWeight_QCD1Down = 0;
-  double ZbosonWeight_QCD2Up = 0;
-  double ZbosonWeight_QCD2Down = 0;
-  double ZbosonWeight_QCD3Up = 0;
-  double ZbosonWeight_QCD3Down = 0;
-  double ZbosonWeight_EW1Up = 0;
-  double ZbosonWeight_EW1Down = 0;
-  double ZbosonWeight_EW2Up = 0;
-  double ZbosonWeight_EW2Down = 0;
-  double ZbosonWeight_EW3Up = 0;
-  double ZbosonWeight_EW3Down = 0;
-  double ZbosonWeight_MixedUp = 0;
-  double ZbosonWeight_MixedDown = 0;
-  double ZbosonWeight_AlphaUp = 0;
-  double ZbosonWeight_AlphaDown = 0;
-  double ZbosonWeight_muRUp = 0;
-  double ZbosonWeight_muRDown = 0;
-  double ZbosonWeight_muFUp = 0;
-  double ZbosonWeight_muFDown = 0;
   /////////////////////////////
   // Choose/Add Variables here//
   /////////////////////////////
@@ -214,7 +193,7 @@ public:
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
   TTreeReaderValue<Float_t> Weight_GEN_nom = { fReader, "Weight_GEN_nom" };
-  TTreeReaderValue<Float_t> Weight_PU = { fReader, "Weight_PU" };
+  TTreeReaderValue<Float_t> Weight_PU = { fReader, "Weight_pu69p2" };
   TTreeReaderValue<Float_t> Weight_CSV = { fReader, "Weight_CSV" };
 
   TTreeReaderValue<Float_t> Weight_PUup = { fReader, "Weight_pu69p2Up" };
@@ -222,8 +201,8 @@ public:
 
   TTreeReaderValue<Float_t> Weight_MuRup = { fReader, "Weight_scale_variation_muR_2p0_muF_1p0" };
   TTreeReaderValue<Float_t> Weight_MuRdown = { fReader, "Weight_scale_variation_muR_0p5_muF_1p0" };
-  TTreeReaderValue<Float_t> Weight_MuFup = { fReader, "Weight_scale_variation_muR_1p0_muF_0p5" };
-  TTreeReaderValue<Float_t> Weight_MuFdown = { fReader, "Weight_scale_variation_muR_1p0_muF_2p0" };
+  TTreeReaderValue<Float_t> Weight_MuFup = { fReader, "Weight_scale_variation_muR_1p0_muF_2p0" };
+  TTreeReaderValue<Float_t> Weight_MuFdown = { fReader, "Weight_scale_variation_muR_1p0_muF_0p5" };
 
 
   TTreeReaderValue<Float_t> Weight_CSVLFup = { fReader, "Weight_CSVLFup" };

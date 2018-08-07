@@ -14,7 +14,7 @@
 class UnfoldWrapper
 {
 public:
-	UnfoldWrapper(TString varName, TString label, std::vector<TH2*> A, TH1F* data, TH1* fakes, std::vector<std::vector<TH1*>> MC, std::vector<std::vector<TH1*>> GenMC, std::vector<std::string> variations, std::vector<std::string> bkgnames,std::vector<double> BinEdgesGen);
+	UnfoldWrapper(TString varName, TString label, std::vector<TH2*> A, TH1F* data, TH1* fakes, std::vector<TH1*> misses, std::vector<std::vector<TH1*>> MC, std::vector<std::vector<TH1*>> GenMC, std::vector<std::string> variations, std::vector<std::string> bkgnames,std::vector<double> BinEdgesGen);
 	void DoIt();
 	// ~UnfoldWrapper();
 	FileWriter writer;
@@ -22,6 +22,7 @@ public:
 	TString varName;
 	TString label;
 	std::vector<TH2*> A;
+	std::vector<TH1*> misses;
 	TH1F* data;
 	TH1* fakes;
 	std::vector<std::string> variations;

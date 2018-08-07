@@ -11,12 +11,13 @@
 #include <iostream>
 
 
-UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, TH1* fakes_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_): writer(label_) {
+UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, TH1* fakes_, std::vector<TH1*> misses_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_): writer(label_) {
 	varName = varName_;
 	label = label_;
 	A = A_;
 	data = data_;
 	fakes = fakes_;
+	misses = misses_;
 	MC = MC_;
 	GenMC = GenMC_;
 	variations = variations_;
@@ -55,39 +56,67 @@ void UnfoldWrapper::DoIt() {
 		i++;
 	}
 
-
 	// Subtract Fakes from Data
 	TH1F* h_DataMinFakes = (TH1F*)data->Clone();
 	h_DataMinFakes->Add(fakes, -1);
 
+	// //normalize matrix by hand
+	// double s_i = 0;
+	// std::vector<double> s;
+	// for (int iBiny = 1; iBiny <= A.at(0)->GetNbinsY(); iBiny++) {
+	// 	s_i = 0;
+	// 	for (int iBinx = 0; iBinx <= A.at(0)->GetNbinsX(); iBinx++) {
+	// 		s_i += A.at(0)->GetBinContent(iBiny, iBinx);
+	// 	}
+	// 	s.push_back(s_i);
+	// 	std::cout << s_i << std::endl;
+	// }
+
+	// for (int iBiny = 1; iBiny <= A.at(0)->GetNbinsY(); iBiny++) {
+	// 	for (int iBinx = 0; iBinx <= A.at(0)->GetNbinsX(); iBinx++) {
+	// 		double tmp = A.at(0)->GetBinContent(iBiny, iBinx);
+	// 		A.at(0)->SetBinContent(iBiny, iBinx, tmp / s.at(iBiny)-1);
+	// 	}
+	// }
+
 	int nBins_Gen = GenMC[0].at(0)->GetNbinsX();
 	Unfolder.ParseConfig();
 	TUnfoldDensity* unfold = Unfolder.SetUp(A.at(0), data);
+
+	// TH1* bias = (TH1*)GenMC[0].at(0)->Clone();
+	// bias->Reset();
+	// for (auto& h : GenMC[0]) {
+	// 	bias->Add(h);
+	// }
+	// unfold->SetBias(bias);
+
 	TH2* ProbMatrix = (TH2*)A.at(0)->Clone();
 	ProbMatrix->Reset();
 	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
-	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
+	// Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
 
 	unfold->SubtractBackground(fakes, "fakes" + label, 1, 0.0); // subtract fakes
 
 // addsys variations of MigrationMatrix
-	int nVariation = 0;
-	for (auto& var : variations) {
-		std::cout << "adding " << var << " as systematik" << std::endl;
-		unfold->AddSysError(A.at(nVariation),
-		                    TString(var),
-		                    TUnfoldDensity::kHistMapOutputVert,
-		                    TUnfoldDensity::kSysErrModeMatrix);
-		nVariation += 1;
+	for (auto& A_var : A) {
+		for (auto& varname : variations) {
+			if (TString(A_var->GetName()).Contains(varname)) {
+				std::cout << "adding " << varname << " as systematic" << std::endl;
+				A_var->Print();
+				std::cout << A_var->GetRMS() << std::endl;
+				unfold->AddSysError(A_var, TString(varname), TUnfoldDensity::kHistMapOutputVert, TUnfoldDensity::kSysErrModeMatrix);
+			}
+		}
 	}
 
-// unfold->SetBias(GenMC.at(0));
-
-// Find Best Tau
+	// Find Best Tau
 	Unfolder.FindBestTauLcurve(unfold, label);
-// Unfolder.FindBestTau(unfold, label);
-// unfold->DoUnfold(0.000316228);
-// unfold->DoUnfold(0.0);
+	// Unfolder.FindBestTau(unfold, label);
+	// unfold->DoUnfold(0.0);
+	// unfold->DoUnfold(0.1);
+
+
+
 
 // Get Output
 // 0st element=unfolded 1st=folded back
@@ -95,29 +124,42 @@ void UnfoldWrapper::DoIt() {
 	unfold_output = Unfolder.GetOutput(unfold);
 	TH1* unfolded_nominal = std::get<0>(unfold_output);
 
-// Visualize ERRORS
-	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
-	Drawer.Draw2D(ErrorMatrix, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
-	writer.addToFile(ErrorMatrix);
+// add misses
+	// i = 0;
+	// for (auto& h : misses) {
+	// 	unfolded_nominal->Add(misses.at(i), +1);
+	// 	i++;
+	// }
+
 
 // STAT SOURCES
 
 
 // SYST SOURCES
-	//input data stat error
+//input data stat error
 	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input" + label);
 	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 // subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
-	// Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+// Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes" + label);
-	// Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+// Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	// Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 
-	//create shift Histos from MatrixErrors
+// Visualize ERRORS
+	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
+// TH2* ErrorMatrix = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
+// ErrorMatrix->Reset();
+// ErrorMatrix->SetName("ErrorMatrix");
+// unfold->GetEmatrix(ErrorMatrix);
+// ErrorMatrix->Add(ErrorMatrix_MCstat);
+	Drawer.Draw2D(ErrorMatrix, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	writer.addToFile(ErrorMatrix);
+
+//create shift Histos from MatrixErrors
 	TH1* ShiftInputUp = (TH1*) unfolded_nominal->Clone();
 	ShiftInputUp->SetName("unfolded_" + genvar + "_DataStatUp");
 	TH1* ShiftInputDown = (TH1*) unfolded_nominal->Clone();
@@ -169,9 +211,9 @@ void UnfoldWrapper::DoIt() {
 	double systerrorL;
 	double systerrorH;
 
-	//calculate errors on unfolded Points -> all systematic
+//calculate errors on unfolded Points -> all systematic
 	for (Int_t bin = 1; bin <= nBins_Gen; bin++) {
-		std::cout << "claculating error in Bin " << bin << std::endl;
+		std::cout << "calculating error in Bin " << bin << std::endl;
 		// create templates of error from Covariance Matrices
 		ShiftInputUp->AddBinContent(bin, sqrt(ErrorMatrix_input->GetBinContent(bin, bin)));
 		ShiftInputDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_input->GetBinContent(bin, bin))));
@@ -234,14 +276,17 @@ void UnfoldWrapper::DoIt() {
 	        ESystH.data());
 	TH2* L = unfold->GetL("L");
 	TH2* RhoTotal = unfold->GetRhoIJtotal("RhoTotal");
-	std::cout << "#####chi**2 from DummyData#####" << std::endl;
+	std::cout << "#####chi**2 Values#####" << std::endl;
 	std::cout << "chi**2_A+chi**2_L/Ndf = "
 	          << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n"
 	          << "chi**2_Sys/Ndf = "
-	          << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n";
+	          << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n"
+	          << "AvgRho = "
+	          << unfold->GetRhoAvg() << "\n";
 
 
-	// Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
+
+// Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
 	Drawer.Draw2D(L, "L" + label);
 	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
 
@@ -256,7 +301,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw1D(std::get<1>(unfold_output), varName + "_foldedback" + label, log);
 	unfolded_nominal->SetName("unfolded_" + genvar);
 	writer.addToFile(unfolded_nominal);
-	nVariation = 0;
+	int nVariation = 0;
 	std::vector<TH1*> v_NomPlusVar;
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
@@ -273,6 +318,12 @@ void UnfoldWrapper::DoIt() {
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
+
+// i = 0;
+// for (auto& h : GenMC.at(0)) {
+// 	h->Add(misses.at(i), -1);
+// 	i++;
+// }
 
 	for (const auto& sysvar : GenMC) {
 		for (const auto& bkg : sysvar) {

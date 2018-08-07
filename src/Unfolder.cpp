@@ -16,7 +16,7 @@ using namespace std;
 TUnfoldDensity* Unfolder::SetUp(TH2* A, TH1F* input) {
 	cout << "Setting Up Unfolder.." << endl;
 	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfoldDensity::kHistMapOutputVert, TUnfold::kRegModeCurvature,
-	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidthAndUser, 0, 0, 0, "*[UOB]" );
+	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[UOB]" );
 	float n_input = unfold->SetInput(input);
 	if (n_input >= 1) {
 		std::cout << "Unfolding result may be wrong\n";
