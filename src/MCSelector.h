@@ -77,11 +77,14 @@ public:
   TH1F* h_Gen = 0;
   std::map<std::string, TH1F*> h_GenSys;
   TH1F* h_Data = 0;
-  std::map<std::string, TH2D*> ASys;
   TH2D* A = 0;
+  std::map<std::string, TH2D*> ASys;
   TH2D* A_equBins = 0;
+  std::map<std::string, TH2D*> A_equBinsSys;
+  
   // Split Sample
   TH1F* h_DummyDataSplit = 0;
+  std::map<std::string, TH1F*> h_DummyDataSplitSys;
   TH1F* h_RecoSplit = 0;
   std::map<std::string, TH1F*> h_RecoSysSplit;
   TH1F* h_GenSplit = 0;
@@ -89,23 +92,38 @@ public:
   TH2D* ASplit = 0;
   std::map<std::string, TH2D*> ASysSplit;
   TH1F* h_testMET = 0;
+  std::map<std::string, TH1F*> h_testMETSys;
   TH1F* h_testMETgenBinning = 0;
+  std::map<std::string, TH1F*> h_testMETgenBinningSys;
   TH1F* h_GenRecoMET = 0;
+  std::map<std::string, TH1F*> h_GenRecoMETSys;
 
   TH1F* h_testMET_Split = 0;
+  std::map<std::string, TH1F*> h_testMET_SplitSys;
   TH1F* h_fake = 0;
+  std::map<std::string, TH1F*> h_fakeSys;
   TH1F* h_fake_Split = 0;
+  std::map<std::string, TH1F*> h_fake_SplitSys;
   TH1F* h_misses = 0;
+  std::map<std::string, TH1F*> h_missesSys;
   TH1F* h_misses_Split = 0;
+  std::map<std::string, TH1F*> h_misses_SplitSys;
 
   // Additional Histos
   TH1F* h_N_Jets = 0;
+  std::map<std::string, TH1F*> h_N_JetsSys;
   TH1F* h_Jet_Pt = 0;
+  std::map<std::string, TH1F*> h_Jet_PtSys;
   TH1F* h_Jet_Eta = 0;
+  std::map<std::string, TH1F*> h_Jet_EtaSys;
   TH1F* h_Evt_Phi_MET = 0;
+  std::map<std::string, TH1F*> h_Evt_Phi_METSys;
   TH1F* h_Evt_Phi_GenMET = 0;
+  std::map<std::string, TH1F*> h_Evt_Phi_GenMETSys;
   TH1F* h_W_Pt = 0;
+  std::map<std::string, TH1F*> h_W_PtSys;
   TH1F* h_Z_Pt = 0;
+  std::map<std::string, TH1F*> h_Z_PtSys;
 
 
   TH1D* hWbosonWeight_nominal = 0;

@@ -209,134 +209,180 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   if (option.Contains("res") || option.Contains("scale") || option.Contains("data")) doadditionalsystematics = false;
   else doadditionalsystematics = true;
+
   std::cout << "doing additional systematics?? " << doadditionalsystematics << std::endl;
 
   TRandom* rand = new TRandom();
+
+  auto bookSysHistos = [this](std::map<std::string, TH1F*> &histMap, TString name, TString var, int nBins, std::vector<double> BinEdges) {
+    if (doadditionalsystematics) {
+      for (auto& sys : allSystematics) {
+        TH1F* tmp = new TH1F(name + sys, var, nBins, BinEdges.data());
+        tmp->Sumw2();
+        histMap[sys] = new TH1F(name + sys, var, nBins, BinEdges.data());
+        GetOutputList()->Add(histMap[sys]);
+      }
+    }
+  };
+
+  auto bookSysHistosequBins = [this](std::map<std::string, TH1F*> &histMap, TString name, TString var, int nBins, double xmin, double xmax) {
+    if (doadditionalsystematics) {
+      for (auto& sys : allSystematics) {
+        TH1F* tmp = new TH1F(name + sys, var, nBins, xmin, xmax);
+        tmp->Sumw2();
+        histMap[sys] = new TH1F(name + sys, var, nBins, xmin, xmax);
+        GetOutputList()->Add(histMap[sys]);
+      }
+    }
+  };
+
+  auto bookSysHistos2D = [this](std::map<std::string, TH2D*> &histMap, TString name, TString var, int nBinsx, std::vector<double> BinEdgesx, int nBinsy, std::vector<double> BinEdgesy) {
+    if (doadditionalsystematics) {
+      for (auto& sys : allSystematics) {
+        TH2D* tmp = new TH2D(name + sys, var, nBinsx, BinEdgesx.data(), nBinsy, BinEdgesy.data());
+        tmp->Sumw2();
+        histMap[sys] =  new TH2D(name + sys, var, nBinsx, BinEdgesx.data(), nBinsy, BinEdgesy.data());;
+        GetOutputList()->Add(histMap[sys] );
+      }
+    }
+  };
+
+  auto bookSysHistos2DequBins = [this](std::map<std::string, TH2D*> &histMap, TString name, TString var, int nBinsx, double xmin, double xmax, int nBinsy, double ymin, double ymax) {
+    if (doadditionalsystematics) {
+      for (auto& sys : allSystematics) {
+        TH2D* tmp = new TH2D(name + sys, var, nBinsx, xmin, xmax, nBinsy, ymin, ymax);
+        tmp->Sumw2();
+        histMap[sys] = new TH2D(name + sys, var, nBinsx, xmin, xmax, nBinsy, ymin, ymax);
+        GetOutputList()->Add(histMap[sys]);
+      }
+    }
+  };
+
   // book histos for split distributions
-  h_GenSplit = new TH1F(strippedOption + genvar + currentJESJERvar + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
+  h_GenSplit = new TH1F(strippedOption + genvar + "_Split" + currentJESJERvar , genvar, nBins_Gen, BinEdgesGen.data());
   h_GenSplit->Sumw2();
   GetOutputList()->Add(h_GenSplit);
-  h_RecoSplit = new TH1F(strippedOption + recovar + currentJESJERvar + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
+  bookSysHistos(h_GenSysSplit, strippedOption + genvar + "_Split_" , genvar, nBins_Gen, BinEdgesGen);
+
+  h_RecoSplit = new TH1F(strippedOption + recovar + "_Split" + currentJESJERvar, recovar, nBins_Reco, BinEdgesReco.data());
   h_RecoSplit->Sumw2();
   GetOutputList()->Add(h_RecoSplit);
-  h_DummyDataSplit = new TH1F(strippedOption + "DummyData" +  currentJESJERvar + "_Split", "DummyData", nBins_Reco, BinEdgesReco.data());
+  bookSysHistos(h_RecoSysSplit, strippedOption + recovar + "_Split_" , recovar, nBins_Reco, BinEdgesReco);
+
+
+  h_DummyDataSplit = new TH1F(strippedOption + "DummyData_Split" +  currentJESJERvar, "DummyData", nBins_Reco, BinEdgesReco.data());
   h_DummyDataSplit->Sumw2();
   GetOutputList()->Add(h_DummyDataSplit);
+  bookSysHistos(h_DummyDataSplitSys, strippedOption + "DummyData_Split_" , "DummyData", nBins_Reco, BinEdgesReco);
 
-  ASplit = new TH2D(strippedOption + "A" + currentJESJERvar + "_Split", "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
+
+  ASplit = new TH2D(strippedOption + "A_Split" + currentJESJERvar, "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
   ASplit->Sumw2();
   GetOutputList()->Add(ASplit);
+  bookSysHistos2D(ASysSplit, strippedOption + "A_Split_", "A", nBins_Reco, BinEdgesReco, nBins_Gen, BinEdgesGen);
+
 
   // book histos for full distributions
   h_Gen = new TH1F(strippedOption + genvar + currentJESJERvar, genvar, nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
-
   GetOutputList()->Add(h_Gen);
+  bookSysHistos(h_GenSys, strippedOption + genvar + "_" , genvar, nBins_Gen, BinEdgesGen);
+
   h_Reco = new TH1F(strippedOption + recovar + currentJESJERvar, recovar, nBins_Reco, BinEdgesReco.data());
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
+  bookSysHistos(h_RecoSys, strippedOption + recovar + "_" , recovar, nBins_Reco, BinEdgesReco);
+
 
   A = new TH2D(strippedOption + "A" + currentJESJERvar , "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
   A->Sumw2();
   GetOutputList()->Add(A);
-
-  if (doadditionalsystematics) {
-
-    for (auto& sys : allSystematics) {
-      TH2D* tmp = new TH2D(strippedOption + "A_" + sys, "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
-      tmp->Sumw2();
-      ASys[sys] = tmp;
-      GetOutputList()->Add(tmp);
-
-      TH1F* Recotmp = new TH1F(strippedOption + recovar + "_" + sys, recovar, nBins_Reco, BinEdgesReco.data());
-      Recotmp->Sumw2();
-      h_RecoSys[sys] = Recotmp;
-      GetOutputList()->Add(Recotmp);
-
-      TH1F* Gentmp = new TH1F(strippedOption + genvar + "_" + sys, genvar, nBins_Gen, BinEdgesGen.data());
-      Gentmp->Sumw2();
-      h_GenSys[sys] = Gentmp;
-      GetOutputList()->Add(Gentmp);
+  bookSysHistos2D(ASys, strippedOption + "A_", "A", nBins_Reco, BinEdgesReco, nBins_Gen, BinEdgesGen);
 
 
-
-      TH2D* tmpSplit = new TH2D(strippedOption + "A_" + sys + "_Split", "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
-      tmpSplit->Sumw2();
-      ASysSplit[sys] = tmpSplit;
-      GetOutputList()->Add(tmpSplit);
-
-      TH1F* RecotmpSplit = new TH1F(strippedOption + recovar + "_" + sys + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
-      RecotmpSplit->Sumw2();
-      h_RecoSysSplit[sys] = RecotmpSplit;
-      GetOutputList()->Add(RecotmpSplit);
-
-      TH1F* GentmpSplit = new TH1F(strippedOption + genvar + "_" + sys + "_Split", genvar, nBins_Gen, BinEdgesGen.data());
-      GentmpSplit->Sumw2();
-      h_GenSysSplit[sys] = GentmpSplit;
-      GetOutputList()->Add(GentmpSplit);
-    }
-  }
-
-  A_equBins = new TH2D(strippedOption + "A_equBins" + currentJESJERvar, "A", 500, 0, 2000, nBins_Reco, BinEdgesReco.data());
+  A_equBins = new TH2D(strippedOption + "A_equBins" + currentJESJERvar, "A", 250, 0, 2000, 250, 0, 2000);
   A_equBins->Sumw2();
   GetOutputList()->Add(A_equBins);
+  bookSysHistos2DequBins(A_equBinsSys, strippedOption + "A_equBins_", "A",  250, 0, 2000, 250, 0, 2000);
+
 
   h_testMET = new TH1F(strippedOption + "TestMET" + currentJESJERvar, "TESTMET", nBins_Reco, BinEdgesReco.data());
   h_testMET->Sumw2();
   GetOutputList()->Add(h_testMET);
+  bookSysHistos(h_testMETSys, strippedOption + "TestMET_" , "TESTMET", nBins_Reco, BinEdgesReco);
 
   h_GenRecoMET = new TH1F(strippedOption + "h_GenRecoMET" + currentJESJERvar, "h_GenRecoMET", nBins_Reco, BinEdgesReco.data());
   h_GenRecoMET->Sumw2();
   GetOutputList()->Add(h_GenRecoMET);
+  bookSysHistos(h_GenRecoMETSys, strippedOption + "h_GenRecoMET_" , "h_GenRecoMET", nBins_Reco, BinEdgesReco);
+
 
   h_testMETgenBinning = new TH1F(strippedOption + "testMETgenBinning" + currentJESJERvar, "testMETgenBinning", nBins_Gen, BinEdgesGen.data());
   h_testMETgenBinning->Sumw2();
   GetOutputList()->Add(h_testMETgenBinning);
+  bookSysHistos(h_testMETgenBinningSys, strippedOption + "testMETgenBinning_" , "testMETgenBinning", nBins_Gen, BinEdgesGen);
 
-  h_testMET_Split = new TH1F(strippedOption + "TestMET" + currentJESJERvar + "_Split", "TESTMET", nBins_Reco, BinEdgesReco.data());
+  h_testMET_Split = new TH1F(strippedOption + "TestMET_Split" + currentJESJERvar, "TESTMET", nBins_Reco, BinEdgesReco.data());
   h_testMET_Split->Sumw2();
   GetOutputList()->Add(h_testMET_Split);
+  bookSysHistos(h_testMET_SplitSys, strippedOption + "TestMET_Split_" , "TESTMET", nBins_Reco, BinEdgesReco);
 
-  h_fake = new TH1F(strippedOption + "fakes" + currentJESJERvar, recovar, nBins_Reco, BinEdgesReco.data());
+  h_fake = new TH1F(strippedOption + "fakes" + currentJESJERvar, "fakes", nBins_Reco, BinEdgesReco.data());
   h_fake->Sumw2();
   GetOutputList()->Add(h_fake);
+  bookSysHistos(h_fakeSys, strippedOption + "fakes_" , "fakes", nBins_Reco, BinEdgesReco);
 
-  h_fake_Split = new TH1F(strippedOption + "fakes" + currentJESJERvar + "_Split", recovar, nBins_Reco, BinEdgesReco.data());
+  h_fake_Split = new TH1F(strippedOption + "fakes_Split" + currentJESJERvar , recovar, nBins_Reco, BinEdgesReco.data());
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
+  bookSysHistos(h_fake_SplitSys, strippedOption + "fakes_Split_" , "fakes", nBins_Reco, BinEdgesReco);
 
-  h_misses = new TH1F(strippedOption + "misses" + currentJESJERvar, genvar, nBins_Gen, BinEdgesGen.data());
+  h_misses = new TH1F(strippedOption + "misses" + currentJESJERvar, "misses", nBins_Gen, BinEdgesGen.data());
   h_misses->Sumw2();
   GetOutputList()->Add(h_misses);
+  bookSysHistos(h_missesSys, strippedOption + "misses_" , "misses", nBins_Gen, BinEdgesGen);
 
-  h_misses_Split = new TH1F(strippedOption + "misses" + currentJESJERvar + "_Split", genvar,  nBins_Gen, BinEdgesGen.data());
+  h_misses_Split = new TH1F(strippedOption + "misses_Split" + currentJESJERvar, genvar,  nBins_Gen, BinEdgesGen.data());
   h_misses_Split->Sumw2();
   GetOutputList()->Add(h_misses_Split);
+  bookSysHistos(h_misses_SplitSys, strippedOption + "misses_Split_" , "misses", nBins_Gen, BinEdgesGen);
 
   // Additional Variables
   h_N_Jets = new TH1F(strippedOption + "N_Jets" + currentJESJERvar, "N_Jets", 15, 0, 15);
   h_N_Jets->Sumw2();
   GetOutputList()->Add(h_N_Jets);
-  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jets_Pt", 80, 0, 800);
+  bookSysHistosequBins(h_N_JetsSys, strippedOption + "N_Jets" , "N_Jets", 15, 0, 15);
+
+  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 80, 0, 800);
   h_Jet_Pt->Sumw2();
   GetOutputList()->Add(h_Jet_Pt);
+  bookSysHistosequBins(h_Jet_PtSys, strippedOption + "Jet_Pt_" , "Jet_Pt", 80, 0, 800);
+
   h_Jet_Eta = new TH1F(strippedOption + "Jet_Eta" + currentJESJERvar, "Jet_Eta", 40, -4, 4);
   h_Jet_Eta->Sumw2();
   GetOutputList()->Add(h_Jet_Eta);
+  bookSysHistosequBins(h_Jet_EtaSys, strippedOption + "Jet_Eta_" , "Jet_Eta", 40, -4, 4);
+
   h_Evt_Phi_MET = new TH1F(strippedOption + "Evt_Phi_MET" + currentJESJERvar, "Evt_Phi_MET", 50, -3.2, 3.2);
   h_Evt_Phi_MET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_MET);
+  bookSysHistosequBins(h_Evt_Phi_METSys, strippedOption + "Evt_Phi_MET_" , "Evt_Phi_MET", 40, -4, 4);
+
   h_Evt_Phi_GenMET = new TH1F(strippedOption + "Evt_Phi_GenMET" + currentJESJERvar, "Evt_Phi_GenMET", 50, -3.2, 3.2);
   h_Evt_Phi_GenMET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_GenMET);
+  bookSysHistosequBins(h_Evt_Phi_GenMETSys, strippedOption + "Evt_Phi_GenMET_" , "Evt_Phi_GenMET", 50, -3.2, 3.2);
 
   h_W_Pt = new TH1F(strippedOption + "h_W_Pt" + currentJESJERvar, "h_W_Pt", 120, 0, 1200);
   h_W_Pt->Sumw2();
   GetOutputList()->Add(h_W_Pt);
+  bookSysHistosequBins(h_W_PtSys, strippedOption + "h_W_Pt_" , "h_W_Pt", 120, 0, 1200);
 
   h_Z_Pt = new TH1F(strippedOption + "h_Z_Pt" + currentJESJERvar, "h_Z_Pt", 120, 0, 1200);
   h_Z_Pt->Sumw2();
   GetOutputList()->Add(h_Z_Pt);
+  bookSysHistosequBins(h_Z_PtSys, strippedOption + "h_Z_Pt_" , "h_Z_Pt", 120, 0, 1200);
+
 
   std::cout << "All Histos SetUp!" << std::endl;
 }
@@ -512,6 +558,50 @@ MCSelector::Process(Long64_t entry)
     // weight_ *= (BosonWeight_nominal);
   }
 
+  auto fillSys = [this, isZnunuSample, isWlnuSample](std::map<std::string, TH1F*> &histMap, double var) {
+    if (doadditionalsystematics) { //fill systematics only in nominal case
+      for (auto& sys : allSystematics ) {
+        if (BosonSystematicWeights.count(sys)) {
+          if (isZnunuSample || isWlnuSample) {
+            double bosonweight = BosonSystematicWeights.find(sys)->second;
+            float tmpweight = weight_ * bosonweight;
+            histMap.find(sys)->second->Fill( var, tmpweight );
+          }
+        }
+        else {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
+          else if (TString(sys).Contains("mu")) {
+            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
+          }
+          histMap.find(sys)->second->Fill( var, tmpweight );
+        }
+      }
+    }
+  };
+
+  auto fillSys2D = [this, isZnunuSample, isWlnuSample](std::map<std::string, TH2D*> &histMap, double varx, double vary) {
+    if (doadditionalsystematics) { //fill systematics only in nominal case
+      for (auto& sys : allSystematics ) {
+        if (BosonSystematicWeights.count(sys)) {
+          if (isZnunuSample || isWlnuSample) {
+            double bosonweight = BosonSystematicWeights.find(sys)->second;
+            float tmpweight = weight_ * bosonweight;
+            histMap.find(sys)->second->Fill( varx, vary, tmpweight );
+          }
+        }
+        else {
+          float tmpweight = weight_ * *(sysweights.find(sys)->second);
+          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
+          else if (TString(sys).Contains("mu")) {
+            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
+          }
+          histMap.find(sys)->second->Fill( varx, vary, tmpweight );
+        }
+      }
+    }
+  };
+
   bool dPhiCut = varDeltaPhi_Jet_MET[0] > 1.0;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
@@ -521,235 +611,101 @@ MCSelector::Process(Long64_t entry)
 
   bool miss = gensel && !recosel;
 
+
+
   if (gensel) {
     h_Gen->Fill(*var_gen, weight_);
+    fillSys(h_GenSys, *var_gen);
+    h_GenRecoMET->Fill(*var_reco, weight_);
+    fillSys(h_GenRecoMETSys, *var_reco);
+
+    if (!isPseudoData) {
+      h_GenSplit->Fill(*var_gen, weight_);
+      fillSys(h_GenSysSplit, *var_gen);
+    }
+
     if (recosel) {
       h_testMET->Fill(*var_reco, weight_);
+      fillSys(h_testMETSys, *var_reco);
       h_testMETgenBinning->Fill(*var_reco, weight_);
-    }
-    h_GenRecoMET->Fill(*var_reco, weight_);
-    if (doadditionalsystematics) { //fill systematics only in nominal case
-      for (auto& sys : allSystematics ) {
-        if (BosonSystematicWeights.count(sys)) {
-          if (isZnunuSample || isWlnuSample) {
-            double bosonweight = BosonSystematicWeights.find(sys)->second;
-            float tmpweight = weight_ * bosonweight;
-            h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-          }
-        }
-        else {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-          else if (TString(sys).Contains("mu")) {
-            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-          }
-          h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-        }
+      fillSys(h_testMETgenBinningSys, *var_reco);
+
+      if (!isPseudoData) {
+        h_testMET_Split->Fill(*var_reco, weight_);
+        fillSys(h_testMET_SplitSys, *var_reco);
       }
     }
+
   }
 
   if (miss) { //is a miss
     A->Fill(-10, *var_gen, weight_);
+    fillSys2D(ASys, -10, *var_gen );
     h_misses->Fill(*var_gen, weight_);
+    fillSys(h_missesSys, *var_gen);
+    if (!isPseudoData) {
+      h_misses_Split->Fill(*var_gen, weight_);
+      fillSys(h_misses_SplitSys, *var_gen);
 
-    if (doadditionalsystematics) { //fill systematics only in nominal case
-      for (auto& sys : allSystematics ) {
-        if (BosonSystematicWeights.count(sys)) {
-          if (isZnunuSample || isWlnuSample) {
-            double bosonweight = BosonSystematicWeights.find(sys)->second;
-            //if (isnan(bosonweight)) bosonweight = 0;
-            float tmpweight = weight_ * bosonweight;
-            // std::cout << "applying boson weight " <<  bosonweight << " for " << sys << " in Sample " << option << "with W_Pt " << *W_Pt << std::endl;
-            ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight );
-            // h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-          }
-        }
-        else {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-          else if (TString(sys).Contains("mu")) {
-            // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-            // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-            // std::cout << "Boson" + sys << " = " << BosonSystematicWeights.find("Boson" + sys)->second << std::endl;
-          }
-          ASys.find(sys)->second->Fill(-10, *var_gen, tmpweight);
-          // h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-        }
-      }
+      ASplit->Fill(-10, *var_gen, weight_);
+      fillSys2D(ASysSplit, -10, *var_gen );
     }
-
-    // if (!isPseudoData) {
-    //   ASplit->Fill(-10, *var_gen, weight_);
-    //   h_misses_Split->Fill(*var_gen, weight_);
-    //   h_GenSplit->Fill(*var_gen, weight_); // Fill GenMET also, if its a miss, since they belong to the desired Gen PhaseSpace
-
-    //   if (doadditionalsystematics) { //fill systematics only in nominal case
-    //     for (auto& sys : allSystematics ) {
-    //       if (BosonSystematicWeights.count(sys)) {
-    //         if (isZnunuSample || isWlnuSample) {
-    //           double bosonweight = BosonSystematicWeights.find(sys)->second;
-    //           float tmpweight = weight_ * bosonweight;
-    //           ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
-    //           h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-    //         }
-    //       }
-    //       else {
-    //         float tmpweight = weight_ * *(sysweights.find(sys)->second);
-    //         if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-    //         else if (TString(sys).Contains("mu")) {
-    //           // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-    //           tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-    //           // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-    //         }
-    //         ASysSplit.find(sys)->second->Fill(-10, *var_gen, tmpweight );
-    //         h_GenSysSplit.find(sys)->second->Fill( *var_gen, tmpweight );
-    //       }
-    //     }
-    //   }
-    // }
   }
 
+
   if (recosel) { // "normal" selection on reco level
-    // if (triggered && *recoSelected && dPhiCut) { // "normal" selection on reco level
-    //don't touch genselection for "normal" reco histograms
-    // if (isPseudoData) {
-    //   // h_RecoSplit->Fill(*var_reco, weight_);
-    //   h_RecoSplit->Fill(rand.Poisson(*var_reco), weight_);
-    //   h_DummyDataSplit->Fill(*var_reco, weight_);
-    //   if (doadditionalsystematics) {  //fill systematics only in nominal case
-    //     for (auto& sys : allSystematics ) {
-    //       if (BosonSystematicWeights.count(sys)) {
-    //         if (isZnunuSample || isWlnuSample) {
-    //           double bosonweight = BosonSystematicWeights.find(sys)->second;
-    //           float tmpweight = weight_ * bosonweight;
-    //           h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
-    //         }
-    //       }
-    //       else {
-    //         float tmpweight = weight_ * *(sysweights.find(sys)->second);
-    //         if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-    //         else if (TString(sys).Contains("mu")) {
-    //           // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-    //           tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-    //           // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-    //         }
-    //         h_RecoSysSplit.find(sys)->second->Fill(*var_reco, tmpweight );
-
-    //       }
-    //     }
-    //   }
-    // }
     h_Reco->Fill(*var_reco, weight_);
-    if (doadditionalsystematics) {  //fill systematics only in nominal case
-      for (auto& sys : allSystematics ) {
-        if (BosonSystematicWeights.count(sys)) {
-          if (isZnunuSample || isWlnuSample) {
-            double bosonweight = BosonSystematicWeights.find(sys)->second;
-            float tmpweight = weight_ * bosonweight;
-            h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
-          }
-        }
-        else {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-          else if (TString(sys).Contains("mu")) {
-            // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-            // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-          }
-          h_RecoSys.find(sys)->second->Fill(*var_reco, tmpweight );
-        }
-      }
-    }
-
+    fillSys(h_RecoSys, *var_reco);
     // Additional Variables
     h_N_Jets->Fill(*N_Jets, weight_);
+    fillSys(h_RecoSys, *N_Jets);
+
     h_Jet_Pt->Fill(*Jet_Pt, weight_);
+    fillSys(h_Jet_PtSys, *Jet_Pt);
+
     h_Jet_Eta->Fill(*Jet_Eta, weight_);
+    fillSys(h_Jet_EtaSys, *Jet_Eta);
+
     h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
+    fillSys(h_Evt_Phi_METSys, *Evt_Phi_MET);
+
     h_Evt_Phi_GenMET->Fill(*Evt_Phi_GenMET, weight_);
+    fillSys(h_Evt_Phi_GenMETSys, *Evt_Phi_GenMET);
 
     h_W_Pt->Fill(*W_Pt, weight_);
+    fillSys(h_W_PtSys, *W_Pt);
+
     h_Z_Pt->Fill(*Z_Pt, weight_);
+    fillSys(h_Z_PtSys, *Z_Pt);
 
+    if (isPseudoData) {
+      h_RecoSplit->Fill(*var_reco, weight_);
+      fillSys(h_RecoSysSplit, *var_reco);
 
-
+      h_DummyDataSplit->Fill(*var_reco, weight_);
+      fillSys(h_DummyDataSplitSys, *var_reco);
+    }
 
     if (!gensel) { //is a fake
-      if (!isPseudoData) {
-        h_fake_Split->Fill(*var_reco, weight_);
-      }
       h_fake->Fill(*var_reco, weight_);
-
+      fillSys(h_fakeSys, *var_reco);
       if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
       if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
       if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
       if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
       if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
       if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
-    }
-    // else if (*genSelected) { //is not a fake
-    else if (gensel) { //is not a fake
-      // if (!isPseudoData) {
-      //   h_GenSplit->Fill(*var_gen, weight_);
-      //   h_testMET_Split->Fill(*var_reco, weight_);
-      //   h_testMETgenBinning->Fill(*var_reco, weight_);
-      //   ASplit->Fill(*var_reco, *var_gen, weight_);
 
-      //   if (doadditionalsystematics) { //fill systematics only in nominal case
-      //     for (auto& sys : allSystematics ) {
-      //       if (BosonSystematicWeights.count(sys)) {
-      //         if (isZnunuSample || isWlnuSample) {
-      //           double bosonweight = BosonSystematicWeights.find(sys)->second;
-      //           float tmpweight = weight_ * bosonweight;
-      //           ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-      //           h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-      //         }
-      //       }
-      //       else {
-      //         float tmpweight = weight_ * *(sysweights.find(sys)->second);
-      //         if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-      //         else if (TString(sys).Contains("mu")) {
-      //           // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-      //           tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-      //           // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-      //         }
-      //         ASysSplit.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-      //         h_GenSysSplit.find(sys)->second->Fill(*var_gen, tmpweight );
-      //       }
-      //     }
-      //   }
-      // }
-      // h_Gen->Fill(*var_gen, weight_);
-      // h_testMET->Fill(*var_reco, weight_);
-      A_equBins->Fill(*var_reco, *var_gen, weight_);
-      A->Fill(*var_reco, *var_gen, weight_);
-
-      if (doadditionalsystematics) { //fill systematics only in nominal case
-        for (auto& sys : allSystematics ) {
-          if (BosonSystematicWeights.count(sys)) {
-            if (isZnunuSample || isWlnuSample) {
-              double bosonweight = BosonSystematicWeights.find(sys)->second;
-              float tmpweight = weight_ * bosonweight;
-              ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-              // h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-            }
-          }
-          else {
-            float tmpweight = weight_ * *(sysweights.find(sys)->second);
-            if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-            else if (TString(sys).Contains("mu")) {
-              // if (isWlnuSample || isZnunuSample) tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-              tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-              // tmpweight *= BosonSystematicWeights.find("Boson" + sys)->second;
-            }
-            ASys.find(sys)->second->Fill(*var_reco, *var_gen, tmpweight );
-            // h_GenSys.find(sys)->second->Fill( *var_gen, tmpweight );
-          }
-        }
+      if (!isPseudoData) {
+        h_fake_Split->Fill(*var_reco, weight_);
+        fillSys(h_fake_SplitSys, *var_reco);
       }
+    }
+    else if (gensel) { //is not a fake
+      A_equBins->Fill(*var_reco, *var_gen, weight_);
+      fillSys2D(A_equBinsSys, *var_reco, *var_gen );
+      A->Fill(*var_reco, *var_gen, weight_);
+      fillSys2D(ASys, *var_reco, *var_gen );
     }
   }
   return kTRUE;

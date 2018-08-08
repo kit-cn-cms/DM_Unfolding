@@ -44,6 +44,7 @@ void UnfoldWrapper::DoIt() {
 	boost::property_tree::ini_parser::read_ini(std::string(path.GetConfigPath()), pt);
 	TString genvar = pt.get<std::string>("vars.gen");
 	TString recovar = pt.get<std::string>("vars.reco");
+	bool AddMissesbyHand = pt.get<bool>("Unfolding.AddMissesbyHand");
 
 	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
 	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
@@ -60,24 +61,22 @@ void UnfoldWrapper::DoIt() {
 	TH1F* h_DataMinFakes = (TH1F*)data->Clone();
 	h_DataMinFakes->Add(fakes, -1);
 
-	// //normalize matrix by hand
-	// double s_i = 0;
-	// std::vector<double> s;
-	// for (int iBiny = 1; iBiny <= A.at(0)->GetNbinsY(); iBiny++) {
-	// 	s_i = 0;
-	// 	for (int iBinx = 0; iBinx <= A.at(0)->GetNbinsX(); iBinx++) {
-	// 		s_i += A.at(0)->GetBinContent(iBiny, iBinx);
-	// 	}
-	// 	s.push_back(s_i);
-	// 	std::cout << s_i << std::endl;
-	// }
+	//clear RecoUnderflow in case you want to treat misses manually
+	if (AddMissesbyHand) {
+		for (int genBin = 0; genBin <= A.at(0)->GetNbinsY(); genBin++) {
+			A.at(0)->SetBinContent(0, genBin, 0);
+		}
 
-	// for (int iBiny = 1; iBiny <= A.at(0)->GetNbinsY(); iBiny++) {
-	// 	for (int iBinx = 0; iBinx <= A.at(0)->GetNbinsX(); iBinx++) {
-	// 		double tmp = A.at(0)->GetBinContent(iBiny, iBinx);
-	// 		A.at(0)->SetBinContent(iBiny, iBinx, tmp / s.at(iBiny)-1);
-	// 	}
-	// }
+		for (auto& A_var : A) {
+			for (auto& varname : variations) {
+				if (TString(A_var->GetName()).Contains(varname)) {
+					for (int genBin = 0; genBin <= A_var->GetNbinsY(); genBin++) {
+						A_var->SetBinContent(0, genBin, 0);
+					}
+				}
+			}
+		}
+	}
 
 	int nBins_Gen = GenMC[0].at(0)->GetNbinsX();
 	Unfolder.ParseConfig();
@@ -125,11 +124,13 @@ void UnfoldWrapper::DoIt() {
 	TH1* unfolded_nominal = std::get<0>(unfold_output);
 
 // add misses
-	// i = 0;
-	// for (auto& h : misses) {
-	// 	unfolded_nominal->Add(misses.at(i), +1);
-	// 	i++;
-	// }
+	if (AddMissesbyHand) {
+		i = 0;
+		for (auto& h : misses) {
+			unfolded_nominal->Add(misses.at(i), +1);
+			i++;
+		}
+	}
 
 
 // STAT SOURCES
