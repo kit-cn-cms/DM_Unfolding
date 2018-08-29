@@ -44,6 +44,8 @@ public:
 	std::vector<std::string> additionalBranchNamesFloat;
 	std::vector<std::string> LHAFixBranchesLong;
 	std::vector<std::string> LHAFixBranchesFloat;
+	std::vector<std::string> PDFFixBranchesLong;
+	std::vector<std::string> PDFFixBranchesFloat;
 	std::vector<std::string> variationFileNames;
 
 	std::vector<std::string> variation;

@@ -45,9 +45,16 @@ void HistMaker::MakeHistos() {
 
 			if (name == "diboson" || name == "singletop") {
 				long nevents = tmp_chain->GetEntries();
-				TTree* tmpFriendTree = CreateFriendTree(LHAFixBranchesLong, LHAFixBranchesFloat, nevents, name + TString("Friend"));
+				TTree* tmpFriendTree = CreateFriendTree(LHAFixBranchesLong, LHAFixBranchesFloat, nevents, name + TString("LHAFixFriend"));
 				TChain* tmpFriendChain = new TChain( name + TString("Friend"));
 				tmpFriendChain->Add(path.GetRootFilesPath() + name + TString("Friend.root"));
+				tmp_chain -> AddFriend(tmpFriendChain);
+			}
+			if (name == "diboson" || name == "singletop" || name == "gamma_jets" || name == "qcd" || name == "ttbar") {
+				long nevents = tmp_chain->GetEntries();
+				TTree* tmpFriendTree = CreateFriendTree(PDFFixBranchesLong, PDFFixBranchesFloat, nevents, name + TString("PDFFriend"));
+				TChain* tmpFriendChain = new TChain( name + TString("PDFFriend"));
+				tmpFriendChain->Add(path.GetRootFilesPath() + name + TString("PDFFriend.root"));
 				tmp_chain -> AddFriend(tmpFriendChain);
 			}
 
@@ -102,6 +109,9 @@ void HistMaker::ParseConfig() {
 
 	LHAFixBranchesLong = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesLong"));
 	LHAFixBranchesFloat = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesFloat"));
+	
+	PDFFixBranchesLong = to_array<std::string>(pt.get<std::string>("tree.PDFFixBranchesLong"));
+	PDFFixBranchesFloat = to_array<std::string>(pt.get<std::string>("tree.PDFFixBranchesFloat"));
 
 	for (const std::string& name : bkgnames) {
 		BkgPaths[name];
@@ -257,8 +267,8 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	TStopwatch watch;
 	watch.Start();
 	//SetUp TProof
-	// TProof *pl = TProof::Open("workers=1");
-	TProof *pl = TProof::Open("workers=12");
+	TProof *pl = TProof::Open("workers=3");
+	// TProof *pl = TProof::Open("workers=12");
 	// TProof *pl = TProof::Open("");
 	if (useBatch) {
 		pl->Close();
