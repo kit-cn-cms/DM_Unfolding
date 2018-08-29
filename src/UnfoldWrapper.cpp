@@ -11,7 +11,7 @@
 #include <iostream>
 
 
-UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, TH1* fakes_, std::vector<TH1*> misses_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_): writer(label_) {
+UnfoldWrapper::UnfoldWrapper(TString varName_, TString label_, std::vector<TH2*> A_, TH1F* data_, std::vector<TH1F*> fakes_, std::vector<TH1*> misses_, std::vector<std::vector<TH1*>> MC_, std::vector<std::vector<TH1*>> GenMC_, std::vector<std::string> variations_, std::vector<std::string> bkgnames_, std::vector<double> BinEdgesGen_): writer(label_) {
 	varName = varName_;
 	label = label_;
 	A = A_;
@@ -45,6 +45,7 @@ void UnfoldWrapper::DoIt() {
 	TString genvar = pt.get<std::string>("vars.gen");
 	TString recovar = pt.get<std::string>("vars.reco");
 	bool AddMissesbyHand = pt.get<bool>("Unfolding.AddMissesbyHand");
+	bool FillFakesinUF = pt.get<bool>("Unfolding.FillFakesinUF");
 
 	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
 	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
@@ -59,14 +60,13 @@ void UnfoldWrapper::DoIt() {
 
 	// Subtract Fakes from Data
 	TH1F* h_DataMinFakes = (TH1F*)data->Clone();
-	h_DataMinFakes->Add(fakes, -1);
+	if (!FillFakesinUF) h_DataMinFakes->Add(fakes.at(0), -1);
 
 	//clear RecoUnderflow in case you want to treat misses manually
 	if (AddMissesbyHand) {
 		for (int genBin = 0; genBin <= A.at(0)->GetNbinsY(); genBin++) {
 			A.at(0)->SetBinContent(0, genBin, 0);
 		}
-
 		for (auto& A_var : A) {
 			for (auto& varname : variations) {
 				if (TString(A_var->GetName()).Contains(varname)) {
@@ -78,10 +78,33 @@ void UnfoldWrapper::DoIt() {
 		}
 	}
 
+	// fill Fakes in Gen Underflow
+	if (FillFakesinUF) {
+		std::cout << "filling " << fakes.at(0)->GetName() << " in Underflow of " <<  A.at(0)->GetName() << std::endl;
+		for (int recoBin = 0; recoBin <= A.at(0)->GetNbinsX(); recoBin++) {
+			A.at(0)->SetBinContent(recoBin, 0, fakes.at(0)->GetBinContent(recoBin));
+		}
+		for (auto& A_var : A) {
+			for (auto& varname : variations) {
+				if (TString(A_var->GetName()).Contains(varname)) {
+					for (auto& fakeVarHisto : fakes) {
+						if (TString(fakeVarHisto->GetName()).Contains(varname)) {
+							std::cout << "filling " << fakeVarHisto->GetName() << " in Underflow of " << A_var->GetName() << std::endl;
+							for (int recoBin = 0; recoBin <= A_var->GetNbinsX(); recoBin++) {
+								A_var->SetBinContent(recoBin, 0, fakeVarHisto->GetBinContent(recoBin));
+								// std::cout << "setting recobin " << recoBin << " to " << fakeVarHisto->GetBinContent(recoBin) << std::endl;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	int nBins_Gen = GenMC[0].at(0)->GetNbinsX();
 	Unfolder.ParseConfig();
 	TUnfoldDensity* unfold = Unfolder.SetUp(A.at(0), data);
 
+	//setBias Manually
 	// TH1* bias = (TH1*)GenMC[0].at(0)->Clone();
 	// bias->Reset();
 	// for (auto& h : GenMC[0]) {
@@ -92,9 +115,9 @@ void UnfoldWrapper::DoIt() {
 	TH2* ProbMatrix = (TH2*)A.at(0)->Clone();
 	ProbMatrix->Reset();
 	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
-	// Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
+	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
 
-	unfold->SubtractBackground(fakes, "fakes" + label, 1, 0.0); // subtract fakes
+	if (!FillFakesinUF) unfold->SubtractBackground(fakes.at(0), "fakes" + label, 1., 0.00); // subtract fakes
 
 // addsys variations of MigrationMatrix
 	for (auto& A_var : A) {
@@ -110,9 +133,11 @@ void UnfoldWrapper::DoIt() {
 
 	// Find Best Tau
 	Unfolder.FindBestTauLcurve(unfold, label);
+	// Unfolder.FindBestTau(unfold, label, 0, "*[]");
 	// Unfolder.FindBestTau(unfold, label);
 	// unfold->DoUnfold(0.0);
-	// unfold->DoUnfold(0.1);
+	// unfold->DoUnfold(0.01);
+	// unfold->DoUnfold(1);
 
 
 
@@ -122,6 +147,7 @@ void UnfoldWrapper::DoIt() {
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
 	TH1* unfolded_nominal = std::get<0>(unfold_output);
+	std::cout << "Unfolded Underflow: " << unfolded_nominal->GetBinContent(0) << std::endl;
 
 // add misses
 	if (AddMissesbyHand) {
@@ -140,25 +166,34 @@ void UnfoldWrapper::DoIt() {
 //input data stat error
 	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input" + label);
 	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	writer.addToFile(ErrorMatrix_input);
+
 // subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
-// Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes" + label);
-// Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
 	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	writer.addToFile(ErrorMatrix_MCstat);
+
+	TH2* DataMCStat = (TH2*) ErrorMatrix_MCstat->Clone();
+	DataMCStat -> Add(ErrorMatrix_input);
+	DataMCStat->SetName("ErrorMatrix_DataMCStat");
+	writer.addToFile(DataMCStat);
+
+	TH2* DataMCFakeStat = (TH2*) DataMCStat->Clone();
+	DataMCFakeStat->Add(ErrorMatrix_subBKGuncorr);
+	DataMCFakeStat->SetName("ErrorMatrix_DataMCFakeStat");
+	writer.addToFile(DataMCFakeStat);
 
 // Visualize ERRORS
-	TH2* ErrorMatrix = unfold->GetEmatrixTotal("ErrorMatrix");
-// TH2* ErrorMatrix = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
-// ErrorMatrix->Reset();
-// ErrorMatrix->SetName("ErrorMatrix");
-// unfold->GetEmatrix(ErrorMatrix);
-// ErrorMatrix->Add(ErrorMatrix_MCstat);
-	Drawer.Draw2D(ErrorMatrix, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
-	writer.addToFile(ErrorMatrix);
+	TH2* ErrorMatrixTotal = unfold->GetEmatrixTotal("ErrorMatrixTotal");
+	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	writer.addToFile(ErrorMatrixTotal);
 
 //create shift Histos from MatrixErrors
 	TH1* ShiftInputUp = (TH1*) unfolded_nominal->Clone();
@@ -177,12 +212,15 @@ void UnfoldWrapper::DoIt() {
 	ShiftMCstatUp->SetName("unfolded_" + genvar + "_MCStatUp");
 	TH1* ShiftMCstatDown = (TH1*) unfolded_nominal->Clone();
 	ShiftMCstatDown->SetName("unfolded_" + genvar + "_MCStatDown");
-
-
-
+	TH1* ShiftsubBKGscale = nullptr;
+	if (!FillFakesinUF) {
+		ShiftsubBKGscale = unfold->GetDeltaSysBackgroundScale("fakes" + label, "shift_bkgScale");
+	}
 // Variations of MigrationMatrix
 	std::vector<TH2*> v_ErrorMatrixVariations;
 	std::vector<TH1*> v_ShiftVariations;
+
+
 	for (auto& var : variations) {
 		TH2* tmp = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 		tmp->Reset();
@@ -218,17 +256,21 @@ void UnfoldWrapper::DoIt() {
 		// create templates of error from Covariance Matrices
 		ShiftInputUp->AddBinContent(bin, sqrt(ErrorMatrix_input->GetBinContent(bin, bin)));
 		ShiftInputDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_input->GetBinContent(bin, bin))));
+
 		ShiftsubBKGuncorrUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
-		ShiftsubBKGuncorrDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin))));
-		ShiftsubBKGscaleUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGscale->GetBinContent(bin, bin)));
-		ShiftsubBKGscaleDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_subBKGscale->GetBinContent(bin, bin))));
+		ShiftsubBKGuncorrDown->AddBinContent(bin, -1 * sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
+
+		if (!FillFakesinUF) {
+			ShiftsubBKGscaleUp->AddBinContent(bin, ShiftsubBKGscale->GetBinContent(bin, bin));
+			ShiftsubBKGscaleDown->AddBinContent(bin, -1 * (ShiftsubBKGscale->GetBinContent(bin, bin)));
+		}
 		ShiftMCstatUp->AddBinContent(bin, sqrt(ErrorMatrix_MCstat->GetBinContent(bin, bin)));
 		ShiftMCstatDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_MCstat->GetBinContent(bin, bin))));
 		//Get errors from covariance matrices (symmetric errors)
 		double symerror = ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin) +
 		                  ErrorMatrix_subBKGscale->GetBinContent(bin, bin) +
-		                  ErrorMatrix_MCstat->GetBinContent(bin, bin) +
-		                  ErrorMatrix_input->GetBinContent(bin, bin);
+		                  ErrorMatrix_MCstat->GetBinContent(bin, bin);// +
+		// ErrorMatrix_input->GetBinContent(bin, bin);
 		//get errors from Shifts (-> Variations of migrationmatrix)
 		systerrorL = 0;
 		systerrorH = 0;
@@ -283,8 +325,9 @@ void UnfoldWrapper::DoIt() {
 	          << "chi**2_Sys/Ndf = "
 	          << unfold->GetChi2Sys() << " / " << unfold->GetNdf() << "\n"
 	          << "AvgRho = "
-	          << unfold->GetRhoAvg() << "\n";
-
+	          << unfold->GetRhoAvg() << "\n"
+	          << "RhoMax = "
+	          << unfold->GetRhoMax() << "\n";
 
 
 // Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
@@ -302,13 +345,13 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw1D(std::get<1>(unfold_output), varName + "_foldedback" + label, log);
 	unfolded_nominal->SetName("unfolded_" + genvar);
 	writer.addToFile(unfolded_nominal);
-	int nVariation = 0;
 	std::vector<TH1*> v_NomPlusVar;
+
+	int nVariation = 0;
 	for (auto& var : variations) {
 		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
 		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
-		if (TString(var).Contains("CMS_res") || TString(var).Contains("CMS_scale")) NomPlusVar->SetName("unfolded_" + genvar + TString(var));
-		else  NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
+		NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
 		v_NomPlusVar.push_back(NomPlusVar);
 		nVariation += 1;
 	}
@@ -319,12 +362,6 @@ void UnfoldWrapper::DoIt() {
 		writer.addToFile(v_NomPlusVar.at(nVariation));
 		nVariation += 1;
 	}
-
-// i = 0;
-// for (auto& h : GenMC.at(0)) {
-// 	h->Add(misses.at(i), -1);
-// 	i++;
-// }
 
 	for (const auto& sysvar : GenMC) {
 		for (const auto& bkg : sysvar) {

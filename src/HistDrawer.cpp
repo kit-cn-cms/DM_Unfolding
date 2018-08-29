@@ -31,6 +31,20 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 	return idx;
 }
 
+void set_color_env(){
+
+const Int_t NRGBs = 5;
+const Int_t NCont = 255;
+
+Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+gStyle->SetNumberContours(NCont);
+
+}
+
 void HistDrawer::Draw1D(TH1* hist, TString name, bool log, TString xlabel, TString ylabel) {
 	std::cout << "Making Plot: " << name << std::endl;
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
@@ -115,6 +129,7 @@ void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair
 
 void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString xlabel, TString ylabel) {
 	std::cout << "Making Plot: " << name << std::endl;
+	// set_color_env();
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
 	gStyle->SetStatY(0.9);

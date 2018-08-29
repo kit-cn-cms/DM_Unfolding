@@ -21,8 +21,7 @@ public:
 	std::tuple<TH1*, TH1*> GetOutput(TUnfoldDensity* unfold);
 	void GetRegMatrix(TUnfoldDensity* unfold);
 	void SubBkg(TUnfoldDensity* unfold, TH1* h_bkg, TString name);
-
-
+	TH1* GetNormVector(TUnfoldDensity* unfold);
 
 
 

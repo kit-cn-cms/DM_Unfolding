@@ -16,7 +16,8 @@ using namespace std;
 TUnfoldDensity* Unfolder::SetUp(TH2* A, TH1F* input) {
 	cout << "Setting Up Unfolder.." << endl;
 	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfoldDensity::kHistMapOutputVert, TUnfold::kRegModeCurvature,
-	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[UOB]" );
+	        // TUnfold::kEConstraintNone, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[UOB]" );
+	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[]" );
 	float n_input = unfold->SetInput(input);
 	if (n_input >= 1) {
 		std::cout << "Unfolding result may be wrong\n";
@@ -174,5 +175,10 @@ void Unfolder::SubBkg(TUnfoldDensity* unfold, TH1* h_bkg, TString name) {
 }
 
 
-
-
+TH1* Unfolder::GetNormVector(TUnfoldDensity* unfold) {
+	TH1 *normVector = unfold->GetOutput("h_unfolded");
+	normVector->Reset();
+	normVector->SetName("NormVector");
+	unfold->GetNormalisationVector(normVector);
+	return normVector;
+}

@@ -124,6 +124,12 @@ public:
   std::map<std::string, TH1F*> h_W_PtSys;
   TH1F* h_Z_Pt = 0;
   std::map<std::string, TH1F*> h_Z_PtSys;
+  
+  TH1F* h_HadrRecoil = 0;
+  std::map<std::string, TH1F*> h_HadrRecoilSys;
+
+  TH1F* h_HadrRecoil_Phi = 0;
+  std::map<std::string, TH1F*> h_HadrRecoil_PhiSys;
 
 
   TH1D* hWbosonWeight_nominal = 0;
@@ -201,12 +207,15 @@ public:
   TTreeReaderValue<Float_t> var_reco = { fReader, "Evt_Pt_MET" };
   TTreeReaderValue<Float_t> var_gen = { fReader, "Evt_Pt_GenMET" };
 
+  TTreeReaderValue<Float_t> Hadr_Recoil_Pt = { fReader, "Hadr_Recoil_Pt" };
+  TTreeReaderValue<Float_t> Hadr_Recoil_Phi = { fReader, "Hadr_Recoil_Phi" };
+
   TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
   TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
 
   TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
-  Float_t varDeltaPhi_Jet_MET[100];
-  TBranch *BrDeltaPhi_Jet_MET;
+  // Float_t varDeltaPhi_Jet_MET[100];
+  // TBranch *BrDeltaPhi_Jet_MET;
 
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
@@ -216,6 +225,9 @@ public:
 
   TTreeReaderValue<Float_t> Weight_PUup = { fReader, "Weight_pu69p2Up" };
   TTreeReaderValue<Float_t> Weight_PUdown = { fReader, "Weight_pu69p2Down" };
+
+  TTreeReaderValue<Float_t> Weight_PDFup = { fReader, "Weight_LHA_292200_up" };
+  TTreeReaderValue<Float_t> Weight_PDFdown = { fReader, "Weight_LHA_292200_down" };
 
   TTreeReaderValue<Float_t> Weight_MuRup = { fReader, "Weight_scale_variation_muR_2p0_muF_1p0" };
   TTreeReaderValue<Float_t> Weight_MuRdown = { fReader, "Weight_scale_variation_muR_0p5_muF_1p0" };
@@ -240,10 +252,10 @@ public:
   TTreeReaderValue<Float_t> Weight_CSVCErr2up = { fReader, "Weight_CSVCErr2up" };
   TTreeReaderValue<Float_t> Weight_CSVCErr2down = { fReader, "Weight_CSVCErr2down" };
 
-  TTreeReaderValue<Long64_t> Miss = {fReader, "Miss" };
-  TTreeReaderValue<Long64_t> Fake = {fReader, "Fake" };
+  // TTreeReaderValue<Long64_t> Miss = {fReader, "Miss" };
+  // TTreeReaderValue<Long64_t> Fake = {fReader, "Fake" };
   TTreeReaderValue<Long64_t> recoSelected = {fReader, "recoSelected" };
-  TTreeReaderValue<Long64_t> genSelected = {fReader, "genSelected" };
+  // TTreeReaderValue<Long64_t> genSelected = {fReader, "genSelected" };
 
   TTreeReaderValue<Long64_t> GenMETSelection = { fReader, "GenMETSelection" };
   TTreeReaderValue<Long64_t> GenBTagVetoSelection = { fReader, "GenBTagVetoSelection" };
@@ -251,6 +263,16 @@ public:
   TTreeReaderValue<Long64_t> GenLeptonVetoSelection = {fReader, "GenLeptonVetoSelection" };
   TTreeReaderValue<Long64_t> GenmonoVselection = {fReader, "GenmonoVselection" };
   TTreeReaderValue<Long64_t> GenPhotonVetoSelection = {fReader, "GenPhotonVetoSelection" };
+
+
+  TTreeReaderValue<Long64_t> VertexSelection = { fReader, "VertexSelection" };
+  TTreeReaderValue<Long64_t> FilterSelection = { fReader, "FilterSelection" };
+  TTreeReaderValue<Long64_t> METSelection = { fReader, "METSelection" };
+  TTreeReaderValue<Long64_t> BTagVetoSelection = { fReader, "BTagVetoSelection" };
+  TTreeReaderValue<Long64_t> MonoJetSelection = { fReader, "MonoJetSelection" };
+  TTreeReaderValue<Long64_t> LeptonVetoSelection = {fReader, "LeptonVetoSelection" };
+  TTreeReaderValue<Long64_t> monoVselection = {fReader, "monoVselection" };
+  TTreeReaderValue<Long64_t> PhotonVetoSelection = {fReader, "PhotonVetoSelection" };
 
   TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X = {fReader, "Triggered_HLT_PFMET170_X"};
   TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X = { fReader, "Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X" };
@@ -263,6 +285,8 @@ public:
   std::map<std::string, TTreeReaderValue<Float_t> > sysweights = {
     {"Weight_PUUp", ((MCSelector*)this)->MCSelector::Weight_PUup},
     {"Weight_PUDown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
+    {"Weight_PDFUp", ((MCSelector*)this)->MCSelector::Weight_PDFup},
+    {"Weight_PDFDown", ((MCSelector*)this)->MCSelector::Weight_PDFdown}, 
     {"Weight_scale_variation_muRUp", ((MCSelector*)this)->MCSelector::Weight_MuRup},
     {"Weight_scale_variation_muRDown", ((MCSelector*)this)->MCSelector::Weight_MuRdown},
     {"Weight_scale_variation_muFUp", ((MCSelector*)this)->MCSelector::Weight_MuFup},

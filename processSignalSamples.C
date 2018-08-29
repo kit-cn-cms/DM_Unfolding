@@ -7,9 +7,37 @@ TH1* processSignal(TString SignalName) {
 	TChain* chain = new TChain("MVATree");
 	chain->Add(TString(ntuples_path + "/" + SignalName + "/" + SignalName + "*_nominal_Tree.root"));
 	cout << "Processing " << chain->GetEntries() << " entries" << endl;
+	// Heidelbergs binning
 	// double bins_met[13] = {200., 240., 300., 380., 470., 570., 670., 790., 910., 1040., 1180., 1330., 2000. };
+	// Heidelbergs binning modified
 	// double bins_met[13] = {200., 250., 300., 350., 450., 550., 650., 750., 850., 1000., 1150., 1300., 1400 };
-	double bins_met[11] = {200., 300., 400., 500., 600., 700., 800., 900., 1000., 1200., 1400. };
+	// 2 sigma Binning
+	// double bins_met[15] = {250., 320., 390., 460., 530., 600., 670., 740., 820., 900., 980., 1060., 1260., 1400., 2000.};
+
+	// double bins_met[12] = {200., 300., 400., 500., 600., 700., 800., 900., 1000., 1100, 1200, 1400.};
+
+	double bins_met[11] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150, 1300};
+
+
+
+	float signalXS;
+	TTree *XS_tree = new TTree("XS", "XS");
+	XS_tree->ReadFile("Madgraph_Signal_XS.csv", "sample/C:xs/F");
+
+	char sampleVar[100] = "october";
+	// (TString) sampleVar="";
+	float xsVar = 0;
+	XS_tree->SetBranchAddress("sample", &sampleVar);
+	XS_tree->SetBranchAddress("xs", &xsVar);
+	double entries = XS_tree->GetEntries();
+	for (int i = 0; i < entries; i++)
+	{
+		XS_tree->GetEntry(i);
+		if (sampleVar == SignalName) {
+			signalXS = xsVar;
+			// cout << sampleVar << " has XS: " << signalXS << endl;
+		}
+	}
 
 
 	TH1F* h_sig(nullptr);
@@ -39,10 +67,13 @@ TH1* processSignal(TString SignalName) {
 	TTreeReaderValue<Long64_t> Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X (theReader,  "Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X" );
 
 	//bools
-	TTreeReaderValue<Long64_t> Miss (theReader,  "Miss" );
-	TTreeReaderValue<Long64_t> Fake (theReader,  "Fake" );
 	TTreeReaderValue<Long64_t> recoSelected (theReader,  "recoSelected" );
-	TTreeReaderValue<Long64_t> genSelected (theReader,  "genSelected" );
+	TTreeReaderValue<Long64_t> GenMonoJetSelection (theReader,  "GenMonoJetSelection" );
+	TTreeReaderValue<Long64_t> GenLeptonVetoSelection (theReader,  "GenLeptonVetoSelection" );
+	TTreeReaderValue<Long64_t> GenBTagVetoSelection (theReader,  "GenBTagVetoSelection" );
+	TTreeReaderValue<Long64_t> GenPhotonVetoSelection (theReader,  "GenPhotonVetoSelection" );
+	TTreeReaderValue<Long64_t> GenMETSelection (theReader,  "GenMETSelection" );
+	TTreeReaderValue<Long64_t> GenmonoVselection (theReader,  "GenmonoVselection" );
 
 	//weights
 	TTreeReaderValue<Float_t> Weight_XS (theReader, "Weight_XS" );
@@ -54,29 +85,23 @@ TH1* processSignal(TString SignalName) {
 	TTreeReaderValue<Float_t> Weight_MuFup(theReader, "Weight_scale_variation_muR_1p0_muF_2p0" );
 	TTreeReaderValue<Float_t> Weight_MuFdown(theReader, "Weight_scale_variation_muR_1p0_muF_0p5" );
 
-	Float_t varDeltaPhi_Jet_MET[100];
-	chain->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET);
-
-
 	chain->LoadTree(-1);
 	long iEntry = 0;
 	long misscounter = 0;
 	while (theReader.Next()) {
 		if (iEntry % 50000 == 0) cout << "Processing Event Nr.: " << iEntry << endl;
 
-		// theReader.SetEntry(iEntry);
-		chain->GetEntry(iEntry);
-		bool dPhiCut = varDeltaPhi_Jet_MET[0] > 1.0;
-		// cout << *varDeltaPhi_Jet_MET << endl;
+		theReader.SetEntry(iEntry);
+		// chain->GetEntry(iEntry);
+
+		// double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823 * signalXS;
 		double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823;
 		bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
-		// bool miss = *genSelected && (!*recoSelected || !dPhiCut || !triggered);
-		bool gensel = *genSelected;
-		// bool gensel = *var_gen > 200 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
+		bool gensel = *GenMET > 200 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
+		// bool gensel = *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
 
-		bool miss = *genSelected && (!*recoSelected || !dPhiCut || !triggered || *RecoMET < 250);
-		// bool miss = gensel && (!*recoSelected || !dPhiCut || !triggered);
-		// if (triggered && *recoSelected && dPhiCut && *genSelected && *RecoMET > 250) {
+		// bool miss = gensel && (!*recoSelected || !dPhiCut || !triggered || *RecoMET < 250);
+		bool miss = gensel && (!*recoSelected || !triggered);
 		if (gensel) {
 			h_sig->Fill(*GenMET, weight_);
 			h_sig_MuRup->Fill(*GenMET, weight_ * fabs(*Weight_MuRup));
@@ -84,14 +109,6 @@ TH1* processSignal(TString SignalName) {
 			h_sig_MuFup->Fill(*GenMET, weight_ * fabs(*Weight_MuFup));
 			h_sig_MuFdown->Fill(*GenMET, weight_ * fabs(*Weight_MuFdown));
 		}
-		// if (miss) {
-		// 	misscounter += weight_;
-		// 	h_sig->Fill(*GenMET, weight_);
-		// 	h_sig_MuRup->Fill(*GenMET, weight_ * fabs(*Weight_MuRup));
-		// 	h_sig_MuRdown->Fill(*GenMET, weight_ * fabs(*Weight_MuRdown));
-		// 	h_sig_MuFup->Fill(*GenMET, weight_ * fabs(*Weight_MuFup));
-		// 	h_sig_MuFdown->Fill(*GenMET, weight_ * fabs(*Weight_MuFdown));
-		// }
 		iEntry++;
 	}
 	// h_sig->Draw();
@@ -122,3 +139,9 @@ void processSignalSamples(const char* signalname = "Axial_MonoJ_NLO_Mphi-1000_Mc
 	// for (auto& name : Names) processSignal(name);
 
 }
+// Observed Limit: r < 0.2801
+// Expected  2.5%: r < 0.2637
+// Expected 16.0%: r < 0.3559
+// Expected 50.0%: r < 0.5020
+// Expected 84.0%: r < 0.7160
+// Expected 97.5%: r < 1.0041

@@ -53,9 +53,12 @@ main(int argc, char** argv) {
   std::vector<std::string> BosonSystematics = to_array<std::string>(pt.get<std::string>("general.BosonSystematics"));
   std::vector<std::string> unfoldedsysts = to_array<std::string>(pt.get<std::string>("general.unfoldedsysts"));
 
-  systematics.insert(std::end(systematics), std::begin(BosonSystematics), std::end(BosonSystematics));
   std::vector<TString> allSystematics;
   allSystematics.insert(std::end(allSystematics), std::begin(systematics), std::end(systematics));
+  allSystematics.insert(std::end(allSystematics), std::begin(BosonSystematics), std::end(BosonSystematics));
+  allSystematics.insert(std::end(allSystematics), std::begin(unfoldedsysts), std::end(unfoldedsysts));
+  std::sort( allSystematics.begin(), allSystematics.end() );
+  allSystematics.erase( unique( allSystematics.begin(), allSystematics.end() ), allSystematics.end() );
 
   std::vector<std::string> bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
   bool fillhistos = true;
@@ -64,7 +67,6 @@ main(int argc, char** argv) {
   bool runBlind = pt.get<bool>("general.runBlind");
   bool log = true;
   bool drawpull = true;
-
 
   // Fill Histos?
   char c;
@@ -113,7 +115,7 @@ main(int argc, char** argv) {
   std::vector<std::vector<TH2*>> v_A_bkgs_Split;
 
   v_MET_bkgs = histhelper.getAllVariations(bkgnames, "Evt_Pt_MET", {});
-  v_GenMET_bkgs = histhelper.getAllVariations(bkgnames, "Evt_Pt_GenMET", {});
+  v_GenMET_bkgs = histhelper.getAllVariations(bkgnames, "Evt_Pt_GenMET", allSystematics);
   v_fakes_bkgs = histhelper.getAllVariations(bkgnames, "fakes", {});
   v_misses_bkgs = histhelper.getAllVariations(bkgnames, "misses", {});
   v_testmet_bkgs = histhelper.getAllVariations(bkgnames, "TestMET", {});
@@ -123,7 +125,7 @@ main(int argc, char** argv) {
 
   v_MET_DummyDatas = histhelper.getAllVariations(bkgnames, "DummyData_Split", {});
   v_MET_bkgs_Split = histhelper.getAllVariations(bkgnames, "Evt_Pt_MET_Split", {});
-  v_GenMET_bkgs_Split = histhelper.getAllVariations(bkgnames, "Evt_Pt_GenMET_Split", {});
+  v_GenMET_bkgs_Split = histhelper.getAllVariations(bkgnames, "Evt_Pt_GenMET_Split", allSystematics);
   v_fakes_bkgs_Split = histhelper.getAllVariations(bkgnames, "fakes_Split", {});
   v_misses_bkgs_Split = histhelper.getAllVariations(bkgnames, "misses_Split", {});
   v_testmet_bkgs_Split = histhelper.getAllVariations(bkgnames, "TestMET_Split", {});
@@ -139,14 +141,13 @@ main(int argc, char** argv) {
   // add up all BKGSamples
   std::vector<TH1F*> MET_all = histhelper.AddAllBkgs(bkgnames, recovar, {});
   std::vector<TH1F*> GenMET_all = histhelper.AddAllBkgs(bkgnames, genvar, {});
-  std::vector<TH1F*> fakes_all = histhelper.AddAllBkgs(bkgnames, "fakes", {});
+  std::vector<TH1F*> fakes_all = histhelper.AddAllBkgs(bkgnames, "fakes", allSystematics);
   std::vector<TH1F*> misses_all = histhelper.AddAllBkgs(bkgnames, "misses", {});
   std::vector<TH1F*> TestMET_all = histhelper.AddAllBkgs(bkgnames, "TestMET", {});
   std::vector<TH1F*> GenMetReco_all = histhelper.AddAllBkgs(bkgnames, "h_GenRecoMET", {});
   std::vector<TH1F*> testMETgenBinning_all = histhelper.AddAllBkgs(bkgnames, "testMETgenBinning", {});
   std::vector<TH2*> A_all = histhelper.AddAllBkgs2D(bkgnames, "A", allSystematics);
   std::vector<TH2*> A_equBins_all = histhelper.AddAllBkgs2D(bkgnames, "A_equBins", {});
-
   // // PseudoData
   std::vector<TH1F*> MET_DummyData_all = histhelper.AddAllBkgs(bkgnames, "DummyData_Split", {});
   std::vector<TH1F*> MET_all_Split = histhelper.AddAllBkgs(bkgnames, recovar + "_Split", {});
@@ -265,13 +266,12 @@ main(int argc, char** argv) {
     allvar.erase(allvar.begin());
 //Do the unfolding
     if (runBlind) {
-      UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_all.at(0), fakes_all.at(0), v_misses_bkgs_Split.at(0), v_MET_bkgs, v_GenMET_bkgs, allvar, bkgnames, BinEdgesGen);
+      UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_all.at(0), fakes_all, v_misses_bkgs.at(0), v_MET_bkgs, v_GenMET_bkgs, unfoldedsysts, bkgnames, BinEdgesGen);
       Wrapper.DoIt();
       // for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
     }
     else {
-      // UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_MET_bkgs, v_GenMET_bkgs, allvar, bkgnames, BinEdgesGen);
-      UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all.at(0), v_misses_bkgs.at(0), v_MET_bkgs, v_GenMET_bkgs, unfoldedsysts, bkgnames, BinEdgesGen);
+      UnfoldWrapper Wrapper = UnfoldWrapper("MET", "data", A_all, MET_data, fakes_all, v_misses_bkgs.at(0), v_MET_bkgs, v_GenMET_bkgs, unfoldedsysts, bkgnames, BinEdgesGen);
       Wrapper.DoIt();
       // for (auto& histo : GenMET_signal) Wrapper.writer.addToFile(histo);
     }
@@ -286,8 +286,10 @@ main(int argc, char** argv) {
     // UnfoldWrapper Wrapper_Split_Signal = UnfoldWrapper("MET", "SplitSignal", A_all_Split,  InputwithSignal, fakes_all_Split.at(0), v_MET_bkgs_Split, v_GenMET_bkgs_Split, variation, bkgnames, BinEdgesGen);
     // Wrapper_Split_Signal.DoIt();
 // Draw Stuff
-    int nVariation = 0;
     bool moveUF = true;
+    Drawer.Draw2D(A_all.at(0), "A_all", log, moveUF, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
+
+    int nVariation = 1;
     for (auto& var : allSystematics) {
       Drawer.Draw2D(A_all.at(nVariation), "A_all" + var, log, moveUF, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");
       // Drawer.Draw2D(A_all_Split.at(nVariation), "A_all_" + var + "_Split", log, moveUF, "reconstructed #slash{E}_{T}", "generated #slash{E}_{T}");

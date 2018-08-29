@@ -63,7 +63,7 @@ MCSelector::Init(TTree* tree)
   // (once per file to be processed).
   // tree->Print();
   fReader.SetTree(tree);
-  tree->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET, &BrDeltaPhi_Jet_MET);
+  // tree->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET, &BrDeltaPhi_Jet_MET);
 }
 
 Bool_t
@@ -113,7 +113,23 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   bkgnames = to_array<std::string>(pt.get<std::string>("Bkg.names"));
   BinEdgesGen = to_array<double>(pt.get<std::string>("Binning.BinEdgesGen"));
+  if (BinEdgesGen.size() == 3) {
+    std::vector<double> tmp = BinEdgesGen;
+    BinEdgesGen.clear();
+    double BinWidth = abs(tmp.at(2) - tmp.at(1)) / tmp.at(0);
+    for (int i = 0; i <= tmp.at(0); i++) {
+      BinEdgesGen.push_back(tmp.at(1) + i * BinWidth);
+    }
+  }
   BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
+  if (BinEdgesReco.size() == 3) {
+    std::vector<double> tmp = BinEdgesReco;
+    BinEdgesReco.clear();
+    double BinWidth = abs(tmp.at(2) - tmp.at(1)) / tmp.at(0);
+    for (int i = 0; i <= tmp.at(0); i++) {
+      BinEdgesReco.push_back(tmp.at(1) + i * BinWidth);
+    }
+  }
   nBins_Gen = BinEdgesGen.size() - 1;
   nBins_Reco = BinEdgesReco.size() - 1;
 
@@ -219,7 +235,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
       for (auto& sys : allSystematics) {
         TH1F* tmp = new TH1F(name + sys, var, nBins, BinEdges.data());
         tmp->Sumw2();
-        histMap[sys] = new TH1F(name + sys, var, nBins, BinEdges.data());
+        histMap[sys] = tmp;
         GetOutputList()->Add(histMap[sys]);
       }
     }
@@ -230,7 +246,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
       for (auto& sys : allSystematics) {
         TH1F* tmp = new TH1F(name + sys, var, nBins, xmin, xmax);
         tmp->Sumw2();
-        histMap[sys] = new TH1F(name + sys, var, nBins, xmin, xmax);
+        histMap[sys] = tmp;
         GetOutputList()->Add(histMap[sys]);
       }
     }
@@ -241,7 +257,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
       for (auto& sys : allSystematics) {
         TH2D* tmp = new TH2D(name + sys, var, nBinsx, BinEdgesx.data(), nBinsy, BinEdgesy.data());
         tmp->Sumw2();
-        histMap[sys] =  new TH2D(name + sys, var, nBinsx, BinEdgesx.data(), nBinsy, BinEdgesy.data());;
+        histMap[sys] =  tmp;
         GetOutputList()->Add(histMap[sys] );
       }
     }
@@ -252,7 +268,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
       for (auto& sys : allSystematics) {
         TH2D* tmp = new TH2D(name + sys, var, nBinsx, xmin, xmax, nBinsy, ymin, ymax);
         tmp->Sumw2();
-        histMap[sys] = new TH2D(name + sys, var, nBinsx, xmin, xmax, nBinsy, ymin, ymax);
+        histMap[sys] = tmp;
         GetOutputList()->Add(histMap[sys]);
       }
     }
@@ -292,6 +308,11 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
   bookSysHistos(h_RecoSys, strippedOption + recovar + "_" , recovar, nBins_Reco, BinEdgesReco);
+
+  h_HadrRecoil = new TH1F(strippedOption + "Hadr_Recoil_Pt" + currentJESJERvar, "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco.data());
+  h_HadrRecoil->Sumw2();
+  GetOutputList()->Add(h_HadrRecoil);
+  bookSysHistos(h_HadrRecoilSys, strippedOption + "Hadr_Recoil_Pt" , "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco);
 
 
   A = new TH2D(strippedOption + "A" + currentJESJERvar , "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
@@ -373,15 +394,20 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_Evt_Phi_GenMET);
   bookSysHistosequBins(h_Evt_Phi_GenMETSys, strippedOption + "Evt_Phi_GenMET_" , "Evt_Phi_GenMET", 50, -3.2, 3.2);
 
-  h_W_Pt = new TH1F(strippedOption + "h_W_Pt" + currentJESJERvar, "h_W_Pt", 120, 0, 1200);
+  h_W_Pt = new TH1F(strippedOption + "h_W_Pt" + currentJESJERvar, "h_W_Pt", 60, 0, 1200);
   h_W_Pt->Sumw2();
   GetOutputList()->Add(h_W_Pt);
-  bookSysHistosequBins(h_W_PtSys, strippedOption + "h_W_Pt_" , "h_W_Pt", 120, 0, 1200);
+  bookSysHistosequBins(h_W_PtSys, strippedOption + "h_W_Pt_" , "h_W_Pt", 60, 0, 1200);
 
-  h_Z_Pt = new TH1F(strippedOption + "h_Z_Pt" + currentJESJERvar, "h_Z_Pt", 120, 0, 1200);
+  h_Z_Pt = new TH1F(strippedOption + "h_Z_Pt" + currentJESJERvar, "h_Z_Pt", 60, 0, 1200);
   h_Z_Pt->Sumw2();
   GetOutputList()->Add(h_Z_Pt);
-  bookSysHistosequBins(h_Z_PtSys, strippedOption + "h_Z_Pt_" , "h_Z_Pt", 120, 0, 1200);
+  bookSysHistosequBins(h_Z_PtSys, strippedOption + "h_Z_Pt_" , "h_Z_Pt", 60, 0, 1200);
+
+  h_HadrRecoil_Phi = new TH1F(strippedOption + "Hadr_Recoil_Phi" + currentJESJERvar, "Hadr_Recoil_Phi", 50, -3.2, 3.2);
+  h_HadrRecoil_Phi->Sumw2();
+  GetOutputList()->Add(h_HadrRecoil_Phi);
+  bookSysHistosequBins(h_HadrRecoil_PhiSys, strippedOption + "Hadr_Recoil_Phi_" , "Hadr_Recoil_Phi", 40, -4, 4);
 
 
   std::cout << "All Histos SetUp!" << std::endl;
@@ -408,7 +434,7 @@ MCSelector::Process(Long64_t entry)
   TString option = GetOption();
   fReader.SetLocalEntry(entry);
 
-  BrDeltaPhi_Jet_MET->GetEntry(entry);
+  // BrDeltaPhi_Jet_MET->GetEntry(entry);
   //////////////////////
   // Add weights here!!//
   //////////////////////
@@ -537,11 +563,7 @@ MCSelector::Process(Long64_t entry)
   };
 
   weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * (BosonWeight_nominal);;
-  // if (*Weight_GenValue > 0)
-  //   weight_ *= 1;
-  // else
-  //   weight_ *= -1;
-  // weight_ = *Weight;
+
   double random = rand.Rndm();
   float split_ = split / 100.;
   bool isPseudoData = random < split_;
@@ -552,10 +574,8 @@ MCSelector::Process(Long64_t entry)
 
   if (isZnunuSample) {
     weight_ *= 3 * 0.971;
-    // weight_ *= (BosonWeight_nominal);
   }
   if (isWlnuSample) {
-    // weight_ *= (BosonWeight_nominal);
   }
 
   auto fillSys = [this, isZnunuSample, isWlnuSample](std::map<std::string, TH1F*> &histMap, double var) {
@@ -602,16 +622,13 @@ MCSelector::Process(Long64_t entry)
     }
   };
 
-  bool dPhiCut = varDeltaPhi_Jet_MET[0] > 1.0;
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  // bool gensel = *genSelected;
-  bool gensel = *var_gen > 200 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
-  bool recosel = triggered && *recoSelected && dPhiCut && *var_reco > 350;
+  bool gensel = *var_gen > 250 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
+  bool recosel = triggered && *recoSelected && *var_reco > 250;
+  // bool recosel = *var_reco > 200 *MonoJetSelection && triggered &&  && *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
 
   bool miss = gensel && !recosel;
-
-
 
   if (gensel) {
     h_Gen->Fill(*var_gen, weight_);
@@ -678,6 +695,12 @@ MCSelector::Process(Long64_t entry)
     h_Z_Pt->Fill(*Z_Pt, weight_);
     fillSys(h_Z_PtSys, *Z_Pt);
 
+    h_HadrRecoil->Fill(*Hadr_Recoil_Pt, weight_);
+    fillSys(h_HadrRecoilSys, *Hadr_Recoil_Pt);
+    
+    h_HadrRecoil_Phi->Fill(*Hadr_Recoil_Phi, weight_);
+    fillSys(h_HadrRecoil_PhiSys, *Hadr_Recoil_Phi);
+
     if (isPseudoData) {
       h_RecoSplit->Fill(*var_reco, weight_);
       fillSys(h_RecoSysSplit, *var_reco);
@@ -686,26 +709,28 @@ MCSelector::Process(Long64_t entry)
       fillSys(h_DummyDataSplitSys, *var_reco);
     }
 
-    if (!gensel) { //is a fake
-      h_fake->Fill(*var_reco, weight_);
-      fillSys(h_fakeSys, *var_reco);
-      if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
-      if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
-      if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
-      if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
-      if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
-      if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
+    if (!option.Contains("data")) { // dont ask for gen stuff in case of data
+      if (!gensel) { //is a fake
+        h_fake->Fill(*var_reco, weight_);
+        fillSys(h_fakeSys, *var_reco);
+        if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
+        if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
+        if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
+        if (!*GenPhotonVetoSelection) failedGenPhotonVetoSelection += 1 * weight_;
+        if (!*GenMETSelection) failedGenMETSelection += 1 * weight_;
+        if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
 
-      if (!isPseudoData) {
-        h_fake_Split->Fill(*var_reco, weight_);
-        fillSys(h_fake_SplitSys, *var_reco);
+        if (!isPseudoData) {
+          h_fake_Split->Fill(*var_reco, weight_);
+          fillSys(h_fake_SplitSys, *var_reco);
+        }
       }
-    }
-    else if (gensel) { //is not a fake
-      A_equBins->Fill(*var_reco, *var_gen, weight_);
-      fillSys2D(A_equBinsSys, *var_reco, *var_gen );
-      A->Fill(*var_reco, *var_gen, weight_);
-      fillSys2D(ASys, *var_reco, *var_gen );
+      else if (gensel) { //is not a fake
+        A_equBins->Fill(*var_reco, *var_gen, weight_);
+        fillSys2D(A_equBinsSys, *var_reco, *var_gen );
+        A->Fill(*var_reco, *var_gen, weight_);
+        fillSys2D(ASys, *var_reco, *var_gen );
+      }
     }
   }
   return kTRUE;

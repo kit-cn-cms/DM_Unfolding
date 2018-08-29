@@ -81,7 +81,7 @@ def writeSubmitCode(script, isArray, nTasks):
     submitCode += "environment = X509_USER_PROXY=/nfs/dust/cms/user/swieland/proxy/x509up_u26259\n"
     submitCode += "use_x509userproxy = True\n"
     submitCode += "x509userproxy = /nfs/dust/cms/user/swieland/proxy/x509up_u26259\n"
-    submitCode += "+RequestRuntime = 3600\n" #24 hours
+    submitCode += "+RequestRuntime = 1800\n" #30 minutes
     submitCode += "max_retries = 3\n"
     submitCode += "retry_until = ExitCode == 0\n"
     submitCode += "run_as_owner = true\n"
