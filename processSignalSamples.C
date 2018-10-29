@@ -12,12 +12,27 @@ TH1* processSignal(TString SignalName) {
 	// Heidelbergs binning modified
 	// double bins_met[13] = {200., 250., 300., 350., 450., 550., 650., 750., 850., 1000., 1150., 1300., 1400 };
 	// 2 sigma Binning
-	// double bins_met[15] = {250., 320., 390., 460., 530., 600., 670., 740., 820., 900., 980., 1060., 1260., 1400., 2000.};
+	// double bins_met[14] = {250., 320., 390., 460., 530., 600., 670., 740., 820., 900., 980., 1060., 1160, 1300.};
+
 
 	// double bins_met[12] = {200., 300., 400., 500., 600., 700., 800., 900., 1000., 1100, 1200, 1400.};
 
-	double bins_met[11] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150, 1300};
+	// double bins_met[11] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150, 1300};
+	// double bins_met[10] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150};
+	// std::vector<double> bins_met = {21,250, 1100};
+	// std::vector<double> bins_met = {250,300,350,400,450,500,550,600,650,700,750,800,900,1000,1100,1200,1400};
 
+	// 2 sigma
+	std::vector<double> bins_met = {250,320,390,460,530,600,670,740,820,900,980,1060,1260,1460};
+
+	if (bins_met.size() == 3) {
+		std::vector<double> tmp = bins_met;
+		bins_met.clear();
+		double BinWidth = abs(tmp.at(2) - tmp.at(1)) / tmp.at(0);
+		for (int i = 0; i <= tmp.at(0); i++) {
+			bins_met.push_back(tmp.at(1) + i * BinWidth);
+		}
+	}
 
 
 	float signalXS;
@@ -41,19 +56,24 @@ TH1* processSignal(TString SignalName) {
 
 
 	TH1F* h_sig(nullptr);
-	h_sig = new TH1F("h_sig", "Signal", sizeof(bins_met) / sizeof(bins_met[0]) - 1 , bins_met );
+	h_sig = new TH1F("h_sig", "Signal", bins_met.size() - 1  , bins_met.data() );
+	h_sig->Sumw2();
 
 	TH1F* h_sig_MuRup(nullptr);
-	h_sig_MuRup = new TH1F("h_sig_MuRup", "SignalMuRup", sizeof(bins_met) / sizeof(bins_met[0]) - 1 , bins_met );
+	h_sig_MuRup = new TH1F("h_sig_MuRup", "SignalMuRup", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuRup->Sumw2();
 
 	TH1F* h_sig_MuRdown(nullptr);
-	h_sig_MuRdown = new TH1F("h_sig_MuRdown", "SignalMuRdown", sizeof(bins_met) / sizeof(bins_met[0]) - 1 , bins_met );
+	h_sig_MuRdown = new TH1F("h_sig_MuRdown", "SignalMuRdown", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuRdown->Sumw2();
 
 	TH1F* h_sig_MuFup(nullptr);
-	h_sig_MuFup = new TH1F("h_sig_MuFup", "SignalMuFup", sizeof(bins_met) / sizeof(bins_met[0]) - 1 , bins_met );
+	h_sig_MuFup = new TH1F("h_sig_MuFup", "SignalMuFup", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuFup->Sumw2();
 
 	TH1F* h_sig_MuFdown(nullptr);
-	h_sig_MuFdown = new TH1F("h_sig_MuFdown", "SignalMuFdown", sizeof(bins_met) / sizeof(bins_met[0]) - 1 , bins_met );
+	h_sig_MuFdown = new TH1F("h_sig_MuFdown", "SignalMuFdown", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuFdown->Sumw2();
 
 	TTreeReader theReader(chain);
 	TTreeReaderValue<Float_t> GenMET(theReader, "Evt_Pt_GenMET");
@@ -94,10 +114,11 @@ TH1* processSignal(TString SignalName) {
 		theReader.SetEntry(iEntry);
 		// chain->GetEntry(iEntry);
 
-		// double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823 * signalXS;
-		double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823;
+		double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823 * signalXS;
+		// double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823;
 		bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
-		bool gensel = *GenMET > 200 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
+		bool gensel = *GenMET > bins_met[0] && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
+
 		// bool gensel = *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
 
 		// bool miss = gensel && (!*recoSelected || !dPhiCut || !triggered || *RecoMET < 250);
@@ -130,6 +151,7 @@ TH1* processSignal(TString SignalName) {
 
 
 
+// void processSignalSamples(const char* signalname = "Vector_MonoJ_NLO_Mphi-500_Mchi-200_gSM-0p25_gDM-1p0_13TeV-madgraph", const char* filename = "/nfs/dust/cms/user/swieland/Darkmatter/DM_Unfolding/rootfiles/signals.root") {
 void processSignalSamples(const char* signalname = "Axial_MonoJ_NLO_Mphi-1000_Mchi-300_gSM-0p25_gDM-1p0_13TeV-madgraph", const char* filename = "/nfs/dust/cms/user/swieland/Darkmatter/DM_Unfolding/rootfiles/signals.root") {
 
 	// TFile* outputfile = new TFile(filename, "UPDATE");
@@ -139,9 +161,4 @@ void processSignalSamples(const char* signalname = "Axial_MonoJ_NLO_Mphi-1000_Mc
 	// for (auto& name : Names) processSignal(name);
 
 }
-// Observed Limit: r < 0.2801
-// Expected  2.5%: r < 0.2637
-// Expected 16.0%: r < 0.3559
-// Expected 50.0%: r < 0.5020
-// Expected 84.0%: r < 0.7160
-// Expected 97.5%: r < 1.0041
+

@@ -23,7 +23,7 @@ void HistMaker::MakeHistos() {
 	ParseConfig();
 	std::vector<TChain*> SignalChains;
 	std::vector<TChain*> DataChains;
-	std::vector<std::vector<TChain*>> BkgChainsVariations;
+	std::vector<std::vector<TChain*>> BkgChainsVariations; // variation x bkgname
 	std::vector<TChain*> BkgChains;
 
 	for (auto& var : variationFileNames) {
@@ -65,18 +65,24 @@ void HistMaker::MakeHistos() {
 	}
 
 	long data_events = DataChains.at(0)->GetEntries();
-	TTree* FriendTree = CreateFriendTree(additionalBranchNamesLong, additionalBranchNamesFloat, data_events, TString("TreeFriend"));
-	TChain* FriendChain = new TChain("TreeFriend");
-	FriendChain->Add(path.GetRootFilesPath() + "TreeFriend.root");
-	for (auto& chain : DataChains) chain->AddFriend(FriendChain);
-	for (auto& chain : SignalChains) chain->AddFriend(FriendChain);
+	TTree* DataFriendTree = CreateFriendTree(additionalBranchNamesLong, additionalBranchNamesFloat, data_events, TString("DataFriend"));
+	TChain* DataFriendChain = new TChain("DataFriend");
+	DataFriendChain->Add(path.GetRootFilesPath() + "DataFriend.root");
+
+	long signal_events = SignalChains.at(0)->GetEntries();
+	TTree* SignalFriendTree = CreateFriendTree(PDFFixBranchesLong, PDFFixBranchesFloat, signal_events, TString("SignalFriend"));
+	TChain* SignalFriendChain = new TChain("SignalFriend");
+	SignalFriendChain->Add(path.GetRootFilesPath() + "SignalFriend.root");
+
+	for (auto& chain : DataChains) chain->AddFriend(DataFriendChain);
+	for (auto& chain : SignalChains) chain->AddFriend(DataFriendChain);
 
 	int nVariation = 0;
 	for (auto& varchains : BkgChainsVariations) {
 		int j = 0;
 		for (auto& chain : varchains) {
 			if (variation.at(nVariation) != "nominal") {
-				chain->AddFriend(FriendChain);
+				chain->AddFriend(DataFriendChain);
 			}
 		}
 		nVariation += 1;
@@ -109,7 +115,7 @@ void HistMaker::ParseConfig() {
 
 	LHAFixBranchesLong = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesLong"));
 	LHAFixBranchesFloat = to_array<std::string>(pt.get<std::string>("tree.LHAFixBranchesFloat"));
-	
+
 	PDFFixBranchesLong = to_array<std::string>(pt.get<std::string>("tree.PDFFixBranchesLong"));
 	PDFFixBranchesFloat = to_array<std::string>(pt.get<std::string>("tree.PDFFixBranchesFloat"));
 
@@ -267,8 +273,8 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	TStopwatch watch;
 	watch.Start();
 	//SetUp TProof
-	TProof *pl = TProof::Open("workers=3");
-	// TProof *pl = TProof::Open("workers=12");
+	// TProof *pl = TProof::Open("workers=3");
+	TProof *pl = TProof::Open("workers=12");
 	// TProof *pl = TProof::Open("");
 	if (useBatch) {
 		pl->Close();
@@ -277,7 +283,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	}
 	//Load necessary Macros
 	Bool_t notOnClient = kFALSE;
-	Bool_t uniqueWorkers = kTRUE;
+	Bool_t uniqueWorkers = kFALSE;
 	pl->Load(path.GetIncludePath() + "PathHelper.hpp+", notOnClient, uniqueWorkers);
 	pl->Load(path.GetSourcePath() + "PathHelper.cpp+", notOnClient, uniqueWorkers);
 	pl->Load(path.GetSourcePath() + "MCSelector.C+", notOnClient, uniqueWorkers);

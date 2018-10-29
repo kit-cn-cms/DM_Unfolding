@@ -50,8 +50,6 @@ public:
   double nMax;
   TRandom rand;
   bool splitSignal;
-  TString genvar;
-  TString recovar;
   std::vector<std::string> bkgnames;
   std::vector<std::string> systematics;
   std::vector<std::string> BosonSystematics;
@@ -130,82 +128,18 @@ public:
 
   TH1F* h_HadrRecoil_Phi = 0;
   std::map<std::string, TH1F*> h_HadrRecoil_PhiSys;
+  
+  TH1F* h_GenHadrRecoil = 0;
+  std::map<std::string, TH1F*> h_GenHadrRecoilSys;
 
-
-  TH1D* hWbosonWeight_nominal = 0;
-  TH1D* hWbosonWeight_QCD1Up = 0;
-  TH1D* hWbosonWeight_QCD1Down = 0;
-  TH1D* hWbosonWeight_QCD2Up = 0;
-  TH1D* hWbosonWeight_QCD2Down = 0;
-  TH1D* hWbosonWeight_QCD3Up = 0;
-  TH1D* hWbosonWeight_QCD3Down = 0;
-  TH1D* hWbosonWeight_EW1Up = 0;
-  TH1D* hWbosonWeight_EW1Down = 0;
-  TH1D* hWbosonWeight_EW2Up = 0;
-  TH1D* hWbosonWeight_EW2Down = 0;
-  TH1D* hWbosonWeight_EW3Up = 0;
-  TH1D* hWbosonWeight_EW3Down = 0;
-  TH1D* hWbosonWeight_MixedUp = 0;
-  TH1D* hWbosonWeight_MixedDown = 0;
-  TH1D* hWbosonWeight_AlphaUp = 0;
-  TH1D* hWbosonWeight_AlphaDown = 0;
-  TH1D* hWbosonWeight_muRUp = 0;
-  TH1D* hWbosonWeight_muRDown = 0;
-  TH1D* hWbosonWeight_muFUp = 0;
-  TH1D* hWbosonWeight_muFDown = 0;
-
-
-  TH1D* hZbosonWeight_nominal = 0;
-  TH1D* hZbosonWeight_QCD1Up = 0;
-  TH1D* hZbosonWeight_QCD1Down = 0;
-  TH1D* hZbosonWeight_QCD2Up = 0;
-  TH1D* hZbosonWeight_QCD2Down = 0;
-  TH1D* hZbosonWeight_QCD3Up = 0;
-  TH1D* hZbosonWeight_QCD3Down = 0;
-  TH1D* hZbosonWeight_EW1Up = 0;
-  TH1D* hZbosonWeight_EW1Down = 0;
-  TH1D* hZbosonWeight_EW2Up = 0;
-  TH1D* hZbosonWeight_EW2Down = 0;
-  TH1D* hZbosonWeight_EW3Up = 0;
-  TH1D* hZbosonWeight_EW3Down = 0;
-  TH1D* hZbosonWeight_MixedUp = 0;
-  TH1D* hZbosonWeight_MixedDown = 0;
-  TH1D* hZbosonWeight_AlphaUp = 0;
-  TH1D* hZbosonWeight_AlphaDown = 0;
-  TH1D* hZbosonWeight_muRUp = 0;
-  TH1D* hZbosonWeight_muRDown = 0;
-  TH1D* hZbosonWeight_muFUp = 0;
-  TH1D* hZbosonWeight_muFDown = 0;
-
-
-  double BosonWeight_nominal = 1;
-  double BosonWeight_QCD1Up = 1;
-  double BosonWeight_QCD1Down = 1;
-  double BosonWeight_QCD2Up = 1;
-  double BosonWeight_QCD2Down = 1;
-  double BosonWeight_QCD3Up = 1;
-  double BosonWeight_QCD3Down = 1;
-  double BosonWeight_EW1Up = 1;
-  double BosonWeight_EW1Down = 1;
-  double BosonWeight_EW2Up = 1;
-  double BosonWeight_EW2Down = 1;
-  double BosonWeight_EW3Up = 1;
-  double BosonWeight_EW3Down = 1;
-  double BosonWeight_MixedUp = 1;
-  double BosonWeight_MixedDown = 1;
-  double BosonWeight_AlphaUp = 1;
-  double BosonWeight_AlphaDown = 1;
-  double BosonWeight_muRUp = 1;
-  double BosonWeight_muRDown = 1;
-  double BosonWeight_muFUp = 1;
-  double BosonWeight_muFDown = 1;
-
+  TH1F* h_GenHadrRecoil_Phi = 0;
+  std::map<std::string, TH1F*> h_GenHadrRecoil_PhiSys;
   /////////////////////////////
   // Choose/Add Variables here//
   /////////////////////////////
   // Readers to access the data (delete the ones you do not need).
-  TTreeReaderValue<Float_t> var_reco = { fReader, "Evt_Pt_MET" };
-  TTreeReaderValue<Float_t> var_gen = { fReader, "Evt_Pt_GenMET" };
+  TTreeReaderValue<Float_t> MET = { fReader, "Evt_Pt_MET" };
+  TTreeReaderValue<Float_t> GenMET = { fReader, "Evt_Pt_GenMET" };
 
   TTreeReaderValue<Float_t> Hadr_Recoil_Pt = { fReader, "Hadr_Recoil_Pt" };
   TTreeReaderValue<Float_t> Hadr_Recoil_Phi = { fReader, "Hadr_Recoil_Phi" };
@@ -251,6 +185,29 @@ public:
   TTreeReaderValue<Float_t> Weight_CSVCErr1down = { fReader, "Weight_CSVCErr1down" };
   TTreeReaderValue<Float_t> Weight_CSVCErr2up = { fReader, "Weight_CSVCErr2up" };
   TTreeReaderValue<Float_t> Weight_CSVCErr2down = { fReader, "Weight_CSVCErr2down" };
+
+  TTreeReaderValue<Float_t> BosonWeight_nominal = { fReader, "BosonWeight_nominal" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD1Up = { fReader, "BosonWeight_QCD1Up" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD1Down = { fReader, "BosonWeight_QCD1Down" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD2Up = { fReader, "BosonWeight_QCD2Up" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD2Down = { fReader, "BosonWeight_QCD2Down" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD3Up = { fReader, "BosonWeight_QCD3Up" };
+  TTreeReaderValue<Float_t> BosonWeight_QCD3Down = { fReader, "BosonWeight_QCD3Down" };
+  TTreeReaderValue<Float_t> BosonWeight_EW1Up = { fReader, "BosonWeight_EW1Up" };
+  TTreeReaderValue<Float_t> BosonWeight_EW1Down = { fReader, "BosonWeight_EW1Down" };
+  TTreeReaderValue<Float_t> BosonWeight_EW2Up = { fReader, "BosonWeight_EW2Up" };
+  TTreeReaderValue<Float_t> BosonWeight_EW2Down = { fReader, "BosonWeight_EW2Down" };
+  TTreeReaderValue<Float_t> BosonWeight_EW3Up = { fReader, "BosonWeight_EW3Up" };
+  TTreeReaderValue<Float_t> BosonWeight_EW3Down = { fReader, "BosonWeight_EW3Down" };
+  TTreeReaderValue<Float_t> BosonWeight_MixedUp = { fReader, "BosonWeight_MixedUp" };
+  TTreeReaderValue<Float_t> BosonWeight_MixedDown = { fReader, "BosonWeight_MixedDown" };
+  TTreeReaderValue<Float_t> BosonWeight_AlphaUp = { fReader, "BosonWeight_AlphaUp" };
+  TTreeReaderValue<Float_t> BosonWeight_AlphaDown = { fReader, "BosonWeight_AlphaDown" };
+  TTreeReaderValue<Float_t> BosonWeight_muRUp = { fReader, "BosonWeight_muRUp" };
+  TTreeReaderValue<Float_t> BosonWeight_muRDown = { fReader, "BosonWeight_muRDown" };
+  TTreeReaderValue<Float_t> BosonWeight_muFUp = { fReader, "BosonWeight_muFUp" };
+  TTreeReaderValue<Float_t> BosonWeight_muFDown = { fReader, "BosonWeight_muFDown" };
+
 
   // TTreeReaderValue<Long64_t> Miss = {fReader, "Miss" };
   // TTreeReaderValue<Long64_t> Fake = {fReader, "Fake" };
@@ -306,7 +263,30 @@ public:
     {"CMS_btag_cferr1Up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1up},
     {"CMS_btag_cferr1Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr1down},
     {"CMS_btag_cferr2Up", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2up},
-    {"CMS_btag_cferr2Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down}
+    {"CMS_btag_cferr2Down", ((MCSelector*)this)->MCSelector::Weight_CSVCErr2down},
+
+    // {"BosonWeight_nominal", ((MCSelector*)this)->MCSelector::BosonWeight_nominal}
+    {"BosonWeight_QCD1Up", ((MCSelector*)this)->MCSelector::BosonWeight_QCD1Up},
+    {"BosonWeight_QCD1Down", ((MCSelector*)this)->MCSelector::BosonWeight_QCD1Down},
+    {"BosonWeight_QCD2Up", ((MCSelector*)this)->MCSelector::BosonWeight_QCD2Up},
+    {"BosonWeight_QCD2Down", ((MCSelector*)this)->MCSelector::BosonWeight_QCD2Down},
+    {"BosonWeight_QCD3Up", ((MCSelector*)this)->MCSelector::BosonWeight_QCD3Up},
+    {"BosonWeight_QCD3Down", ((MCSelector*)this)->MCSelector::BosonWeight_QCD3Down},
+    {"BosonWeight_EW1Up", ((MCSelector*)this)->MCSelector::BosonWeight_EW1Up},
+    {"BosonWeight_EW1Down", ((MCSelector*)this)->MCSelector::BosonWeight_EW1Down},
+    {"BosonWeight_EW2Up", ((MCSelector*)this)->MCSelector::BosonWeight_EW2Up},
+    {"BosonWeight_EW2Down", ((MCSelector*)this)->MCSelector::BosonWeight_EW2Down},
+    {"BosonWeight_EW3Up", ((MCSelector*)this)->MCSelector::BosonWeight_EW3Up},
+    {"BosonWeight_EW3Down", ((MCSelector*)this)->MCSelector::BosonWeight_EW3Down},
+    {"BosonWeight_MixedUp", ((MCSelector*)this)->MCSelector::BosonWeight_MixedUp},
+    {"BosonWeight_MixedDown", ((MCSelector*)this)->MCSelector::BosonWeight_MixedDown},
+    {"BosonWeight_AlphaUp", ((MCSelector*)this)->MCSelector::BosonWeight_AlphaUp},
+    {"BosonWeight_AlphaDown", ((MCSelector*)this)->MCSelector::BosonWeight_AlphaDown},
+    {"BosonWeight_scale_variation_muRUp", ((MCSelector*)this)->MCSelector::BosonWeight_muRUp},
+    {"BosonWeight_scale_variation_muRDown", ((MCSelector*)this)->MCSelector::BosonWeight_muRDown},
+    {"BosonWeight_scale_variation_muFUp", ((MCSelector*)this)->MCSelector::BosonWeight_muFUp},
+    {"BosonWeight_scale_variation_muFDown", ((MCSelector*)this)->MCSelector::BosonWeight_muFDown}
+
   };
 
   std::map<std::string, double> BosonSystematicWeights;

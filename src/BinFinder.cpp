@@ -4,21 +4,38 @@
 #include "TFile.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include "boost/lexical_cast.hpp"
 #include "TF1.h"
 
 using namespace std;
+
+template<typename T>
+std::vector<T>
+to_array(const std::string& s)
+{
+	std::vector<T> result;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, ','))
+		result.push_back(boost::lexical_cast<T>(item));
+	return result;
+}
 
 BinFinder::BinFinder(TH2* Matrix) {
 	matrix = Matrix;
 	double nBinsx = matrix->GetNbinsX();
 	double nBinsy = matrix->GetNbinsY();
-	if (nBinsx != nBinsy) cout << "WARNING MAtrix not square!" << endl;
+	if (nBinsx != nBinsy) cout << "WARNING Matrix not square!" << endl;
 	nBins = nBinsx;
 
 	boost::property_tree::ptree pt;
 	boost::property_tree::ini_parser::read_ini(string(path.GetConfigPath()), pt);
-	xMin = pt.get<int>("Binning.xMin_Reco");
-	xMax = pt.get<int>("Binning.xMax_Reco");
+	std::vector<double> BinEdgesReco = to_array<double>(pt.get<std::string>("Binning.BinEdgesReco"));
+
+	xMin = BinEdgesReco[2];
+	xMax = BinEdgesReco[3];
+	xMin = 250;
+	xMax = 2000;
 	rounding = pt.get<int>("Binning.rounding");
 }
 
@@ -51,7 +68,7 @@ std::vector<double> BinFinder::FitSlices(std::vector<TH1*> slices) {
 		slice->Fit("gaus");
 		slice->Draw("");
 		TF1 *fit = slice->GetFunction("gaus");
-		sigmas.push_back(fit->GetParameter(2)*2);
+		sigmas.push_back(fit->GetParameter(2) * 2);
 		// cout << floor(sigma/10+0.5)*10 << endl;
 		// bins.push_back();
 		c->SaveAs(path.GetPdfPath() + "/bins/" + name + ".pdf");

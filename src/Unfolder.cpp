@@ -16,8 +16,8 @@ using namespace std;
 TUnfoldDensity* Unfolder::SetUp(TH2* A, TH1F* input) {
 	cout << "Setting Up Unfolder.." << endl;
 	TUnfoldDensity* unfold = new TUnfoldDensity(A, TUnfoldDensity::kHistMapOutputVert, TUnfold::kRegModeCurvature,
-	        // TUnfold::kEConstraintNone, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[UOB]" );
-	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[]" );
+	        TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[UOB]" );
+	// TUnfold::kEConstraintArea, TUnfoldDensity::kDensityModeBinWidth, 0, 0, 0, "*[]" );
 	float n_input = unfold->SetInput(input);
 	if (n_input >= 1) {
 		std::cout << "Unfolding result may be wrong\n";
@@ -38,12 +38,12 @@ void Unfolder::ParseConfig() {
 }
 
 std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold, TString name, const char * distribution, const char * axisSteering ) {
-	cout << "Finding BestTau" << endl;
+	cout << "Finding BestTau by minimizing global correlations" << endl;
 	int iBest;
 	TSpline *scanResult = 0;
 	TGraph *lCurve = 0;
 
-	iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoAvgSys, distribution, axisSteering, &lCurve);
+	iBest = unfold->ScanTau(nScan, tauMin, tauMax, &scanResult, TUnfoldDensity::kEScanTauRhoAvg, distribution, axisSteering, &lCurve);
 
 	std::cout << " Best tau=" << unfold->GetTau() << "\n";
 	std::cout << "chi**2 = chi**2_A+chi**2_L/Ndf = " << unfold->GetChi2A() << "+" << unfold->GetChi2L() << " / " << unfold->GetNdf() << "\n";
@@ -64,10 +64,18 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 	//Draw Tau Graphs
 	TCanvas* tau = new TCanvas("tau_" + name, "tau_" + name);
 	tau->cd();
-	scanResult->Draw();
-	knots->Draw("*");
+	knots->GetXaxis()->SetTitle("log #tau");
+	knots->GetXaxis()->SetTitleSize(0.05);
+
+	knots->GetYaxis()->SetTitle("#bar{#rho}");
+	knots->GetYaxis()->SetTitleSize(0.05);
+
+	knots->Draw("A*");
 	bestRhoLogTau->SetMarkerColor(kRed);
 	bestRhoLogTau->Draw("*");
+	scanResult->Draw("same");
+
+	gPad->Update();
 	tau->SaveAs(path.GetPdfPath() + "tau_" + name + ".pdf");
 	tau->SaveAs(path.GetPdfPath() + "../pngs/tau_" + name + ".png");
 	tau->Write();
@@ -76,6 +84,8 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 	clCurve->cd();
 	lCurve->Draw();
 	bestLCurve->Draw("*");
+	lCurve->GetXaxis()->SetTitle("log #chi_{A}");
+	lCurve->GetYaxis()->SetTitle("log #chi_{L}");
 	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
 	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
 
@@ -85,7 +95,7 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 }
 
 std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TString name) {
-	cout << "Finding BestTau" << endl;
+	cout << "Finding BestTau using LCurve Scan" << endl;
 	int iBest;
 	TSpline *logTauX, *logTauY, *logTauCurvature;
 	TGraph *lCurve = 0;
@@ -113,6 +123,7 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	TCanvas* tau = new TCanvas("logtauvsChi2_" + name, "logtauvsChi2_" + name);
 	tau->cd();
 	logTauX->Draw();
+
 	bestLogTauX->SetMarkerColor(kRed);
 	bestLogTauX->Draw("*");
 	tau->SaveAs(path.GetPdfPath() + "logtauvsChi2_" + name + ".pdf");
@@ -130,6 +141,10 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
 	clCurve->cd();
 	lCurve->Draw("AL");
+	lCurve->GetXaxis()->SetTitle("log #chi_{A}");
+	lCurve->GetXaxis()->SetTitleSize(0.05);
+	lCurve->GetYaxis()->SetTitle("log #chi_{L}");
+	lCurve->GetYaxis()->SetTitleSize(0.05);
 	bestLcurve->SetMarkerColor(kRed);
 	bestLcurve->Draw("*");
 	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");

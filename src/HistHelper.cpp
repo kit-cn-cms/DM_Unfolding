@@ -122,7 +122,6 @@ std::vector<TH2*> HistHelper::AddAllBkgs2D(std::vector<std::string> bkgnames, TS
 	if (addedhist == nullptr) std::cout << "couldn't find nominal template: " << bkgnames.at(0) + "_" + varname << std::endl;
 
 	addedhist->Reset();
-
 	//sys variations
 	for (auto& var : variations) {
 		for (auto bkgname : bkgnames) {

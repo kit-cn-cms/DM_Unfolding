@@ -133,8 +133,6 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   nBins_Gen = BinEdgesGen.size() - 1;
   nBins_Reco = BinEdgesReco.size() - 1;
 
-  genvar = pt.get<std::string>("vars.gen");
-  recovar = pt.get<std::string>("vars.reco");
   variation = pt.get<std::string>("general.variation");
   // nBins_Gen = pt.get<int>("Binning.nBins_Gen");
   // nBins_Reco = pt.get<int>("Binning.nBins_Reco");
@@ -145,64 +143,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   split = pt.get<int>("general.split");
   systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
   BosonSystematics = to_array<std::string>(pt.get<std::string>("general.BosonSystematics"));
-
-  TString WFileName = pt.get<std::string>("Boson.WFileName");
-  TString ZFileName = pt.get<std::string>("Boson.ZFileName");
   std::cout << "Config parsed!" << std::endl;
 
 
   //append BosonSystematics to "common" systematics
   allSystematics.insert(std::end(allSystematics), std::begin(systematics), std::end(systematics));
   allSystematics.insert(std::end(allSystematics), std::begin(BosonSystematics), std::end(BosonSystematics));
-
-  TString path_to_sf_file_W = path.GetRootFilePathforSlaves() + WFileName;
-  TString path_to_sf_file_Z = path.GetRootFilePathforSlaves() + ZFileName;
-
-  fWeightsW = TFile::Open(path_to_sf_file_W);
-  hWbosonWeight_nominal =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n");
-  hWbosonWeight_QCD1Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_unn_nnn_n");
-  hWbosonWeight_QCD1Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_dnn_nnn_n");
-  hWbosonWeight_QCD2Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nun_nnn_n");
-  hWbosonWeight_QCD2Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_ndn_nnn_n");
-  hWbosonWeight_QCD3Up =    (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnu_nnn_n");
-  hWbosonWeight_QCD3Down =  (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnd_nnn_n");
-  hWbosonWeight_EW1Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_unn_n");
-  hWbosonWeight_EW1Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_dnn_n");
-  hWbosonWeight_EW2Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nun_n");
-  hWbosonWeight_EW2Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_ndn_n");
-  hWbosonWeight_EW3Up =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnu_n");
-  hWbosonWeight_EW3Down =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnd_n");
-  hWbosonWeight_MixedUp =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_u");
-  hWbosonWeight_MixedDown = (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_d");
-  hWbosonWeight_AlphaUp =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_alpha_up");
-  hWbosonWeight_AlphaDown = (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_alpha_down");
-  hWbosonWeight_muRUp =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_2p0_muF_1p0");
-  hWbosonWeight_muRDown =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_0p5_muF_1p0");
-  hWbosonWeight_muFUp =     (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_2p0");
-  hWbosonWeight_muFDown =   (TH1D*)fWeightsW->Get("evj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_0p5");
-
-  fWeightsZ = TFile::Open(path_to_sf_file_Z);
-  hZbosonWeight_nominal =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n");
-  hZbosonWeight_QCD1Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_unn_nnn_n");
-  hZbosonWeight_QCD1Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_dnn_nnn_n");
-  hZbosonWeight_QCD2Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nun_nnn_n");
-  hZbosonWeight_QCD2Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_ndn_nnn_n");
-  hZbosonWeight_QCD3Up =    (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnu_nnn_n");
-  hZbosonWeight_QCD3Down =  (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnd_nnn_n");
-  hZbosonWeight_EW1Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_unn_n");
-  hZbosonWeight_EW1Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_dnn_n");
-  hZbosonWeight_EW2Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nun_n");
-  hZbosonWeight_EW2Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_ndn_n");
-  hZbosonWeight_EW3Up =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnu_n");
-  hZbosonWeight_EW3Down =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnd_n");
-  hZbosonWeight_MixedUp =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_u");
-  hZbosonWeight_MixedDown = (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_d");
-  hZbosonWeight_AlphaUp =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_alpha_up");
-  hZbosonWeight_AlphaDown = (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_alpha_down");
-  hZbosonWeight_muRUp =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_2p0_muF_1p0");
-  hZbosonWeight_muRDown =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_0p5_muF_1p0");
-  hZbosonWeight_muFUp =     (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_2p0");
-  hZbosonWeight_muFDown =   (TH1D*)fWeightsZ->Get("vvj_NNLO_NLO_nnn_nnn_n_Weight_scale_variation_muR_1p0_muF_0p5");
 
   std::string currentJESJERvar = "";
   if (option.Contains("_CMS_scale_jUp")) {
@@ -275,15 +221,15 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   };
 
   // book histos for split distributions
-  h_GenSplit = new TH1F(strippedOption + genvar + "_Split" + currentJESJERvar , genvar, nBins_Gen, BinEdgesGen.data());
+  h_GenSplit = new TH1F(strippedOption + "GenMET" + "_Split" + currentJESJERvar , "GenMET", nBins_Gen, BinEdgesGen.data());
   h_GenSplit->Sumw2();
   GetOutputList()->Add(h_GenSplit);
-  bookSysHistos(h_GenSysSplit, strippedOption + genvar + "_Split_" , genvar, nBins_Gen, BinEdgesGen);
+  bookSysHistos(h_GenSysSplit, strippedOption + "GenMET" + "_Split_" , "GenMET", nBins_Gen, BinEdgesGen);
 
-  h_RecoSplit = new TH1F(strippedOption + recovar + "_Split" + currentJESJERvar, recovar, nBins_Reco, BinEdgesReco.data());
+  h_RecoSplit = new TH1F(strippedOption + "MET" + "_Split" + currentJESJERvar, "MET", nBins_Reco, BinEdgesReco.data());
   h_RecoSplit->Sumw2();
   GetOutputList()->Add(h_RecoSplit);
-  bookSysHistos(h_RecoSysSplit, strippedOption + recovar + "_Split_" , recovar, nBins_Reco, BinEdgesReco);
+  bookSysHistos(h_RecoSysSplit, strippedOption + "MET" + "_Split_" , "MET", nBins_Reco, BinEdgesReco);
 
 
   h_DummyDataSplit = new TH1F(strippedOption + "DummyData_Split" +  currentJESJERvar, "DummyData", nBins_Reco, BinEdgesReco.data());
@@ -299,20 +245,20 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
 
   // book histos for full distributions
-  h_Gen = new TH1F(strippedOption + genvar + currentJESJERvar, genvar, nBins_Gen, BinEdgesGen.data());
+  h_Gen = new TH1F(strippedOption + "GenMET" + currentJESJERvar, "GenMET", nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
   GetOutputList()->Add(h_Gen);
-  bookSysHistos(h_GenSys, strippedOption + genvar + "_" , genvar, nBins_Gen, BinEdgesGen);
+  bookSysHistos(h_GenSys, strippedOption + "GenMET" + "_" , "GenMET", nBins_Gen, BinEdgesGen);
 
-  h_Reco = new TH1F(strippedOption + recovar + currentJESJERvar, recovar, nBins_Reco, BinEdgesReco.data());
+  h_Reco = new TH1F(strippedOption + "MET" + currentJESJERvar, "MET", nBins_Reco, BinEdgesReco.data());
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
-  bookSysHistos(h_RecoSys, strippedOption + recovar + "_" , recovar, nBins_Reco, BinEdgesReco);
+  bookSysHistos(h_RecoSys, strippedOption + "MET" + "_" , "MET", nBins_Reco, BinEdgesReco);
 
   h_HadrRecoil = new TH1F(strippedOption + "Hadr_Recoil_Pt" + currentJESJERvar, "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco.data());
   h_HadrRecoil->Sumw2();
   GetOutputList()->Add(h_HadrRecoil);
-  bookSysHistos(h_HadrRecoilSys, strippedOption + "Hadr_Recoil_Pt" , "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco);
+  bookSysHistos(h_HadrRecoilSys, strippedOption + "Hadr_Recoil_Pt_" , "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco);
 
 
   A = new TH2D(strippedOption + "A" + currentJESJERvar , "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
@@ -321,10 +267,10 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   bookSysHistos2D(ASys, strippedOption + "A_", "A", nBins_Reco, BinEdgesReco, nBins_Gen, BinEdgesGen);
 
 
-  A_equBins = new TH2D(strippedOption + "A_equBins" + currentJESJERvar, "A", 250, 0, 2000, 250, 0, 2000);
+  A_equBins = new TH2D(strippedOption + "A_equBins" + currentJESJERvar, "A", 250, 250, 2000, 250, 250, 2000);
   A_equBins->Sumw2();
   GetOutputList()->Add(A_equBins);
-  bookSysHistos2DequBins(A_equBinsSys, strippedOption + "A_equBins_", "A",  250, 0, 2000, 250, 0, 2000);
+  bookSysHistos2DequBins(A_equBinsSys, strippedOption + "A_equBins_", "A",  250, 250, 2000, 250, 250, 2000);
 
 
   h_testMET = new TH1F(strippedOption + "TestMET" + currentJESJERvar, "TESTMET", nBins_Reco, BinEdgesReco.data());
@@ -353,7 +299,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_fake);
   bookSysHistos(h_fakeSys, strippedOption + "fakes_" , "fakes", nBins_Reco, BinEdgesReco);
 
-  h_fake_Split = new TH1F(strippedOption + "fakes_Split" + currentJESJERvar , recovar, nBins_Reco, BinEdgesReco.data());
+  h_fake_Split = new TH1F(strippedOption + "fakes_Split" + currentJESJERvar , "MET", nBins_Reco, BinEdgesReco.data());
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
   bookSysHistos(h_fake_SplitSys, strippedOption + "fakes_Split_" , "fakes", nBins_Reco, BinEdgesReco);
@@ -363,7 +309,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_misses);
   bookSysHistos(h_missesSys, strippedOption + "misses_" , "misses", nBins_Gen, BinEdgesGen);
 
-  h_misses_Split = new TH1F(strippedOption + "misses_Split" + currentJESJERvar, genvar,  nBins_Gen, BinEdgesGen.data());
+  h_misses_Split = new TH1F(strippedOption + "misses_Split" + currentJESJERvar, "GenMET",  nBins_Gen, BinEdgesGen.data());
   h_misses_Split->Sumw2();
   GetOutputList()->Add(h_misses_Split);
   bookSysHistos(h_misses_SplitSys, strippedOption + "misses_Split_" , "misses", nBins_Gen, BinEdgesGen);
@@ -440,129 +386,14 @@ MCSelector::Process(Long64_t entry)
   //////////////////////
   bool isWlnuSample = option.Contains("w_lnu_jets");
   bool isZnunuSample = option.Contains("z_nunu_jets");
+  bool isZllSample = option.Contains("z_ll_jets");
 
-  if (isWlnuSample) {
-    if (*W_Pt > 30) {
-      BosonWeight_nominal   = hWbosonWeight_nominal->GetBinContent(hWbosonWeight_nominal->FindBin(*W_Pt));
-      BosonWeight_QCD1Up    = hWbosonWeight_QCD1Up->GetBinContent(hWbosonWeight_QCD1Up->FindBin(*W_Pt));
-      BosonWeight_QCD1Down  = hWbosonWeight_QCD1Down->GetBinContent(hWbosonWeight_QCD1Down->FindBin(*W_Pt));
-      BosonWeight_QCD2Up    = hWbosonWeight_QCD2Up->GetBinContent(hWbosonWeight_QCD2Up->FindBin(*W_Pt));
-      BosonWeight_QCD2Down  = hWbosonWeight_QCD2Down->GetBinContent(hWbosonWeight_QCD2Down->FindBin(*W_Pt));
-      BosonWeight_QCD3Up    = hWbosonWeight_QCD3Up->GetBinContent(hWbosonWeight_QCD3Up->FindBin(*W_Pt));
-      BosonWeight_QCD3Down  = hWbosonWeight_QCD3Down->GetBinContent(hWbosonWeight_QCD3Down->FindBin(*W_Pt));
-      BosonWeight_EW1Up     = hWbosonWeight_EW1Up->GetBinContent(hWbosonWeight_EW1Up->FindBin(*W_Pt));
-      BosonWeight_EW1Down   = hWbosonWeight_EW1Down->GetBinContent(hWbosonWeight_EW1Down->FindBin(*W_Pt));
-      BosonWeight_EW2Up     = hWbosonWeight_EW2Up->GetBinContent(hWbosonWeight_EW2Up->FindBin(*W_Pt));
-      BosonWeight_EW2Down   = hWbosonWeight_EW2Down->GetBinContent(hWbosonWeight_EW2Down->FindBin(*W_Pt));
-      BosonWeight_EW3Up     = hWbosonWeight_EW3Up->GetBinContent(hWbosonWeight_EW3Up->FindBin(*W_Pt));
-      BosonWeight_EW3Down   = hWbosonWeight_EW3Down->GetBinContent(hWbosonWeight_EW3Down->FindBin(*W_Pt));
-      BosonWeight_MixedUp   = hWbosonWeight_MixedUp->GetBinContent(hWbosonWeight_MixedUp->FindBin(*W_Pt));
-      BosonWeight_MixedDown = hWbosonWeight_MixedDown->GetBinContent(hWbosonWeight_MixedDown->FindBin(*W_Pt));
-      BosonWeight_AlphaUp   = hWbosonWeight_AlphaUp->GetBinContent(hWbosonWeight_AlphaUp->FindBin(*W_Pt));
-      BosonWeight_AlphaDown = hWbosonWeight_AlphaDown->GetBinContent(hWbosonWeight_AlphaDown->FindBin(*W_Pt));
-      BosonWeight_muRUp     = hWbosonWeight_muRUp->GetBinContent(hWbosonWeight_muRUp->FindBin(*W_Pt));
-      BosonWeight_muRDown   = hWbosonWeight_muRDown->GetBinContent(hWbosonWeight_muRDown->FindBin(*W_Pt));
-      BosonWeight_muFUp     = hWbosonWeight_muFUp->GetBinContent(hWbosonWeight_muFUp->FindBin(*W_Pt));
-      BosonWeight_muFDown   = hWbosonWeight_muFDown->GetBinContent(hWbosonWeight_muFDown->FindBin(*W_Pt));
-    }
-    else {
-      BosonWeight_nominal = 1;
-      BosonWeight_QCD1Up = 1;
-      BosonWeight_QCD1Down = 1;
-      BosonWeight_QCD2Up = 1;
-      BosonWeight_QCD2Down = 1;
-      BosonWeight_QCD3Up = 1;
-      BosonWeight_QCD3Down = 1;
-      BosonWeight_EW1Up = 1;
-      BosonWeight_EW1Down = 1;
-      BosonWeight_EW2Up = 1;
-      BosonWeight_EW2Down = 1;
-      BosonWeight_EW3Up = 1;
-      BosonWeight_EW3Down = 1;
-      BosonWeight_MixedUp = 1;
-      BosonWeight_MixedDown = 1;
-      BosonWeight_AlphaUp = 1;
-      BosonWeight_AlphaDown = 1;
-      BosonWeight_muRUp = 1;
-      BosonWeight_muRDown = 1;
-      BosonWeight_muFUp = 1;
-      BosonWeight_muFDown = 1;
-    }
-  }
+  bool applyBosonWeights = isWlnuSample or isZnunuSample or isZllSample;
 
-  if (isZnunuSample) {
-    if (*Z_Pt > 30) {
-      BosonWeight_nominal   = hZbosonWeight_nominal->GetBinContent(hZbosonWeight_nominal->FindBin(*Z_Pt));
-      BosonWeight_QCD1Up    = hZbosonWeight_QCD1Up->GetBinContent(hZbosonWeight_QCD1Up->FindBin(*Z_Pt));
-      BosonWeight_QCD1Down  = hZbosonWeight_QCD1Down->GetBinContent(hZbosonWeight_QCD1Down->FindBin(*Z_Pt));
-      BosonWeight_QCD2Up    = hZbosonWeight_QCD2Up->GetBinContent(hZbosonWeight_QCD2Up->FindBin(*Z_Pt));
-      BosonWeight_QCD2Down  = hZbosonWeight_QCD2Down->GetBinContent(hZbosonWeight_QCD2Down->FindBin(*Z_Pt));
-      BosonWeight_QCD3Up    = hZbosonWeight_QCD3Up->GetBinContent(hZbosonWeight_QCD3Up->FindBin(*Z_Pt));
-      BosonWeight_QCD3Down  = hZbosonWeight_QCD3Down->GetBinContent(hZbosonWeight_QCD3Down->FindBin(*Z_Pt));
-      BosonWeight_EW1Up     = hZbosonWeight_EW1Up->GetBinContent(hZbosonWeight_EW1Up->FindBin(*Z_Pt));
-      BosonWeight_EW1Down   = hZbosonWeight_EW1Down->GetBinContent(hZbosonWeight_EW1Down->FindBin(*Z_Pt));
-      BosonWeight_EW2Up     = hZbosonWeight_EW2Up->GetBinContent(hZbosonWeight_EW2Up->FindBin(*Z_Pt));
-      BosonWeight_EW2Down   = hZbosonWeight_EW2Down->GetBinContent(hZbosonWeight_EW2Down->FindBin(*Z_Pt));
-      BosonWeight_EW3Up     = hZbosonWeight_EW3Up->GetBinContent(hZbosonWeight_EW3Up->FindBin(*Z_Pt));
-      BosonWeight_EW3Down   = hZbosonWeight_EW3Down->GetBinContent(hZbosonWeight_EW3Down->FindBin(*Z_Pt));
-      BosonWeight_MixedUp   = hZbosonWeight_MixedUp->GetBinContent(hZbosonWeight_MixedUp->FindBin(*Z_Pt));
-      BosonWeight_MixedDown = hZbosonWeight_MixedDown->GetBinContent(hZbosonWeight_MixedDown->FindBin(*Z_Pt));
-      BosonWeight_AlphaUp   = hZbosonWeight_AlphaUp->GetBinContent(hZbosonWeight_AlphaUp->FindBin(*Z_Pt));
-      BosonWeight_AlphaDown = hZbosonWeight_AlphaDown->GetBinContent(hZbosonWeight_AlphaDown->FindBin(*Z_Pt));
-      BosonWeight_muRUp     = hZbosonWeight_muRUp->GetBinContent(hZbosonWeight_muRUp->FindBin(*Z_Pt));
-      BosonWeight_muRDown   = hZbosonWeight_muRDown->GetBinContent(hZbosonWeight_muRDown->FindBin(*Z_Pt));
-      BosonWeight_muFUp     = hZbosonWeight_muFUp->GetBinContent(hZbosonWeight_muFUp->FindBin(*Z_Pt));
-      BosonWeight_muFDown   = hZbosonWeight_muFDown->GetBinContent(hZbosonWeight_muFDown->FindBin(*Z_Pt));
-    }
-    else {
-      BosonWeight_nominal = 1;
-      BosonWeight_QCD1Up = 1;
-      BosonWeight_QCD1Down = 1;
-      BosonWeight_QCD2Up = 1;
-      BosonWeight_QCD2Down = 1;
-      BosonWeight_QCD3Up = 1;
-      BosonWeight_QCD3Down = 1;
-      BosonWeight_EW1Up = 1;
-      BosonWeight_EW1Down = 1;
-      BosonWeight_EW2Up = 1;
-      BosonWeight_EW2Down = 1;
-      BosonWeight_EW3Up = 1;
-      BosonWeight_EW3Down = 1;
-      BosonWeight_MixedUp = 1;
-      BosonWeight_MixedDown = 1;
-      BosonWeight_AlphaUp = 1;
-      BosonWeight_AlphaDown = 1;
-      BosonWeight_muRUp = 1;
-      BosonWeight_muRDown = 1;
-      BosonWeight_muFUp = 1;
-      BosonWeight_muFDown = 1;
-    }
-  }
 
-  BosonSystematicWeights = {
-    {"BosonWeight_QCD1Up", BosonWeight_QCD1Up / BosonWeight_nominal},
-    {"BosonWeight_QCD1Down", BosonWeight_QCD1Down / BosonWeight_nominal},
-    {"BosonWeight_QCD2Up", BosonWeight_QCD2Up / BosonWeight_nominal},
-    {"BosonWeight_QCD2Down", BosonWeight_QCD2Down / BosonWeight_nominal},
-    {"BosonWeight_QCD3Up", BosonWeight_QCD3Up / BosonWeight_nominal},
-    {"BosonWeight_QCD3Down", BosonWeight_QCD3Down / BosonWeight_nominal},
-    {"BosonWeight_EW1Up", BosonWeight_EW1Up / BosonWeight_nominal},
-    {"BosonWeight_EW1Down", BosonWeight_EW1Down / BosonWeight_nominal},
-    {"BosonWeight_EW2Up", BosonWeight_EW2Up / BosonWeight_nominal},
-    {"BosonWeight_EW2Down", BosonWeight_EW2Down / BosonWeight_nominal},
-    {"BosonWeight_EW3Up", BosonWeight_EW3Up / BosonWeight_nominal},
-    {"BosonWeight_EW3Down", BosonWeight_EW3Down / BosonWeight_nominal},
-    {"BosonWeight_MixedUp", BosonWeight_MixedUp / BosonWeight_nominal},
-    {"BosonWeight_MixedDown", BosonWeight_MixedDown / BosonWeight_nominal},
-    {"BosonWeight_AlphaUp", BosonWeight_AlphaUp / BosonWeight_nominal},
-    {"BosonWeight_AlphaDown", BosonWeight_AlphaDown / BosonWeight_nominal},
-    {"BosonWeight_scale_variation_muRUp", BosonWeight_muRUp / BosonWeight_nominal},
-    {"BosonWeight_scale_variation_muRDown", BosonWeight_muRDown / BosonWeight_nominal},
-    {"BosonWeight_scale_variation_muFUp", BosonWeight_muFUp / BosonWeight_nominal},
-    {"BosonWeight_scale_variation_muFDown", BosonWeight_muFDown / BosonWeight_nominal},
-  };
+  weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom);
 
-  weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * (BosonWeight_nominal);;
+  if (applyBosonWeights) weight_ *= *BosonWeight_nominal;
 
   double random = rand.Rndm();
   float split_ = split / 100.;
@@ -577,102 +408,110 @@ MCSelector::Process(Long64_t entry)
   }
   if (isWlnuSample) {
   }
+  if (option.Contains("signal")) {
+    weight_ *= 0.7826;
+  }
 
-  auto fillSys = [this, isZnunuSample, isWlnuSample](std::map<std::string, TH1F*> &histMap, double var) {
+  auto fillSys = [this, applyBosonWeights](std::map<std::string, TH1F*> &histMap, double var) {
     if (doadditionalsystematics) { //fill systematics only in nominal case
       for (auto& sys : allSystematics ) {
-        if (BosonSystematicWeights.count(sys)) {
-          if (isZnunuSample || isWlnuSample) {
-            double bosonweight = BosonSystematicWeights.find(sys)->second;
-            float tmpweight = weight_ * bosonweight;
-            histMap.find(sys)->second->Fill( var, tmpweight );
+        // std::cout << sys << std::endl;
+        float tmpweight = weight_ * *(sysweights.find(sys)->second);
+        if (TString(sys).Contains("Boson") and applyBosonWeights) tmpweight /= *BosonWeight_nominal;
+        if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
+        else if (TString(sys).Contains("PDF")) {
+          if (*(sysweights.find(sys)->second) > 0) {
+            tmpweight = weight_ * *(sysweights.find(sys)->second);
+          }
+          else {
+            tmpweight = weight_;
           }
         }
-        else {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-          else if (TString(sys).Contains("mu")) {
-            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-          }
-          histMap.find(sys)->second->Fill( var, tmpweight );
+        else if (TString(sys).Contains("mu")) {
+          if (applyBosonWeights) tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * (*(sysweights.find("Boson" + sys)->second)) / *BosonWeight_nominal;
+          else tmpweight = weight_ * fabs(*(sysweights.find(sys)->second));
         }
+        histMap.find(sys)->second->Fill( var, tmpweight );
+        // std::cout <<"did " << sys << std::endl;
       }
     }
   };
 
-  auto fillSys2D = [this, isZnunuSample, isWlnuSample](std::map<std::string, TH2D*> &histMap, double varx, double vary) {
+  auto fillSys2D = [this, applyBosonWeights](std::map<std::string, TH2D*> &histMap, double varx, double vary) {
     if (doadditionalsystematics) { //fill systematics only in nominal case
       for (auto& sys : allSystematics ) {
-        if (BosonSystematicWeights.count(sys)) {
-          if (isZnunuSample || isWlnuSample) {
-            double bosonweight = BosonSystematicWeights.find(sys)->second;
-            float tmpweight = weight_ * bosonweight;
-            histMap.find(sys)->second->Fill( varx, vary, tmpweight );
+        float tmpweight = weight_ * *(sysweights.find(sys)->second);
+        if (TString(sys).Contains("Boson") and applyBosonWeights) tmpweight /= *BosonWeight_nominal;
+        if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
+        else if (TString(sys).Contains("PDF")) {
+          if (*(sysweights.find(sys)->second) > 0) {
+            tmpweight = weight_ * *(sysweights.find(sys)->second);
+          }
+          else {
+            tmpweight = weight_;
           }
         }
-        else {
-          float tmpweight = weight_ * *(sysweights.find(sys)->second);
-          if (TString(sys).Contains("PU")) tmpweight /= *Weight_PU;
-          else if (TString(sys).Contains("mu")) {
-            tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * BosonSystematicWeights.find("Boson" + sys)->second;
-          }
-          histMap.find(sys)->second->Fill( varx, vary, tmpweight );
+        else if (TString(sys).Contains("mu")) {
+          if (applyBosonWeights) tmpweight = weight_ * fabs(*(sysweights.find(sys)->second)) * (*(sysweights.find("Boson" + sys)->second)) / *BosonWeight_nominal;
+          else tmpweight = weight_ * fabs(*(sysweights.find(sys)->second));
         }
+        histMap.find(sys)->second->Fill( varx, vary, tmpweight );
       }
     }
   };
 
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  bool gensel = *var_gen > 250 && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
-  bool recosel = triggered && *recoSelected && *var_reco > 250;
-  // bool recosel = *var_reco > 200 *MonoJetSelection && triggered &&  && *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
+  bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
+  // bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection;
+  bool recosel = triggered && *MET > BinEdgesReco.at(0) && *METSelection && *MonoJetSelection &&  *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
 
   bool miss = gensel && !recosel;
 
+  // if ((abs(*MET - *GenMET) < 150) or (option.Contains("data"))) {
   if (gensel) {
-    h_Gen->Fill(*var_gen, weight_);
-    fillSys(h_GenSys, *var_gen);
-    h_GenRecoMET->Fill(*var_reco, weight_);
-    fillSys(h_GenRecoMETSys, *var_reco);
+    h_Gen->Fill(*GenMET, weight_);
+    fillSys(h_GenSys, *GenMET);
+    h_GenRecoMET->Fill(*MET, weight_);
+    fillSys(h_GenRecoMETSys, *MET);
 
     if (!isPseudoData) {
-      h_GenSplit->Fill(*var_gen, weight_);
-      fillSys(h_GenSysSplit, *var_gen);
+      h_GenSplit->Fill(*GenMET, weight_);
+      fillSys(h_GenSysSplit, *GenMET);
     }
 
     if (recosel) {
-      h_testMET->Fill(*var_reco, weight_);
-      fillSys(h_testMETSys, *var_reco);
-      h_testMETgenBinning->Fill(*var_reco, weight_);
-      fillSys(h_testMETgenBinningSys, *var_reco);
+      h_testMET->Fill(*MET, weight_);
+      fillSys(h_testMETSys, *MET);
+      h_testMETgenBinning->Fill(*MET, weight_);
+      fillSys(h_testMETgenBinningSys, *MET);
 
       if (!isPseudoData) {
-        h_testMET_Split->Fill(*var_reco, weight_);
-        fillSys(h_testMET_SplitSys, *var_reco);
+        h_testMET_Split->Fill(*MET, weight_);
+        fillSys(h_testMET_SplitSys, *MET);
       }
     }
 
   }
 
   if (miss) { //is a miss
-    A->Fill(-10, *var_gen, weight_);
-    fillSys2D(ASys, -10, *var_gen );
-    h_misses->Fill(*var_gen, weight_);
-    fillSys(h_missesSys, *var_gen);
+    A->Fill(-10, *GenMET, weight_);
+    fillSys2D(ASys, -10, *GenMET );
+    h_misses->Fill(*GenMET, weight_);
+    fillSys(h_missesSys, *GenMET);
     if (!isPseudoData) {
-      h_misses_Split->Fill(*var_gen, weight_);
-      fillSys(h_misses_SplitSys, *var_gen);
+      h_misses_Split->Fill(*GenMET, weight_);
+      fillSys(h_misses_SplitSys, *GenMET);
 
-      ASplit->Fill(-10, *var_gen, weight_);
-      fillSys2D(ASysSplit, -10, *var_gen );
+      ASplit->Fill(-10, *GenMET, weight_);
+      fillSys2D(ASysSplit, -10, *GenMET );
     }
   }
 
 
   if (recosel) { // "normal" selection on reco level
-    h_Reco->Fill(*var_reco, weight_);
-    fillSys(h_RecoSys, *var_reco);
+    h_Reco->Fill(*MET, weight_);
+    fillSys(h_RecoSys, *MET);
     // Additional Variables
     h_N_Jets->Fill(*N_Jets, weight_);
     fillSys(h_RecoSys, *N_Jets);
@@ -697,22 +536,22 @@ MCSelector::Process(Long64_t entry)
 
     h_HadrRecoil->Fill(*Hadr_Recoil_Pt, weight_);
     fillSys(h_HadrRecoilSys, *Hadr_Recoil_Pt);
-    
+
     h_HadrRecoil_Phi->Fill(*Hadr_Recoil_Phi, weight_);
     fillSys(h_HadrRecoil_PhiSys, *Hadr_Recoil_Phi);
 
     if (isPseudoData) {
-      h_RecoSplit->Fill(*var_reco, weight_);
-      fillSys(h_RecoSysSplit, *var_reco);
+      h_RecoSplit->Fill(*MET, weight_);
+      fillSys(h_RecoSysSplit, *MET);
 
-      h_DummyDataSplit->Fill(*var_reco, weight_);
-      fillSys(h_DummyDataSplitSys, *var_reco);
+      h_DummyDataSplit->Fill(*MET, weight_);
+      fillSys(h_DummyDataSplitSys, *MET);
     }
 
     if (!option.Contains("data")) { // dont ask for gen stuff in case of data
       if (!gensel) { //is a fake
-        h_fake->Fill(*var_reco, weight_);
-        fillSys(h_fakeSys, *var_reco);
+        h_fake->Fill(*MET, weight_);
+        fillSys(h_fakeSys, *MET);
         if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
         if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
         if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
@@ -721,18 +560,19 @@ MCSelector::Process(Long64_t entry)
         if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
 
         if (!isPseudoData) {
-          h_fake_Split->Fill(*var_reco, weight_);
-          fillSys(h_fake_SplitSys, *var_reco);
+          h_fake_Split->Fill(*MET, weight_);
+          fillSys(h_fake_SplitSys, *MET);
         }
       }
       else if (gensel) { //is not a fake
-        A_equBins->Fill(*var_reco, *var_gen, weight_);
-        fillSys2D(A_equBinsSys, *var_reco, *var_gen );
-        A->Fill(*var_reco, *var_gen, weight_);
-        fillSys2D(ASys, *var_reco, *var_gen );
+        A_equBins->Fill(*MET, *GenMET, weight_);
+        fillSys2D(A_equBinsSys, *MET, *GenMET );
+        A->Fill(*MET, *GenMET, weight_);
+        fillSys2D(ASys, *MET, *GenMET );
       }
     }
   }
+  // }
   return kTRUE;
 }
 

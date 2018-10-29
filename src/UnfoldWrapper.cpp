@@ -33,10 +33,11 @@ void UnfoldWrapper::DoIt() {
 	std::cout << "#########################################################################" << std::endl;
 
 	Unfolder Unfolder;
-	HistDrawer Drawer;
+	// HistDrawer Drawer;
 	PathHelper path;
 
 	bool log = true;
+	bool moveUF = true;
 	bool drawpull = true;
 	bool normalize = true;
 
@@ -46,6 +47,8 @@ void UnfoldWrapper::DoIt() {
 	TString recovar = pt.get<std::string>("vars.reco");
 	bool AddMissesbyHand = pt.get<bool>("Unfolding.AddMissesbyHand");
 	bool FillFakesinUF = pt.get<bool>("Unfolding.FillFakesinUF");
+	bool manualErrors = pt.get<bool>("Unfolding.manualErrors");
+	bool doLCurveScan = pt.get<bool>("Unfolding.doLCurveScan");
 
 	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
 	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
@@ -78,28 +81,7 @@ void UnfoldWrapper::DoIt() {
 		}
 	}
 
-	// fill Fakes in Gen Underflow
-	if (FillFakesinUF) {
-		std::cout << "filling " << fakes.at(0)->GetName() << " in Underflow of " <<  A.at(0)->GetName() << std::endl;
-		for (int recoBin = 0; recoBin <= A.at(0)->GetNbinsX(); recoBin++) {
-			A.at(0)->SetBinContent(recoBin, 0, fakes.at(0)->GetBinContent(recoBin));
-		}
-		for (auto& A_var : A) {
-			for (auto& varname : variations) {
-				if (TString(A_var->GetName()).Contains(varname)) {
-					for (auto& fakeVarHisto : fakes) {
-						if (TString(fakeVarHisto->GetName()).Contains(varname)) {
-							std::cout << "filling " << fakeVarHisto->GetName() << " in Underflow of " << A_var->GetName() << std::endl;
-							for (int recoBin = 0; recoBin <= A_var->GetNbinsX(); recoBin++) {
-								A_var->SetBinContent(recoBin, 0, fakeVarHisto->GetBinContent(recoBin));
-								// std::cout << "setting recobin " << recoBin << " to " << fakeVarHisto->GetBinContent(recoBin) << std::endl;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+
 	int nBins_Gen = GenMC[0].at(0)->GetNbinsX();
 	Unfolder.ParseConfig();
 	TUnfoldDensity* unfold = Unfolder.SetUp(A.at(0), data);
@@ -115,38 +97,41 @@ void UnfoldWrapper::DoIt() {
 	TH2* ProbMatrix = (TH2*)A.at(0)->Clone();
 	ProbMatrix->Reset();
 	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
-	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, false, varName + "_Reco", varName + "_Gen");
+	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, !log, !moveUF, "reconstructed #slash{E}_{T}" , "generated #slash{E}_{T}");
 
 	if (!FillFakesinUF) unfold->SubtractBackground(fakes.at(0), "fakes" + label, 1., 0.00); // subtract fakes
 
 // addsys variations of MigrationMatrix
-	for (auto& A_var : A) {
-		for (auto& varname : variations) {
-			if (TString(A_var->GetName()).Contains(varname)) {
-				std::cout << "adding " << varname << " as systematic" << std::endl;
-				A_var->Print();
-				std::cout << A_var->GetRMS() << std::endl;
-				unfold->AddSysError(A_var, TString(varname), TUnfoldDensity::kHistMapOutputVert, TUnfoldDensity::kSysErrModeMatrix);
+	if (!manualErrors) {
+		for (auto& A_var : A) {
+			for (auto& varname : variations) {
+				if (TString(A_var->GetName()).Contains(varname)) {
+					std::cout << "adding " << varname << " as systematic" << std::endl;
+					A_var->Print();
+					std::cout << A_var->GetRMS() << std::endl;
+					unfold->AddSysError(A_var, TString(varname), TUnfoldDensity::kHistMapOutputVert, TUnfoldDensity::kSysErrModeMatrix);
+				}
 			}
 		}
 	}
 
 	// Find Best Tau
-	Unfolder.FindBestTauLcurve(unfold, label);
+	if(doLCurveScan) Unfolder.FindBestTauLcurve(unfold, label);
+	else unfold->DoUnfold(0.0);
 	// Unfolder.FindBestTau(unfold, label, 0, "*[]");
 	// Unfolder.FindBestTau(unfold, label);
 	// unfold->DoUnfold(0.0);
 	// unfold->DoUnfold(0.01);
 	// unfold->DoUnfold(1);
-
-
-
+// AvgRho = 0.671906
+// RhoMax = 0.878694
 
 // Get Output
 // 0st element=unfolded 1st=folded back
 	std::tuple<TH1*, TH1*> unfold_output;
 	unfold_output = Unfolder.GetOutput(unfold);
 	TH1* unfolded_nominal = std::get<0>(unfold_output);
+	unfolded_nominal->Sumw2();
 	std::cout << "Unfolded Underflow: " << unfolded_nominal->GetBinContent(0) << std::endl;
 
 // add misses
@@ -164,20 +149,20 @@ void UnfoldWrapper::DoIt() {
 
 // SYST SOURCES
 //input data stat error
-	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input" + label);
-	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input");
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 	writer.addToFile(ErrorMatrix_input);
 
 // subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 	writer.addToFile(ErrorMatrix_MCstat);
 
 	TH2* DataMCStat = (TH2*) ErrorMatrix_MCstat->Clone();
@@ -192,7 +177,7 @@ void UnfoldWrapper::DoIt() {
 
 // Visualize ERRORS
 	TH2* ErrorMatrixTotal = unfold->GetEmatrixTotal("ErrorMatrixTotal");
-	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label, true, "Unfolded " + varName, "Unfolded " + varName);
+	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 	writer.addToFile(ErrorMatrixTotal);
 
 //create shift Histos from MatrixErrors
@@ -213,6 +198,9 @@ void UnfoldWrapper::DoIt() {
 	TH1* ShiftMCstatDown = (TH1*) unfolded_nominal->Clone();
 	ShiftMCstatDown->SetName("unfolded_" + genvar + "_MCStatDown");
 	TH1* ShiftsubBKGscale = nullptr;
+
+	std::vector<TH1*> v_InputStat;
+
 	if (!FillFakesinUF) {
 		ShiftsubBKGscale = unfold->GetDeltaSysBackgroundScale("fakes" + label, "shift_bkgScale");
 	}
@@ -226,16 +214,45 @@ void UnfoldWrapper::DoIt() {
 		tmp->Reset();
 		unfold->GetEmatrixSysSource(tmp, TString(var));
 		v_ErrorMatrixVariations.push_back(tmp);
-		// Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label, true, "Unfolded " + varName, "Unfolded " + varName);
+		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
 
-		TH1* Delta = (TH1*) GenMC[0].at(0)->Clone();
-		Delta->Reset();
-		Delta->Sumw2();
-		Delta->SetName(TString("shift_") + var);
-		unfold->TUnfoldSys::GetDeltaSysSource(Delta, TString(var));
-		v_ShiftVariations.push_back(Delta);
-		Drawer.Draw1D(Delta, "Shift_" + TString(var) + label, false, "unfolded " + varName);
+		if (!manualErrors) {
+			TH1* Delta = (TH1*) GenMC[0].at(0)->Clone();
+			Delta->Reset();
+			Delta->Sumw2();
+			Delta->SetName(TString("shift_") + var);
+			unfold->TUnfoldSys::GetDeltaSysSource(Delta, TString(var));
+			v_ShiftVariations.push_back(Delta);
+			Drawer.Draw1D(Delta, "Shift_" + TString(var) + label, false, "unfolded " + varName);
+
+			TH1* NomPlusVar = (TH1*) unfolded_nominal->Clone();
+			NomPlusVar->Add(Delta);
+			NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
+			writer.addToFile(NomPlusVar);
+			// Drawer.DrawDataMC(unfolded_nominal, {NomPlusVar}, {var}, "UnfoldedNominalvs(UnfoldedNominal+" + var + ")" + label, log, !normalize, !drawpull, "unfolded #slash{E}_{T}");
+
+		}
 	}
+
+	for (auto& A_var : A) {
+		for (auto& varname : variations) {
+			if (TString(A_var->GetName()).Contains(varname)) {
+				std::cout << "getting shift from " << varname << " as systematic" << std::endl;
+				A_var->Print();
+				std::cout << "Mean gen " << A_var->GetMean(1) << " vs nominal: " <<  A.at(0)->GetMean(1) << std::endl;
+				std::cout << "Mean reco " << A_var->GetMean(2) << " vs nominal: " <<  A.at(0)->GetMean(2) << std::endl;
+
+				if (manualErrors) {
+					TH1* Delta = GetSysShift(A_var, varname, unfolded_nominal);
+					Delta->Sumw2();
+					Delta->SetName(TString("shift_") + varname);
+					v_ShiftVariations.push_back(Delta);
+					Drawer.Draw1D(Delta, "Shift_" + TString(varname) + label, false, "unfolded " + varName);
+				}
+			}
+		}
+	}
+
 
 	TH1D* METTotalError = new TH1D("TotalError", +varName + label, nBins_Gen, BinEdgesGen.data());
 	std::vector<double> ESystL;
@@ -256,6 +273,18 @@ void UnfoldWrapper::DoIt() {
 		// create templates of error from Covariance Matrices
 		ShiftInputUp->AddBinContent(bin, sqrt(ErrorMatrix_input->GetBinContent(bin, bin)));
 		ShiftInputDown->AddBinContent(bin, -1 * sqrt((ErrorMatrix_input->GetBinContent(bin, bin))));
+
+		TH1* tmphistUp = (TH1*) ShiftInputUp->Clone();
+		tmphistUp->Reset();
+		tmphistUp->SetBinContent(bin, ShiftInputUp->GetBinContent(bin));
+		tmphistUp->SetName( TString::Format("unfolded_Evt_Pt_GenMET_Input_Bin%iUp", bin));
+		writer.addToFile(tmphistUp);
+
+		TH1* tmphistDown = (TH1*) ShiftInputDown->Clone();
+		tmphistDown->Reset();
+		tmphistDown->SetBinContent(bin, ShiftInputDown->GetBinContent(bin));
+		tmphistDown->SetName( TString::Format("unfolded_Evt_Pt_GenMET_Input_Bin%iDown", bin));
+		writer.addToFile(tmphistDown);
 
 		ShiftsubBKGuncorrUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
 		ShiftsubBKGuncorrDown->AddBinContent(bin, -1 * sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
@@ -332,7 +361,38 @@ void UnfoldWrapper::DoIt() {
 
 // Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
 	Drawer.Draw2D(L, "L" + label);
-	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, "Unfolded MET", "Unfolded MET");
+	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, !moveUF, "unfolded #slash{E}_{T}", "unfolded #slash{E}_{T}");
+
+	//calculate correlationmatrix for input+MCStat
+	TMatrixDSym cov(DataMCFakeStat->GetNbinsX());
+	TMatrixDSym covdiag(DataMCFakeStat->GetNbinsX());
+	TMatrixD corr(DataMCFakeStat->GetNbinsX(), DataMCFakeStat->GetNbinsX());
+
+	for (int i = 0; i < DataMCFakeStat->GetNbinsX(); i++) {
+		for (int j = i; j < DataMCFakeStat->GetNbinsX(); j++) {
+			if (j != i) {
+				cov(i, j) = DataMCFakeStat->GetBinContent(i + 1 , j + 1) ;
+				cov(j, i) = DataMCFakeStat->GetBinContent(i + 1 , j + 1) ;
+				covdiag(i, j) = 0;
+				covdiag(j, i) = 0;
+			}
+			else {
+				cov(i, i) = DataMCFakeStat->GetBinContent(i + 1  , j + 1);
+				covdiag(i, i) = 1. / sqrt(cov(i, i));
+			}
+		}
+	}
+
+	// cov.Print();
+	// covdiag.Print();
+
+	corr = covdiag * cov * covdiag;
+	std::cout << "Correlation matric originating from Data and MC statistical fluctuations:" << std::endl;
+	corr.Print();
+	TH2* h_corrDataMCstat = new TH2D(corr);
+	h_corrDataMCstat->SetName("h_corrDataMCstat");
+	Drawer.Draw2D(h_corrDataMCstat, "RhoDataMCstat" + label, !log, !moveUF, "unfolded Bin Number", "unfolded Bin Number");
+
 
 	Drawer.DrawDataMC(data, MC.at(0), nameRecoSampleColorMap, "MET" + label, log, !normalize, !drawpull, "#slash{E}_{T}", "# Events");
 
@@ -345,27 +405,22 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw1D(std::get<1>(unfold_output), varName + "_foldedback" + label, log);
 	unfolded_nominal->SetName("unfolded_" + genvar);
 	writer.addToFile(unfolded_nominal);
-	std::vector<TH1*> v_NomPlusVar;
-
-	int nVariation = 0;
-	for (auto& var : variations) {
-		TH1* NomPlusVar = (TH1*)std::get<0>(unfold_output)->Clone();
-		NomPlusVar->Add(v_ShiftVariations.at(nVariation));
-		NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
-		v_NomPlusVar.push_back(NomPlusVar);
-		nVariation += 1;
-	}
-
-	nVariation = 0;
-	for (auto& var : variations) {
-		Drawer.DrawDataMC(std::get<0>(unfold_output), {v_NomPlusVar.at(nVariation)}, {"nominal+" + var}, "UnfoldedNominalvs(UnfoldedNominal+" + var + ")" + label, log, !normalize, !drawpull);
-		writer.addToFile(v_NomPlusVar.at(nVariation));
-		nVariation += 1;
-	}
 
 	for (const auto& sysvar : GenMC) {
 		for (const auto& bkg : sysvar) {
 			writer.addToFile(bkg);
+			TH1* bkgcopy = (TH1*) bkg->Clone();
+			TString tmpName = bkg->GetName();
+			if (tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZvvBosonWeight"));
+			}
+			if (tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZllBosonWeight"));
+			}
+			if (tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "WlnuBosonWeight"));
+			}
+			writer.addToFile(bkgcopy);
 		}
 	}
 
@@ -379,10 +434,38 @@ void UnfoldWrapper::DoIt() {
 	                       drawpull,
 	                       "unfolded #slash{E}_{T}", "# Events");
 
-	Drawer.DrawDataMC(h_DataMinFakes,
-	{ std::get<1>(unfold_output) },
-	{ "FoldedBack" },
-	varName + "DatavsFoldedBack" + label,
-	log);
+	Drawer.DrawDataMC(h_DataMinFakes, { std::get<1>(unfold_output) }, { "folded back" }, "foldedBack" + label,	log, !normalize, !drawpull, "#slash{E}_{T} [GeV]" );
 
+}
+
+
+TH1* UnfoldWrapper::GetSysShift(TH2* A_variated, TString variationName, TH1* nominalUnfolded) {
+	Unfolder Unfolder;
+	Unfolder.ParseConfig();
+
+	TUnfoldDensity* unfold = Unfolder.SetUp(A_variated, data);
+	unfold->DoUnfold(0);
+
+	std::tuple<TH1*, TH1*> unfold_output;
+	unfold_output = Unfolder.GetOutput(unfold);
+
+	TH1* NomPlusVar = (TH1*) std::get<0>(unfold_output)->Clone();
+	NomPlusVar->SetName("unfolded_Evt_Pt_GenMET_" + TString(variationName));
+	// bool log = true;
+	// bool normalize = true;
+	// bool drawpull = true;
+	// this->Drawer.DrawDataMC(nominalUnfolded, {NomPlusVar}, {variationName}, "UnfoldedNominalvs(UnfoldedNominal+" + variationName + ")" + label, log, !normalize, !drawpull, "unfolded #slash{E}_{T}");
+
+
+
+	// for (int iBin = 1; iBin < NomPlusVar->GetNbinsX(); iBin++) {
+	// 	double diff = NomPlusVar->GetBinContent(iBin) - nominalUnfolded->GetBinContent(iBin);
+	// 	if (abs(diff) < 2) NomPlusVar->SetBinContent(iBin, NomPlusVar->GetBinContent(iBin) + 100 * diff);
+	// }
+
+	TH1* shift = (TH1*) nominalUnfolded->Clone();
+	shift->Add(NomPlusVar, -1);
+	writer.addToFile(NomPlusVar);
+
+	return shift;
 }

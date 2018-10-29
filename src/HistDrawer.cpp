@@ -31,17 +31,17 @@ std::vector<size_t> sort_indexes(const std::vector<T> &v) {
 	return idx;
 }
 
-void set_color_env(){
+void set_color_env() {
 
-const Int_t NRGBs = 5;
-const Int_t NCont = 255;
+	const Int_t NRGBs = 5;
+	const Int_t NCont = 255;
 
-Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
-Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
-Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
-Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
-TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-gStyle->SetNumberContours(NCont);
+	Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00 };
+	Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51 };
+	Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
+	Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
+	TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+	gStyle->SetNumberContours(NCont);
 
 }
 
@@ -136,6 +136,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString 
 	gStyle->SetStatX(0.9);
 	gStyle->SetOptStat(0);
 
+
 	TH2* histClone = (TH2*) hist->Clone();
 	histClone->Draw("COLZ1");
 	histClone->SetTitle(name);
@@ -228,13 +229,18 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	legend->Draw("same");
 	data->SetStats(false);
 
+	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
+	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitleOffset(1);
+	stack->SetTitle("");
 
 	data->SetMarkerStyle(20);
 	// data->SetMarkerSize();
 	if (xlabel == "none") {
 		data->SetXTitle(name);
 	}
-	else data-> SetXTitle(xlabel);
+	else data -> SetXTitle(xlabel);
 	DrawLumiLabel(c);
 
 	c->cd(2);
@@ -353,6 +359,12 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	data->SetStats(false);
 	DrawLumiLabel(c);
 
+	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
+	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitleOffset(1);
+	stack->SetTitle("");
+
 
 	data->SetMarkerStyle(20);
 	// data->SetMarkerSize();
@@ -362,7 +374,6 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	else data-> SetXTitle(xlabel);
 
 	data->SetMarkerStyle(20);
-
 
 	c->cd(2);
 	TH1* ratio = (TH1*) data->Clone();
@@ -475,6 +486,12 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 	else stack->SetMaximum(max_Stack);
 	stack->SetMinimum(10);
 	stack->Draw("hist");
+
+	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
+	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitleOffset(1);
+	stack->SetTitle("");
 
 	dataTGraph->Draw("samePE1");
 	dataTGraph->SetMarkerStyle(20);
@@ -651,7 +668,7 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad, bool pullpad) {
 
 void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
 	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
-	pt->AddText("work in Progress            CMS Simulation");
+	pt->AddText("work in Progress            CMS private work");
 	pt->SetFillColor(kWhite);
 	pt->Draw("SAME");
 }
