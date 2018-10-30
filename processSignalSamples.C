@@ -8,28 +8,28 @@ TH1* processSignal(TString SignalName) {
 	chain->Add(TString(ntuples_path + "/" + SignalName + "/" + SignalName + "*_nominal_Tree.root"));
 	cout << "Processing " << chain->GetEntries() << " entries" << endl;
 	// Heidelbergs binning
-	// double bins_met[13] = {200., 240., 300., 380., 470., 570., 670., 790., 910., 1040., 1180., 1330., 2000. };
+	// double bins[13] = {200., 240., 300., 380., 470., 570., 670., 790., 910., 1040., 1180., 1330., 2000. };
 	// Heidelbergs binning modified
-	// double bins_met[13] = {200., 250., 300., 350., 450., 550., 650., 750., 850., 1000., 1150., 1300., 1400 };
+	// double bins[13] = {200., 250., 300., 350., 450., 550., 650., 750., 850., 1000., 1150., 1300., 1400 };
 	// 2 sigma Binning
-	// double bins_met[14] = {250., 320., 390., 460., 530., 600., 670., 740., 820., 900., 980., 1060., 1160, 1300.};
+	// double bins[14] = {250., 320., 390., 460., 530., 600., 670., 740., 820., 900., 980., 1060., 1160, 1300.};
 
 
-	// double bins_met[12] = {200., 300., 400., 500., 600., 700., 800., 900., 1000., 1100, 1200, 1400.};
+	// double bins[12] = {200., 300., 400., 500., 600., 700., 800., 900., 1000., 1100, 1200, 1400.};
 
-	double bins_met[11] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150, 1300};
-	// double bins_met[10] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150};
-	// std::vector<double> bins_met = {21,250, 1100};
-	// std::vector<double> bins_met = {250,300,350,400,450,500,550,600,650,700,750,800,900,1000,1100,1200,1400};
+	std::vector<double> bins = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150, 1300};
+	// double bins[10] = {250, 350, 450, 550, 650, 750, 850, 950, 1050, 1150};
+	// std::vector<double> bins = {21,250, 1100};
+	// std::vector<double> bins = {250,300,350,400,450,500,550,600,650,700,750,800,900,1000,1100,1200,1400};
 	// 2 sigma
-	// std::vector<double> bins_met = {250,320,390,460,530,600,670,740,820,900,980,1060,1260,1460};
+	// std::vector<double> bins = {250,320,390,460,530,600,670,740,820,900,980,1060,1260,1460};
 
-	if (bins_met.size() == 3) {
-		std::vector<double> tmp = bins_met;
-		bins_met.clear();
+	if (bins.size() == 3) {
+		std::vector<double> tmp = bins;
+		bins.clear();
 		double BinWidth = abs(tmp.at(2) - tmp.at(1)) / tmp.at(0);
 		for (int i = 0; i <= tmp.at(0); i++) {
-			bins_met.push_back(tmp.at(1) + i * BinWidth);
+			bins.push_back(tmp.at(1) + i * BinWidth);
 		}
 	}
 
@@ -55,28 +55,28 @@ TH1* processSignal(TString SignalName) {
 
 
 	TH1F* h_sig(nullptr);
-	h_sig = new TH1F("h_sig", "Signal", bins_met.size() - 1  , bins_met.data() );
+	h_sig = new TH1F("h_sig", "Signal", bins.size() - 1  , bins.data() );
 	h_sig->Sumw2();
 
 	TH1F* h_sig_MuRup(nullptr);
-	h_sig_MuRup = new TH1F("h_sig_MuRup", "SignalMuRup", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuRup = new TH1F("h_sig_MuRup", "SignalMuRup", bins.size() - 1  , bins.data() );
 	h_sig_MuRup->Sumw2();
 
 	TH1F* h_sig_MuRdown(nullptr);
-	h_sig_MuRdown = new TH1F("h_sig_MuRdown", "SignalMuRdown", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuRdown = new TH1F("h_sig_MuRdown", "SignalMuRdown", bins.size() - 1  , bins.data() );
 	h_sig_MuRdown->Sumw2();
 
 	TH1F* h_sig_MuFup(nullptr);
-	h_sig_MuFup = new TH1F("h_sig_MuFup", "SignalMuFup", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuFup = new TH1F("h_sig_MuFup", "SignalMuFup", bins.size() - 1  , bins.data() );
 	h_sig_MuFup->Sumw2();
 
 	TH1F* h_sig_MuFdown(nullptr);
-	h_sig_MuFdown = new TH1F("h_sig_MuFdown", "SignalMuFdown", bins_met.size() - 1  , bins_met.data() );
+	h_sig_MuFdown = new TH1F("h_sig_MuFdown", "SignalMuFdown", bins.size() - 1  , bins.data() );
 	h_sig_MuFdown->Sumw2();
 
 	TTreeReader theReader(chain);
-	TTreeReaderValue<Float_t> GenMET(theReader, "Evt_Pt_GenMET");
-	TTreeReaderValue<Float_t> RecoMET(theReader, "Evt_Pt_MET");
+	TTreeReaderValue<Float_t> Gen(theReader, "Gen_Hadr_Recoil_Pt");
+	TTreeReaderValue<Float_t> Reco(theReader, "Hadr_Recoil_Pt");
 
 	//triggers
 	TTreeReaderValue<Long64_t> Triggered_HLT_PFMET170_X (theReader, "Triggered_HLT_PFMET170_X");
@@ -91,7 +91,6 @@ TH1* processSignal(TString SignalName) {
 	TTreeReaderValue<Long64_t> GenLeptonVetoSelection (theReader,  "GenLeptonVetoSelection" );
 	TTreeReaderValue<Long64_t> GenBTagVetoSelection (theReader,  "GenBTagVetoSelection" );
 	TTreeReaderValue<Long64_t> GenPhotonVetoSelection (theReader,  "GenPhotonVetoSelection" );
-	TTreeReaderValue<Long64_t> GenMETSelection (theReader,  "GenMETSelection" );
 	TTreeReaderValue<Long64_t> GenmonoVselection (theReader,  "GenmonoVselection" );
 
 	//weights
@@ -116,18 +115,17 @@ TH1* processSignal(TString SignalName) {
 		double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823 * signalXS;
 		// double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823;
 		bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
-		bool gensel = *GenMET > bins_met[0] && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
+		bool gensel = *Gen > bins[0]  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
 
 		// bool gensel = *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection && *GenMETSelection && *GenmonoVselection;
 
-		// bool miss = gensel && (!*recoSelected || !dPhiCut || !triggered || *RecoMET < 250);
 		bool miss = gensel && (!*recoSelected || !triggered);
 		if (gensel) {
-			h_sig->Fill(*GenMET, weight_);
-			h_sig_MuRup->Fill(*GenMET, weight_ * fabs(*Weight_MuRup));
-			h_sig_MuRdown->Fill(*GenMET, weight_ * fabs(*Weight_MuRdown));
-			h_sig_MuFup->Fill(*GenMET, weight_ * fabs(*Weight_MuFup));
-			h_sig_MuFdown->Fill(*GenMET, weight_ * fabs(*Weight_MuFdown));
+			h_sig->Fill(*Gen, weight_);
+			h_sig_MuRup->Fill(*Gen, weight_ * fabs(*Weight_MuRup));
+			h_sig_MuRdown->Fill(*Gen, weight_ * fabs(*Weight_MuRdown));
+			h_sig_MuFup->Fill(*Gen, weight_ * fabs(*Weight_MuFup));
+			h_sig_MuFdown->Fill(*Gen, weight_ * fabs(*Weight_MuFdown));
 		}
 		iEntry++;
 	}
