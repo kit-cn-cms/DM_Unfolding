@@ -45,10 +45,13 @@ void UnfoldWrapper::DoIt() {
 	boost::property_tree::ini_parser::read_ini(std::string(path.GetConfigPath()), pt);
 	TString genvar = pt.get<std::string>("vars.gen");
 	TString recovar = pt.get<std::string>("vars.reco");
+	TString RecoVariableNameLateX = pt.get<std::string>("vars.recoLateX");
+
 	bool AddMissesbyHand = pt.get<bool>("Unfolding.AddMissesbyHand");
 	bool FillFakesinUF = pt.get<bool>("Unfolding.FillFakesinUF");
 	bool manualErrors = pt.get<bool>("Unfolding.manualErrors");
 	bool doLCurveScan = pt.get<bool>("Unfolding.doLCurveScan");
+	bool doRhoScan = pt.get<bool>("Unfolding.doRhoScan");
 
 	std::map<std::string, std::pair<TH1*, int>> nameGenSampleColorMap;
 	std::map<std::string, std::pair<TH1*, int>> nameRecoSampleColorMap;
@@ -97,7 +100,7 @@ void UnfoldWrapper::DoIt() {
 	TH2* ProbMatrix = (TH2*)A.at(0)->Clone();
 	ProbMatrix->Reset();
 	unfold->TUnfold::GetProbabilityMatrix(ProbMatrix, TUnfoldDensity::kHistMapOutputVert);
-	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, !log, !moveUF, "reconstructed #slash{E}_{T}" , "generated #slash{E}_{T}");
+	Drawer.Draw2D(ProbMatrix, "ProbMatrix" + label, !log, !moveUF, "reconstructed " + RecoVariableNameLateX , "generated " + RecoVariableNameLateX);
 
 	if (!FillFakesinUF) unfold->SubtractBackground(fakes.at(0), "fakes" + label, 1., 0.00); // subtract fakes
 
@@ -116,15 +119,12 @@ void UnfoldWrapper::DoIt() {
 	}
 
 	// Find Best Tau
-	if(doLCurveScan) Unfolder.FindBestTauLcurve(unfold, label);
-	else unfold->DoUnfold(0.0);
-	// Unfolder.FindBestTau(unfold, label, 0, "*[]");
-	// Unfolder.FindBestTau(unfold, label);
-	// unfold->DoUnfold(0.0);
-	// unfold->DoUnfold(0.01);
-	// unfold->DoUnfold(1);
-// AvgRho = 0.671906
-// RhoMax = 0.878694
+	// do plots of scans
+	if (doLCurveScan) Unfolder.FindBestTauLcurve(unfold, label);
+	if (doRhoScan) Unfolder.FindBestTau(unfold, label);
+
+	//drop regularization
+	unfold->DoUnfold(0.0);
 
 // Get Output
 // 0st element=unfolded 1st=folded back
@@ -144,25 +144,22 @@ void UnfoldWrapper::DoIt() {
 	}
 
 
-// STAT SOURCES
-
-
 // SYST SOURCES
 //input data stat error
 	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input");
-	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 	writer.addToFile(ErrorMatrix_input);
 
 // subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 	writer.addToFile(ErrorMatrix_MCstat);
 
 	TH2* DataMCStat = (TH2*) ErrorMatrix_MCstat->Clone();
@@ -177,7 +174,7 @@ void UnfoldWrapper::DoIt() {
 
 // Visualize ERRORS
 	TH2* ErrorMatrixTotal = unfold->GetEmatrixTotal("ErrorMatrixTotal");
-	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 	writer.addToFile(ErrorMatrixTotal);
 
 //create shift Histos from MatrixErrors
@@ -214,7 +211,7 @@ void UnfoldWrapper::DoIt() {
 		tmp->Reset();
 		unfold->GetEmatrixSysSource(tmp, TString(var));
 		v_ErrorMatrixVariations.push_back(tmp);
-		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label,  log, !moveUF, "unfolded #slash{E}_{T} [GeV]", "unfolded #slash{E}_{T} [GeV]");
+		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
 
 		if (!manualErrors) {
 			TH1* Delta = (TH1*) GenMC[0].at(0)->Clone();
@@ -229,7 +226,7 @@ void UnfoldWrapper::DoIt() {
 			NomPlusVar->Add(Delta);
 			NomPlusVar->SetName("unfolded_" + genvar + "_" + TString(var));
 			writer.addToFile(NomPlusVar);
-			// Drawer.DrawDataMC(unfolded_nominal, {NomPlusVar}, {var}, "UnfoldedNominalvs(UnfoldedNominal+" + var + ")" + label, log, !normalize, !drawpull, "unfolded #slash{E}_{T}");
+			// Drawer.DrawDataMC(unfolded_nominal, {NomPlusVar}, {var}, "UnfoldedNominalvs(UnfoldedNominal+" + var + ")" + label, log, !normalize, !drawpull, "unfolded " + RecoVariableLateX);
 
 		}
 	}
@@ -243,7 +240,7 @@ void UnfoldWrapper::DoIt() {
 				std::cout << "Mean reco " << A_var->GetMean(2) << " vs nominal: " <<  A.at(0)->GetMean(2) << std::endl;
 
 				if (manualErrors) {
-					TH1* Delta = GetSysShift(A_var, varname, unfolded_nominal);
+					TH1* Delta = GetSysShift(A_var, varname, genvar, unfolded_nominal);
 					Delta->Sumw2();
 					Delta->SetName(TString("shift_") + varname);
 					v_ShiftVariations.push_back(Delta);
@@ -254,7 +251,7 @@ void UnfoldWrapper::DoIt() {
 	}
 
 
-	TH1D* METTotalError = new TH1D("TotalError", +varName + label, nBins_Gen, BinEdgesGen.data());
+	TH1D* TotalError = new TH1D("TotalError", +varName + label, nBins_Gen, BinEdgesGen.data());
 	std::vector<double> ESystL;
 	std::vector<double> ESystH;
 	std::vector<double> BinCenters;
@@ -277,13 +274,13 @@ void UnfoldWrapper::DoIt() {
 		TH1* tmphistUp = (TH1*) ShiftInputUp->Clone();
 		tmphistUp->Reset();
 		tmphistUp->SetBinContent(bin, ShiftInputUp->GetBinContent(bin));
-		tmphistUp->SetName( TString::Format("unfolded_Evt_Pt_GenMET_Input_Bin%iUp", bin));
+		tmphistUp->SetName( TString::Format("unfolded_" + genvar + "_Input_Bin%iUp", bin));
 		writer.addToFile(tmphistUp);
 
 		TH1* tmphistDown = (TH1*) ShiftInputDown->Clone();
 		tmphistDown->Reset();
 		tmphistDown->SetBinContent(bin, ShiftInputDown->GetBinContent(bin));
-		tmphistDown->SetName( TString::Format("unfolded_Evt_Pt_GenMET_Input_Bin%iDown", bin));
+		tmphistDown->SetName( TString::Format("unfolded_" + genvar + "_Input_Bin%iDown", bin));
 		writer.addToFile(tmphistDown);
 
 		ShiftsubBKGuncorrUp->AddBinContent(bin, sqrt(ErrorMatrix_subBKGuncorr->GetBinContent(bin, bin)));
@@ -339,7 +336,7 @@ void UnfoldWrapper::DoIt() {
 	Drawer.DrawDataMC(std::get<0>(unfold_output), {ShiftMCstatDown}, {"nominal+MCstatDown"}, "UnfoldedNominalvs(UnfoldedNominal+MCstatDown)" + label, log, !normalize, !drawpull);
 
 
-	TGraphAsymmErrors* MET_TGraph = new TGraphAsymmErrors(nBins_Gen,
+	TGraphAsymmErrors* TGraph = new TGraphAsymmErrors(nBins_Gen,
 	        BinCenters.data(),
 	        BinContents.data(),
 	        zeros.data(),
@@ -359,9 +356,9 @@ void UnfoldWrapper::DoIt() {
 	          << unfold->GetRhoMax() << "\n";
 
 
-// Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "Unfolded MET", "Unfolded MET");
+// Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "unfolded "+ varName, "unfolded "+ varName);
 	Drawer.Draw2D(L, "L" + label);
-	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, !moveUF, "unfolded #slash{E}_{T}", "unfolded #slash{E}_{T}");
+	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, !moveUF, "unfolded " + varName, "unfolded " + varName);
 
 	//calculate correlationmatrix for input+MCStat
 	TMatrixDSym cov(DataMCFakeStat->GetNbinsX());
@@ -394,15 +391,15 @@ void UnfoldWrapper::DoIt() {
 	Drawer.Draw2D(h_corrDataMCstat, "RhoDataMCstat" + label, !log, !moveUF, "unfolded Bin Number", "unfolded Bin Number");
 
 
-	Drawer.DrawDataMC(data, MC.at(0), nameRecoSampleColorMap, "MET" + label, log, !normalize, !drawpull, "#slash{E}_{T}", "# Events");
+	Drawer.DrawDataMC(data, MC.at(0), nameRecoSampleColorMap, recovar + label, log, !normalize, !drawpull, varName, "# Events");
 
 	std::vector<std::string> GenBkgNames;
 	for (const std::string& name : bkgnames) {
 		GenBkgNames.push_back("Gen_" + name);
 	}
 
-	Drawer.Draw1D(std::get<0>(unfold_output), varName + "_unfolded" + label, log);
-	Drawer.Draw1D(std::get<1>(unfold_output), varName + "_foldedback" + label, log);
+	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded" + label,varName, log);
+	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback" + label,varName, log);
 	unfolded_nominal->SetName("unfolded_" + genvar);
 	writer.addToFile(unfolded_nominal);
 
@@ -411,13 +408,13 @@ void UnfoldWrapper::DoIt() {
 			writer.addToFile(bkg);
 			TH1* bkgcopy = (TH1*) bkg->Clone();
 			TString tmpName = bkg->GetName();
-			if (tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZvvBosonWeight"));
 			}
-			if (tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZllBosonWeight"));
 			}
-			if (tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "WlnuBosonWeight"));
 			}
 			writer.addToFile(bkgcopy);
@@ -425,21 +422,21 @@ void UnfoldWrapper::DoIt() {
 	}
 
 
-	Drawer.DrawDataMCerror(MET_TGraph,
+	Drawer.DrawDataMCerror(TGraph,
 	                       GenMC.at(0),
 	                       nameGenSampleColorMap,
-	                       varName + "UnfoldedvsGenErrors" + label,
+	                       recovar + "UnfoldedvsGenErrors" + label,
 	                       log,
 	                       !normalize,
 	                       drawpull,
-	                       "unfolded #slash{E}_{T}", "# Events");
+	                       "unfolded " + varName, "# Events");
 
-	Drawer.DrawDataMC(h_DataMinFakes, { std::get<1>(unfold_output) }, { "folded back" }, "foldedBack" + label,	log, !normalize, !drawpull, "#slash{E}_{T} [GeV]" );
+	Drawer.DrawDataMC(h_DataMinFakes, { std::get<1>(unfold_output) }, { "folded back" }, "foldedBack" + label,	log, !normalize, !drawpull, RecoVariableNameLateX);
 
 }
 
 
-TH1* UnfoldWrapper::GetSysShift(TH2* A_variated, TString variationName, TH1* nominalUnfolded) {
+TH1* UnfoldWrapper::GetSysShift(TH2* A_variated, TString variationName, TString variableName, TH1* nominalUnfolded) {
 	Unfolder Unfolder;
 	Unfolder.ParseConfig();
 
@@ -450,11 +447,11 @@ TH1* UnfoldWrapper::GetSysShift(TH2* A_variated, TString variationName, TH1* nom
 	unfold_output = Unfolder.GetOutput(unfold);
 
 	TH1* NomPlusVar = (TH1*) std::get<0>(unfold_output)->Clone();
-	NomPlusVar->SetName("unfolded_Evt_Pt_GenMET_" + TString(variationName));
+	NomPlusVar->SetName("unfolded_" + variableName + "_" + TString(variationName));
 	// bool log = true;
 	// bool normalize = true;
 	// bool drawpull = true;
-	// this->Drawer.DrawDataMC(nominalUnfolded, {NomPlusVar}, {variationName}, "UnfoldedNominalvs(UnfoldedNominal+" + variationName + ")" + label, log, !normalize, !drawpull, "unfolded #slash{E}_{T}");
+	// this->Drawer.DrawDataMC(nominalUnfolded, {NomPlusVar}, {variationName}, "UnfoldedNominalvs(UnfoldedNominal+" + variationName + ")" + label, log, !normalize, !drawpull, "unfolded "+RecoVariableNameLateX);
 
 
 

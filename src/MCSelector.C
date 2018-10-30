@@ -143,6 +143,9 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   split = pt.get<int>("general.split");
   systematics = to_array<std::string>(pt.get<std::string>("general.systematics"));
   BosonSystematics = to_array<std::string>(pt.get<std::string>("general.BosonSystematics"));
+  GenVariableName = pt.get<std::string>("vars.gen");
+  RecoVariableName = pt.get<std::string>("vars.reco");
+
   std::cout << "Config parsed!" << std::endl;
 
 
@@ -221,15 +224,15 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   };
 
   // book histos for split distributions
-  h_GenSplit = new TH1F(strippedOption + "GenMET" + "_Split" + currentJESJERvar , "GenMET", nBins_Gen, BinEdgesGen.data());
+  h_GenSplit = new TH1F(strippedOption + GenVariableName + "_Split" + currentJESJERvar , GenVariableName, nBins_Gen, BinEdgesGen.data());
   h_GenSplit->Sumw2();
   GetOutputList()->Add(h_GenSplit);
-  bookSysHistos(h_GenSysSplit, strippedOption + "GenMET" + "_Split_" , "GenMET", nBins_Gen, BinEdgesGen);
+  bookSysHistos(h_GenSysSplit, strippedOption + GenVariableName + "_Split_" , GenVariableName, nBins_Gen, BinEdgesGen);
 
-  h_RecoSplit = new TH1F(strippedOption + "MET" + "_Split" + currentJESJERvar, "MET", nBins_Reco, BinEdgesReco.data());
+  h_RecoSplit = new TH1F(strippedOption + RecoVariableName + "_Split" + currentJESJERvar, RecoVariableName, nBins_Reco, BinEdgesReco.data());
   h_RecoSplit->Sumw2();
   GetOutputList()->Add(h_RecoSplit);
-  bookSysHistos(h_RecoSysSplit, strippedOption + "MET" + "_Split_" , "MET", nBins_Reco, BinEdgesReco);
+  bookSysHistos(h_RecoSysSplit, strippedOption + RecoVariableName + "_Split_" , RecoVariableName, nBins_Reco, BinEdgesReco);
 
 
   h_DummyDataSplit = new TH1F(strippedOption + "DummyData_Split" +  currentJESJERvar, "DummyData", nBins_Reco, BinEdgesReco.data());
@@ -245,21 +248,35 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
 
   // book histos for full distributions
-  h_Gen = new TH1F(strippedOption + "GenMET" + currentJESJERvar, "GenMET", nBins_Gen, BinEdgesGen.data());
+  h_Gen = new TH1F(strippedOption + GenVariableName + currentJESJERvar, GenVariableName, nBins_Gen, BinEdgesGen.data());
   h_Gen->Sumw2();
   GetOutputList()->Add(h_Gen);
-  bookSysHistos(h_GenSys, strippedOption + "GenMET" + "_" , "GenMET", nBins_Gen, BinEdgesGen);
+  bookSysHistos(h_GenSys, strippedOption + GenVariableName + "_" , GenVariableName, nBins_Gen, BinEdgesGen);
 
-  h_Reco = new TH1F(strippedOption + "MET" + currentJESJERvar, "MET", nBins_Reco, BinEdgesReco.data());
+  h_Reco = new TH1F(strippedOption + RecoVariableName + currentJESJERvar, RecoVariableName, nBins_Reco, BinEdgesReco.data());
   h_Reco->Sumw2();
   GetOutputList()->Add(h_Reco);
-  bookSysHistos(h_RecoSys, strippedOption + "MET" + "_" , "MET", nBins_Reco, BinEdgesReco);
+  bookSysHistos(h_RecoSys, strippedOption + RecoVariableName + "_" , RecoVariableName, nBins_Reco, BinEdgesReco);
 
   h_HadrRecoil = new TH1F(strippedOption + "Hadr_Recoil_Pt" + currentJESJERvar, "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco.data());
   h_HadrRecoil->Sumw2();
   GetOutputList()->Add(h_HadrRecoil);
   bookSysHistos(h_HadrRecoilSys, strippedOption + "Hadr_Recoil_Pt_" , "Hadr_Recoil_Pt", nBins_Reco, BinEdgesReco);
 
+  h_GenHadrRecoil = new TH1F(strippedOption + "GenHadr_Recoil_Pt" + currentJESJERvar, "GenHadr_Recoil_Pt", nBins_Reco, BinEdgesReco.data());
+  h_GenHadrRecoil->Sumw2();
+  GetOutputList()->Add(h_GenHadrRecoil);
+  bookSysHistos(h_GenHadrRecoilSys, strippedOption + "GenHadr_Recoil_Pt_" , "GenHadr_Recoil_Pt", nBins_Reco, BinEdgesReco);
+
+  h_MET = new TH1F(strippedOption + "MET" + currentJESJERvar, "MET", nBins_Reco, BinEdgesReco.data());
+  h_MET->Sumw2();
+  GetOutputList()->Add(h_MET);
+  bookSysHistos(h_METSys, strippedOption + "MET" , "MET", nBins_Reco, BinEdgesReco);
+
+  h_GenMET = new TH1F(strippedOption + "GenMET" + currentJESJERvar, "GenMET", nBins_Reco, BinEdgesReco.data());
+  h_GenMET->Sumw2();
+  GetOutputList()->Add(h_GenMET);
+  bookSysHistos(h_GenMETSys, strippedOption + "GenMET" , "GenMET", nBins_Reco, BinEdgesReco);
 
   A = new TH2D(strippedOption + "A" + currentJESJERvar , "A", nBins_Reco, BinEdgesReco.data(), nBins_Gen, BinEdgesGen.data());
   A->Sumw2();
@@ -273,33 +290,33 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   bookSysHistos2DequBins(A_equBinsSys, strippedOption + "A_equBins_", "A",  250, 250, 2000, 250, 250, 2000);
 
 
-  h_testMET = new TH1F(strippedOption + "TestMET" + currentJESJERvar, "TESTMET", nBins_Reco, BinEdgesReco.data());
-  h_testMET->Sumw2();
-  GetOutputList()->Add(h_testMET);
-  bookSysHistos(h_testMETSys, strippedOption + "TestMET_" , "TESTMET", nBins_Reco, BinEdgesReco);
+  h_test = new TH1F(strippedOption + "Test" + currentJESJERvar, "TEST", nBins_Reco, BinEdgesReco.data());
+  h_test->Sumw2();
+  GetOutputList()->Add(h_test);
+  bookSysHistos(h_testSys, strippedOption + "Test_" , "TEST", nBins_Reco, BinEdgesReco);
 
-  h_GenRecoMET = new TH1F(strippedOption + "h_GenRecoMET" + currentJESJERvar, "h_GenRecoMET", nBins_Reco, BinEdgesReco.data());
-  h_GenRecoMET->Sumw2();
-  GetOutputList()->Add(h_GenRecoMET);
-  bookSysHistos(h_GenRecoMETSys, strippedOption + "h_GenRecoMET_" , "h_GenRecoMET", nBins_Reco, BinEdgesReco);
+  h_GenReco = new TH1F(strippedOption + "h_GenReco" + currentJESJERvar, "h_GenReco", nBins_Reco, BinEdgesReco.data());
+  h_GenReco->Sumw2();
+  GetOutputList()->Add(h_GenReco);
+  bookSysHistos(h_GenRecoSys, strippedOption + "h_GenReco_" , "h_GenReco", nBins_Reco, BinEdgesReco);
 
 
-  h_testMETgenBinning = new TH1F(strippedOption + "testMETgenBinning" + currentJESJERvar, "testMETgenBinning", nBins_Gen, BinEdgesGen.data());
-  h_testMETgenBinning->Sumw2();
-  GetOutputList()->Add(h_testMETgenBinning);
-  bookSysHistos(h_testMETgenBinningSys, strippedOption + "testMETgenBinning_" , "testMETgenBinning", nBins_Gen, BinEdgesGen);
+  h_testgenBinning = new TH1F(strippedOption + "testgenBinning" + currentJESJERvar, "testgenBinning", nBins_Gen, BinEdgesGen.data());
+  h_testgenBinning->Sumw2();
+  GetOutputList()->Add(h_testgenBinning);
+  bookSysHistos(h_testgenBinningSys, strippedOption + "testgenBinning_" , "testgenBinning", nBins_Gen, BinEdgesGen);
 
-  h_testMET_Split = new TH1F(strippedOption + "TestMET_Split" + currentJESJERvar, "TESTMET", nBins_Reco, BinEdgesReco.data());
-  h_testMET_Split->Sumw2();
-  GetOutputList()->Add(h_testMET_Split);
-  bookSysHistos(h_testMET_SplitSys, strippedOption + "TestMET_Split_" , "TESTMET", nBins_Reco, BinEdgesReco);
+  h_test_Split = new TH1F(strippedOption + "Test_Split" + currentJESJERvar, "TEST", nBins_Reco, BinEdgesReco.data());
+  h_test_Split->Sumw2();
+  GetOutputList()->Add(h_test_Split);
+  bookSysHistos(h_test_SplitSys, strippedOption + "Test_Split_" , "TEST", nBins_Reco, BinEdgesReco);
 
   h_fake = new TH1F(strippedOption + "fakes" + currentJESJERvar, "fakes", nBins_Reco, BinEdgesReco.data());
   h_fake->Sumw2();
   GetOutputList()->Add(h_fake);
   bookSysHistos(h_fakeSys, strippedOption + "fakes_" , "fakes", nBins_Reco, BinEdgesReco);
 
-  h_fake_Split = new TH1F(strippedOption + "fakes_Split" + currentJESJERvar , "MET", nBins_Reco, BinEdgesReco.data());
+  h_fake_Split = new TH1F(strippedOption + "fakes_Split" + currentJESJERvar , RecoVariableName, nBins_Reco, BinEdgesReco.data());
   h_fake_Split->Sumw2();
   GetOutputList()->Add(h_fake_Split);
   bookSysHistos(h_fake_SplitSys, strippedOption + "fakes_Split_" , "fakes", nBins_Reco, BinEdgesReco);
@@ -309,7 +326,7 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_misses);
   bookSysHistos(h_missesSys, strippedOption + "misses_" , "misses", nBins_Gen, BinEdgesGen);
 
-  h_misses_Split = new TH1F(strippedOption + "misses_Split" + currentJESJERvar, "GenMET",  nBins_Gen, BinEdgesGen.data());
+  h_misses_Split = new TH1F(strippedOption + "misses_Split" + currentJESJERvar, GenVariableName,  nBins_Gen, BinEdgesGen.data());
   h_misses_Split->Sumw2();
   GetOutputList()->Add(h_misses_Split);
   bookSysHistos(h_misses_SplitSys, strippedOption + "misses_Split_" , "misses", nBins_Gen, BinEdgesGen);
@@ -319,6 +336,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_N_Jets->Sumw2();
   GetOutputList()->Add(h_N_Jets);
   bookSysHistosequBins(h_N_JetsSys, strippedOption + "N_Jets" , "N_Jets", 15, 0, 15);
+
+  // Additional Variables
+  h_N_looseLeptons = new TH1F(strippedOption + "N_LooseLeptons" + currentJESJERvar, "N_LooseLeptons", 4, 0, 4);
+  h_N_looseLeptons->Sumw2();
+  GetOutputList()->Add(h_N_looseLeptons);
+  bookSysHistosequBins(h_N_looseLeptonsSys, strippedOption + "N_LooseLeptons" , "N_LooseLeptons", 4, 0, 4);
 
   h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 80, 0, 800);
   h_Jet_Pt->Sumw2();
@@ -355,6 +378,10 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_HadrRecoil_Phi);
   bookSysHistosequBins(h_HadrRecoil_PhiSys, strippedOption + "Hadr_Recoil_Phi_" , "Hadr_Recoil_Phi", 40, -4, 4);
 
+  h_GenHadrRecoil_Phi = new TH1F(strippedOption + "GenHadr_Recoil_Phi" + currentJESJERvar, "GenHadr_Recoil_Phi", 50, -3.2, 3.2);
+  h_GenHadrRecoil_Phi->Sumw2();
+  GetOutputList()->Add(h_GenHadrRecoil_Phi);
+  bookSysHistosequBins(h_GenHadrRecoil_PhiSys, strippedOption + "GenHadr_Recoil_Phi_" , "GenHadr_Recoil_Phi", 40, -4, 4);
 
   std::cout << "All Histos SetUp!" << std::endl;
 }
@@ -460,61 +487,72 @@ MCSelector::Process(Long64_t entry)
     }
   };
 
+  /////////////////////////////////////
+  /// Choose Variable to unfold here///
+  /////////////////////////////////////
+  Float_t genVariable = *Gen_Hadr_Recoil_Pt;
+  Float_t recoVariable = *Hadr_Recoil_Pt;
+
+
   bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
 
-  bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
+  // bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
+  bool gensel = genVariable > BinEdgesGen.at(0)  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
   // bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection;
-  bool recosel = triggered && *MET > BinEdgesReco.at(0) && *METSelection && *MonoJetSelection &&  *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
+  bool recosel = triggered && recoVariable > BinEdgesReco.at(0) && *METSelection && *MonoJetSelection &&  *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
 
   bool miss = gensel && !recosel;
 
   // if ((abs(*MET - *GenMET) < 150) or (option.Contains("data"))) {
   if (gensel) {
-    h_Gen->Fill(*GenMET, weight_);
-    fillSys(h_GenSys, *GenMET);
-    h_GenRecoMET->Fill(*MET, weight_);
-    fillSys(h_GenRecoMETSys, *MET);
+    h_Gen->Fill(genVariable, weight_);
+    fillSys(h_GenSys, genVariable);
+    h_GenReco->Fill(recoVariable, weight_);
+    fillSys(h_GenRecoSys, recoVariable);
 
     if (!isPseudoData) {
-      h_GenSplit->Fill(*GenMET, weight_);
-      fillSys(h_GenSysSplit, *GenMET);
+      h_GenSplit->Fill(genVariable, weight_);
+      fillSys(h_GenSysSplit, genVariable);
     }
 
     if (recosel) {
-      h_testMET->Fill(*MET, weight_);
-      fillSys(h_testMETSys, *MET);
-      h_testMETgenBinning->Fill(*MET, weight_);
-      fillSys(h_testMETgenBinningSys, *MET);
+      h_test->Fill(recoVariable, weight_);
+      fillSys(h_testSys, recoVariable);
+      h_testgenBinning->Fill(recoVariable, weight_);
+      fillSys(h_testgenBinningSys, recoVariable);
 
       if (!isPseudoData) {
-        h_testMET_Split->Fill(*MET, weight_);
-        fillSys(h_testMET_SplitSys, *MET);
+        h_test_Split->Fill(recoVariable, weight_);
+        fillSys(h_test_SplitSys, recoVariable);
       }
     }
 
   }
 
   if (miss) { //is a miss
-    A->Fill(-10, *GenMET, weight_);
-    fillSys2D(ASys, -10, *GenMET );
-    h_misses->Fill(*GenMET, weight_);
-    fillSys(h_missesSys, *GenMET);
+    A->Fill(-10, genVariable, weight_);
+    fillSys2D(ASys, -10, genVariable );
+    h_misses->Fill(genVariable, weight_);
+    fillSys(h_missesSys, genVariable);
     if (!isPseudoData) {
-      h_misses_Split->Fill(*GenMET, weight_);
-      fillSys(h_misses_SplitSys, *GenMET);
+      h_misses_Split->Fill(genVariable, weight_);
+      fillSys(h_misses_SplitSys, genVariable);
 
-      ASplit->Fill(-10, *GenMET, weight_);
-      fillSys2D(ASysSplit, -10, *GenMET );
+      ASplit->Fill(-10, genVariable, weight_);
+      fillSys2D(ASysSplit, -10, genVariable );
     }
   }
 
 
   if (recosel) { // "normal" selection on reco level
-    h_Reco->Fill(*MET, weight_);
-    fillSys(h_RecoSys, *MET);
+    h_Reco->Fill(recoVariable, weight_);
+    fillSys(h_RecoSys, recoVariable);
     // Additional Variables
     h_N_Jets->Fill(*N_Jets, weight_);
     fillSys(h_RecoSys, *N_Jets);
+
+    h_N_looseLeptons->Fill(*N_LooseLeptons, weight_);
+    fillSys(h_N_looseLeptonsSys, *N_LooseLeptons);
 
     h_Jet_Pt->Fill(*Jet_Pt, weight_);
     fillSys(h_Jet_PtSys, *Jet_Pt);
@@ -537,21 +575,33 @@ MCSelector::Process(Long64_t entry)
     h_HadrRecoil->Fill(*Hadr_Recoil_Pt, weight_);
     fillSys(h_HadrRecoilSys, *Hadr_Recoil_Pt);
 
+    h_GenHadrRecoil->Fill(*Gen_Hadr_Recoil_Pt, weight_);
+    fillSys(h_GenHadrRecoilSys, *Gen_Hadr_Recoil_Pt);
+
+    h_MET->Fill(*MET, weight_);
+    fillSys(h_METSys, *MET);
+
+    h_GenMET->Fill(*GenMET, weight_);
+    fillSys(h_GenMETSys, *GenMET);
+
     h_HadrRecoil_Phi->Fill(*Hadr_Recoil_Phi, weight_);
     fillSys(h_HadrRecoil_PhiSys, *Hadr_Recoil_Phi);
 
-    if (isPseudoData) {
-      h_RecoSplit->Fill(*MET, weight_);
-      fillSys(h_RecoSysSplit, *MET);
+    h_GenHadrRecoil_Phi->Fill(*Gen_Hadr_Recoil_Phi, weight_);
+    fillSys(h_GenHadrRecoil_PhiSys, *Gen_Hadr_Recoil_Phi);
 
-      h_DummyDataSplit->Fill(*MET, weight_);
-      fillSys(h_DummyDataSplitSys, *MET);
+    if (isPseudoData) {
+      h_RecoSplit->Fill(recoVariable, weight_);
+      fillSys(h_RecoSysSplit, recoVariable);
+
+      h_DummyDataSplit->Fill(recoVariable, weight_);
+      fillSys(h_DummyDataSplitSys, recoVariable);
     }
 
     if (!option.Contains("data")) { // dont ask for gen stuff in case of data
       if (!gensel) { //is a fake
-        h_fake->Fill(*MET, weight_);
-        fillSys(h_fakeSys, *MET);
+        h_fake->Fill(recoVariable, weight_);
+        fillSys(h_fakeSys, recoVariable);
         if (!*GenMonoJetSelection) failedGenMonoJetSelection += 1 * weight_;
         if (!*GenLeptonVetoSelection) failedGenLeptonVetoSelection += 1 * weight_;
         if (!*GenBTagVetoSelection) failedGenBTagVetoSelection += 1 * weight_;
@@ -560,15 +610,15 @@ MCSelector::Process(Long64_t entry)
         if (!*GenmonoVselection) failedGenmonoVselection += 1 * weight_;
 
         if (!isPseudoData) {
-          h_fake_Split->Fill(*MET, weight_);
-          fillSys(h_fake_SplitSys, *MET);
+          h_fake_Split->Fill(recoVariable, weight_);
+          fillSys(h_fake_SplitSys, recoVariable);
         }
       }
       else if (gensel) { //is not a fake
-        A_equBins->Fill(*MET, *GenMET, weight_);
-        fillSys2D(A_equBinsSys, *MET, *GenMET );
-        A->Fill(*MET, *GenMET, weight_);
-        fillSys2D(ASys, *MET, *GenMET );
+        A_equBins->Fill(recoVariable, genVariable, weight_);
+        fillSys2D(A_equBinsSys, recoVariable, genVariable );
+        A->Fill(recoVariable, genVariable, weight_);
+        fillSys2D(ASys, recoVariable, genVariable );
       }
     }
   }

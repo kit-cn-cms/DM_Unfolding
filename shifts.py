@@ -20,7 +20,7 @@ def getCanvas():
     return c
 
 
-def drawshifts(file, process="unfolded", variable="Evt_Pt_GenMET", syst="CMS_scale_j", addName="", xlabel="unfolded #slash{E}_{T} [GeV]"):
+def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CMS_scale_j", addName="", xlabel="unfolded #slash{E}_{T} [GeV]"):
     c = getCanvas()
     c.cd(1)
     ROOT.gPad.SetLogy()
@@ -89,16 +89,16 @@ def drawshifts(file, process="unfolded", variable="Evt_Pt_GenMET", syst="CMS_sca
     lineratio.Draw()
     c.Update()
 
-    c.SaveAs("pdfs/shifts_"+syst+addName+".pdf")
-    c.SaveAs("pngs/shifts_"+syst+addName+".png")
+    c.SaveAs("pdfs/shifts/shifts_"+syst+addName+".pdf")
+    c.SaveAs("pngs/shifts/shifts_"+syst+addName+".png")
 
 
 file = ROOT.TFile.Open("rootfiles/data.root")
 MCfile = ROOT.TFile.Open("rootfiles/MCdata.root")
 # file.ls()
 
-nom = file.Get("unfolded_Evt_Pt_GenMET")
-MCDatanom = MCfile.Get("unfolded_Evt_Pt_GenMET")
+nom = file.Get("unfolded_Gen_Hadr_Recoil_Pt")
+MCDatanom = MCfile.Get("unfolded_Gen_Hadr_Recoil_Pt")
 unfoldedsysts = ["CMS_scale_j",
                  "CMS_res_j",
                  "Weight_PU",
@@ -115,9 +115,9 @@ unfoldedsysts = ["CMS_scale_j",
 
 for sys in unfoldedsysts:
     drawshifts(file=file, process="unfolded",
-               variable="Evt_Pt_GenMET", syst=sys, addName="realData")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="realData")
     drawshifts(file=MCfile, process="unfolded",
-               variable="Evt_Pt_GenMET", syst=sys, addName="MCData")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="MCData")
 
 
 BKGfile = ROOT.TFile.Open("rootfiles/histos.root")
@@ -136,6 +136,6 @@ theorysysts = ["Weight_scale_variation_muR",
                ]
 for sys in theorysysts:
     drawshifts(file=BKGfile, process="z_nunu_jets",
-               variable="Evt_Pt_GenMET", syst=sys, addName="z_nunu_jets", xlabel="#slash{E}_{T} [GeV]")
+               variable="GenHadr_Recoil_Pt", syst=sys, addName="z_nunu_jets", xlabel="#slash{E}_{T} [GeV]")
 
 # raw_input()

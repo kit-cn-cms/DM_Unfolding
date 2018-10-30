@@ -26,7 +26,6 @@
 class MCSelector : public TSelector
 {
 private:
-  TH1F* h_GenMET = 0;
 
   TString outpath = "0";
   TString histofilepath = "0";
@@ -68,6 +67,9 @@ public:
   TFile *fWeightsW = 0;
   TFile *fWeightsZ = 0;
 
+  TString GenVariableName;
+  TString RecoVariableName;
+
   // book histos
   // Full Sample
   TH1F* h_Reco = 0;
@@ -89,15 +91,15 @@ public:
   std::map<std::string, TH1F*> h_GenSysSplit;
   TH2D* ASplit = 0;
   std::map<std::string, TH2D*> ASysSplit;
-  TH1F* h_testMET = 0;
-  std::map<std::string, TH1F*> h_testMETSys;
-  TH1F* h_testMETgenBinning = 0;
-  std::map<std::string, TH1F*> h_testMETgenBinningSys;
-  TH1F* h_GenRecoMET = 0;
-  std::map<std::string, TH1F*> h_GenRecoMETSys;
+  TH1F* h_test = 0;
+  std::map<std::string, TH1F*> h_testSys;
+  TH1F* h_testgenBinning = 0;
+  std::map<std::string, TH1F*> h_testgenBinningSys;
+  TH1F* h_GenReco = 0;
+  std::map<std::string, TH1F*> h_GenRecoSys;
 
-  TH1F* h_testMET_Split = 0;
-  std::map<std::string, TH1F*> h_testMET_SplitSys;
+  TH1F* h_test_Split = 0;
+  std::map<std::string, TH1F*> h_test_SplitSys;
   TH1F* h_fake = 0;
   std::map<std::string, TH1F*> h_fakeSys;
   TH1F* h_fake_Split = 0;
@@ -122,16 +124,25 @@ public:
   std::map<std::string, TH1F*> h_W_PtSys;
   TH1F* h_Z_Pt = 0;
   std::map<std::string, TH1F*> h_Z_PtSys;
+
+  TH1F* h_N_looseLeptons = 0;
+  std::map<std::string, TH1F*> h_N_looseLeptonsSys;
+
+  TH1F* h_MET = 0;
+  std::map<std::string, TH1F*> h_METSys;
+
+  TH1F* h_GenMET = 0;
+  std::map<std::string, TH1F*> h_GenMETSys;
   
   TH1F* h_HadrRecoil = 0;
   std::map<std::string, TH1F*> h_HadrRecoilSys;
 
-  TH1F* h_HadrRecoil_Phi = 0;
-  std::map<std::string, TH1F*> h_HadrRecoil_PhiSys;
-  
   TH1F* h_GenHadrRecoil = 0;
   std::map<std::string, TH1F*> h_GenHadrRecoilSys;
 
+  TH1F* h_HadrRecoil_Phi = 0;
+  std::map<std::string, TH1F*> h_HadrRecoil_PhiSys;
+  
   TH1F* h_GenHadrRecoil_Phi = 0;
   std::map<std::string, TH1F*> h_GenHadrRecoil_PhiSys;
   /////////////////////////////
@@ -144,10 +155,14 @@ public:
   TTreeReaderValue<Float_t> Hadr_Recoil_Pt = { fReader, "Hadr_Recoil_Pt" };
   TTreeReaderValue<Float_t> Hadr_Recoil_Phi = { fReader, "Hadr_Recoil_Phi" };
 
+  TTreeReaderValue<Float_t> Gen_Hadr_Recoil_Pt = { fReader, "Gen_Hadr_Recoil_Pt" };
+  TTreeReaderValue<Float_t> Gen_Hadr_Recoil_Phi = { fReader, "Gen_Hadr_Recoil_Phi" };
+
   TTreeReaderValue<Float_t> W_Pt = { fReader, "W_Pt" };
   TTreeReaderValue<Float_t> Z_Pt = { fReader, "Z_Pt" };
 
   TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
+  TTreeReaderValue<Long64_t> N_LooseLeptons = { fReader, "N_LooseLeptons" };
   // Float_t varDeltaPhi_Jet_MET[100];
   // TBranch *BrDeltaPhi_Jet_MET;
 
