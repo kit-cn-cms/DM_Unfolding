@@ -408,13 +408,13 @@ void UnfoldWrapper::DoIt() {
 			writer.addToFile(bkg);
 			TH1* bkgcopy = (TH1*) bkg->Clone();
 			TString tmpName = bkg->GetName();
-			if (tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZvvBosonWeight"));
 			}
-			if (tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_ll_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_ll_jets_" + genvar + "_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZllBosonWeight"));
 			}
-			if (tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_Evt_Pt_GenMET_BosonWeight_Mixed")) {
+			if (tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "WlnuBosonWeight"));
 			}
 			writer.addToFile(bkgcopy);
