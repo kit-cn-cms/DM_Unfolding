@@ -199,4 +199,28 @@ for x in os.listdir(signalSamplepath):
                 drawshifts(file=signalsFile, process=x,
                 variable="Gen_Hadr_Recoil_Pt", syst=sys, addName=x, xlabel="Gen Recoil #vec{U} [Gev/c]")
 
+
+noSelectionmuRmuR = [
+    "muR",
+    "muF",
+]
+
+noselectionFile = ROOT.TFile.Open("rootfiles/muRmuFnormalization.root")
+
+for sys in noSelectionmuRmuR:
+    drawshifts(file=noselectionFile, process="qcd",
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="qcd_noSelection", xlabel="Gen Recoil #vec{U} [Gev/c]")
+    drawshifts(file=noselectionFile, process="qcd",
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="qcd_noSelection_scaled", xlabel="Gen Recoil #vec{U} [Gev/c]")
+    
+    drawshifts(file=noselectionFile, process="ttbar",
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="ttbar_noSelection", xlabel="Gen Recoil #vec{U} [Gev/c]")
+    drawshifts(file=noselectionFile, process="ttbar",
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="ttbar_noSelection_scaled", xlabel="Gen Recoil #vec{U} [Gev/c]")
+
+    drawshifts(file=noselectionFile, process="gamma_jets",
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="gamma_jets_noSelection", xlabel="Gen Recoil #vec{U} [Gev/c]")
+    drawshifts(file=noselectionFile, process="gamma_jets",
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="gamma_jets_noSelection_scaled", xlabel="Gen Recoil #vec{U} [Gev/c]")
+
 # raw_input()

@@ -21,7 +21,7 @@ def getCanvas():
     return c
 
 
-def createChain(Bins, commonpath="/nfs/dust/cms/user/swieland/Darkmatter/ntuples_tagging"):
+def createChain(Bins, commonpath="/nfs/dust/cms/user/swieland/Darkmatter/ntUples_tagging"):
     chain = r.TChain("MVATree")
     for Bin in Bins:
         print "adding ",  commonpath+"/"+Bin+"/*nominal*.root", " to chain"
@@ -70,11 +70,11 @@ def calcNormFactor(chain, variableName="Gen_Hadr_Recoil_Pt", samplename="qcd", i
     c.cd()
     r.gPad.SetLogy()
 
-    h_nominal = Frame.Histo1D((samplename+"_nominal", samplename+"_nominal", 300, 0, 3000), variableName,"commonweight")
-    h_MuRUp = Frame.Histo1D((samplename+"_muRup", samplename+"_muRup", 300, 0, 3000), variableName, "muRUpWeight")
-    h_MuRDown = Frame.Histo1D((samplename+"_muRdown", samplename+"_muRdown", 300, 0, 3000), variableName, "muRDownWeight")
-    h_MuFUp = Frame.Histo1D((samplename+"_muFup", samplename +"_muFup", 300, 0, 3000), variableName, "muFUpWeight")
-    h_MuFDown = Frame.Histo1D((samplename+"_muFdown", samplename+"_muFdown", 300, 0, 3000), variableName, "muFDownWeight")
+    h_nominal = Frame.Histo1D((samplename+"_"+variableName, samplename+"_nominal", 300, 0, 3000), variableName,"commonweight")
+    h_MuRUp = Frame.Histo1D((samplename+"_"+variableName+"_muRUp", samplename+"_muRUp", 300, 0, 3000), variableName, "muRUpWeight")
+    h_MuRDown = Frame.Histo1D((samplename+"_"+variableName+"_muRDown", samplename+"_muRDown", 300, 0, 3000), variableName, "muRDownWeight")
+    h_MuFUp = Frame.Histo1D((samplename+"_"+variableName+"_muFUp", samplename +"_muFUp", 300, 0, 3000), variableName, "muFUpWeight")
+    h_MuFDown = Frame.Histo1D((samplename+"_"+variableName+"_muFDown", samplename+"_muFDown", 300, 0, 3000), variableName, "muFDownWeight")
 
     h_nominal.Sumw2()
     h_MuRUp.Sumw2()
@@ -82,6 +82,21 @@ def calcNormFactor(chain, variableName="Gen_Hadr_Recoil_Pt", samplename="qcd", i
     h_MuFUp.Sumw2()
     h_MuFDown.Sumw2()
 
+    h_nominal_scaled = h_nominal.Clone()
+    h_nominal_scaled.SetName(samplename+"_"+variableName+"_scaled")
+    h_nominal_scaled.Write()
+
+    h_MuRUp_scaled = h_MuRUp.Clone()
+    h_MuRUp_scaled.SetName(samplename+"_"+variableName+"_scaled_muRUp")
+    
+    h_MuRDown_scaled = h_MuRDown.Clone()
+    h_MuRDown_scaled.SetName(samplename+"_"+variableName+"_scaled_muRDown")
+    
+    h_MuFUp_scaled = h_MuFUp.Clone()
+    h_MuFUp_scaled.SetName(samplename+"_"+variableName+"_scaled_muFUp")
+
+    h_MuFDown_scaled = h_MuFDown.Clone()
+    h_MuFDown_scaled.SetName(samplename+"_"+variableName+"_scaled_muFDown")
 
     if isSignal:
         h_nominal.Scale(XSWeight)
@@ -99,35 +114,48 @@ def calcNormFactor(chain, variableName="Gen_Hadr_Recoil_Pt", samplename="qcd", i
     h_MuRUp.Draw()
     h_MuRUp.Write()
     int_muRUp = h_MuRUp.Integral()
-    print "wrote muRup integral=", int_muRUp
-    muRupWeight = int_nom/int_muRUp
-    print "muRupWeight = ", muRupWeight
+    print "wrote muRUp, integral=", int_muRUp
+    muRUpWeight = float(int_nom/int_muRUp)
+    print "muRUpWeight = ", muRUpWeight
+    h_MuRUp_scaled.Scale(muRUpWeight)
+    h_MuRUp_scaled.Write()
+    print "wrote scaled muRUp, integral=", h_MuRUp_scaled.Integral()
 
     h_MuRDown.Draw()
     h_MuRDown.Write()
     int_muRDown = h_MuRDown.Integral()
-    print "wrote muRDown integral=", int_muRDown
-    muRdownWeight = int_nom/int_muRDown
-    print "muRdownWeight = ", muRdownWeight
+    print "wrote muRDown, integral=", int_muRDown
+    muRDownWeight =float(int_nom/int_muRDown)
+    print "muRDownWeight = ", muRDownWeight
+    h_MuRDown_scaled.Scale(muRDownWeight)
+    h_MuRDown_scaled.Write()
+    print "wrote scaled muRDown, integral=", h_MuRDown_scaled.Integral()
 
     h_MuFUp.Draw()
     h_MuFUp.Write()
     int_muFUp = h_MuFUp.Integral()
-    print "wrote muFup integral=", int_muFUp
-    muFupWeight = int_nom/int_muFUp
-    print "muFupWeight = ", muFupWeight
+    print "wrote muFUp integral=", int_muFUp
+    muFUpWeight = float(int_nom/int_muFUp)
+    print "muFUpWeight = ", muFUpWeight
+    h_MuFUp_scaled.Scale(muFUpWeight)
+    h_MuFUp_scaled.Write()
+    print "wrote scaled muFUp, integral=", h_MuFUp_scaled.Integral()
+
 
     h_MuFDown.Draw()
     h_MuFDown.Write()
     int_muFDown = h_MuFDown.Integral()
     print "wrote muFDown integral=", int_muFDown
-    muFdownWeight = int_nom/int_muFDown
-    print "muFdownWeight = ", muFdownWeight
+    muFDownWeight = float(int_nom/int_muFDown)
+    print "muFDownWeight = ", muFDownWeight
+    h_MuFDown_scaled.Scale(muFDownWeight)
+    h_MuFDown_scaled.Write()
+    print "wrote scaled muFDown, integral=", h_MuFDown_scaled.Integral()
 
     outputfile.Close()
 
-    weights = {"muRUp": muRupWeight, "muRDown": muRdownWeight,
-               "muFUp": muFupWeight, "muFDown": muFdownWeight}
+    weights = {"muRUp": muRUpWeight, "muRDown": muRDownWeight,
+               "muFUp": muFUpWeight, "muFDown": muFDownWeight}
     return weights
 
 
@@ -148,10 +176,9 @@ def scaleHistos(weights, processname="qcd", variableName="Gen_Hadr_Recoil_Pt", g
         "Weight_scale_variation_muFUp",
         "Weight_scale_variation_muRDown",
     ]
-    if not isSignal:
-        nominalName = processname+"_"+variableName
-    else:
-        nominalName = processname
+
+    nominalName = processname+"_"+variableName
+
     nominal = histofile.Get(nominalName)
     print "nominal integal= ", nominal.Integral()
     nominal.Write()
@@ -251,7 +278,7 @@ ttbarweights = calcNormFactor(chain=ttbarChain, samplename="ttbar")
 scaleHistos(processname="ttbar", variableName="Gen_Hadr_Recoil_Pt", weights=ttbarweights, generatorLabel="powheg")
 
 # # signals
-# signalSamplepath = "/nfs/dust/cms/user/swieland/Darkmatter/ntuples_signal_madgraph_tagging"
+# signalSamplepath = "/nfs/dust/cms/user/swieland/Darkmatter/ntUples_signal_madgraph_tagging"
 
 # listnames = ["Axial", "Vector", "Pseudo", "Scalar"]
 # lists = [axialsamples, vectorsamples, pseudosamples, scalarsamples]
