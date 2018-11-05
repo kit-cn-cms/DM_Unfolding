@@ -74,6 +74,28 @@ TH1* processSignal(TString SignalName) {
 	h_sig_MuFdown = new TH1F("h_sig_MuFdown", "SignalMuFdown", bins.size() - 1  , bins.data() );
 	h_sig_MuFdown->Sumw2();
 
+	//histos with no selection for muR/muF reweighting
+	TH1F* h_sig_noSelection(nullptr);
+	h_sig_noSelection = new TH1F("h_sig_noSelection", "Signal", 300, 0, 3000);
+	h_sig_noSelection->Sumw2();
+
+	TH1F* h_sig_noSelection_MuRup(nullptr);
+	h_sig_noSelection_MuRup = new TH1F("h_sig_noSelection_MuRup", "SignalMuRup", 300, 0, 3000);
+	h_sig_noSelection_MuRup->Sumw2();
+
+	TH1F* h_sig_noSelection_MuRdown(nullptr);
+	h_sig_noSelection_MuRdown = new TH1F("h_sig_noSelection_MuRdown", "SignalMuRdown", 300, 0, 3000);
+	h_sig_noSelection_MuRdown->Sumw2();
+
+	TH1F* h_sig_noSelection_MuFup(nullptr);
+	h_sig_noSelection_MuFup = new TH1F("h_sig_noSelection_MuFup", "SignalMuFup", 300, 0, 3000);
+	h_sig_noSelection_MuFup->Sumw2();
+
+	TH1F* h_sig_noSelection_MuFdown(nullptr);
+	h_sig_noSelection_MuFdown = new TH1F("h_sig_noSelection_MuFdown", "SignalMuFdown", 300, 0, 3000);
+	h_sig_noSelection_MuFdown->Sumw2();
+
+
 	TTreeReader theReader(chain);
 	TTreeReaderValue<Float_t> Gen(theReader, "Gen_Hadr_Recoil_Pt");
 	TTreeReaderValue<Float_t> Reco(theReader, "Hadr_Recoil_Pt");
@@ -112,6 +134,13 @@ TH1* processSignal(TString SignalName) {
 		theReader.SetEntry(iEntry);
 		// chain->GetEntry(iEntry);
 
+		double commonweight = (*Weight_XS) * (*Weight_GEN_nom)  * signalXS;
+		h_sig_noSelection->Fill(*Gen, commonweight);
+		h_sig_noSelection_MuRup->Fill(*Gen, commonweight * fabs(*Weight_MuRup));
+		h_sig_noSelection_MuRdown->Fill(*Gen, commonweight * fabs(*Weight_MuRdown));
+		h_sig_noSelection_MuFup->Fill(*Gen, commonweight * fabs(*Weight_MuFup));
+		h_sig_noSelection_MuFdown->Fill(*Gen, commonweight * fabs(*Weight_MuFdown));
+
 		double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823 * signalXS;
 		// double weight_ = (*Weight_XS) * (*Weight_CSV) * (*Weight_PU) * (*Weight_GEN_nom) * 35.91823;
 		bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
@@ -129,13 +158,45 @@ TH1* processSignal(TString SignalName) {
 		}
 		iEntry++;
 	}
+
+	double int_nom = h_sig_noSelection->Integral();
+	cout << "nominal, integral=" << int_nom << endl;
+
+	double int_muRUp = h_sig_noSelection_MuRup->Integral();
+	cout << "muRup integral=" << int_muRUp << endl;
+	double muRupWeight = int_nom / int_muRUp;
+	cout << "muRupWeight = " << muRupWeight << endl;
+
+	double int_muRDown = h_sig_noSelection_MuRdown->Integral();
+	cout << "muRDown integral=" << int_muRDown << endl;
+	double muRdownWeight = int_nom / int_muRDown;
+	cout << "muRdownWeight = " << muRdownWeight << endl;
+
+	double int_muFUp = h_sig_noSelection_MuFup->Integral();
+	cout << "muFup integral=" << int_muFUp << endl;
+	double muFupWeight = int_nom / int_muFUp;
+	cout << "muFupWeight = " << muFupWeight << endl;
+
+	double int_muFDown = h_sig_noSelection_MuFdown->Integral();
+	cout << "muFDown integral=" << int_muFDown << endl;
+	double muFdownWeight = int_nom / int_muFDown;
+	cout << "muFdownWeight = " << muFdownWeight << endl;
+
 	// h_sig->Draw();
 	cout << misscounter << " misses in " << SignalName << endl;
 	h_sig->SetName(SignalName);
+
 	h_sig_MuRup->SetName(SignalName + "_Weight_scale_variation_muRUp");
+	h_sig_MuRup->Scale(muRupWeight);
+
 	h_sig_MuRdown->SetName(SignalName + "_Weight_scale_variation_muRDown");
+	h_sig_MuRdown->Scale(muRdownWeight);
+
 	h_sig_MuFup->SetName(SignalName + "_Weight_scale_variation_muFUp");
+	h_sig_MuFup->Scale(muFupWeight);
+
 	h_sig_MuFdown->SetName(SignalName + "_Weight_scale_variation_muFDown");
+	h_sig_MuFdown->Scale(muFdownWeight);
 
 	h_sig->Write();
 	h_sig_MuRup->Write();
