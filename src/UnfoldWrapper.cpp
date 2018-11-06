@@ -398,8 +398,8 @@ void UnfoldWrapper::DoIt() {
 		GenBkgNames.push_back("Gen_" + name);
 	}
 
-	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded" + label,varName, log);
-	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback" + label,varName, log);
+	Drawer.Draw1D(std::get<0>(unfold_output), recovar + "_unfolded" + label, varName, log);
+	Drawer.Draw1D(std::get<1>(unfold_output), recovar + "_foldedback" + label, varName, log);
 	unfolded_nominal->SetName("unfolded_" + genvar);
 	writer.addToFile(unfolded_nominal);
 
@@ -408,6 +408,7 @@ void UnfoldWrapper::DoIt() {
 			writer.addToFile(bkg);
 			TH1* bkgcopy = (TH1*) bkg->Clone();
 			TString tmpName = bkg->GetName();
+			// rename systematic histos from BosonReweighting to account for correct correlations
 			if (tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("z_nunu_jets_" + genvar + "_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "ZvvBosonWeight"));
 			}
@@ -416,6 +417,17 @@ void UnfoldWrapper::DoIt() {
 			}
 			if (tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW2") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_EW3") or tmpName.Contains("w_lnu_jets_" + genvar + "_BosonWeight_Mixed")) {
 				bkgcopy->SetName(tmpName.ReplaceAll("BosonWeight", "WlnuBosonWeight"));
+			}
+
+			// rename systematic histos from BosonReweighting to account for correct correlations
+			if (tmpName.Contains("z_nunu_jets_" + genvar + "_Weight_scale_variation")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("Weight", "amc"));
+			}
+			if (tmpName.Contains("z_ll_jets_" + genvar + "_Weight_scale_variation")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("Weight", "amc"));
+			}
+			if (tmpName.Contains("w_lnu_jets_" + genvar + "_Weight_scale_variation")) {
+				bkgcopy->SetName(tmpName.ReplaceAll("Weight", "amc"));
 			}
 			writer.addToFile(bkgcopy);
 		}
