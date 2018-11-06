@@ -70,11 +70,11 @@ def calcNormFactor(chain, variableName="Gen_Hadr_Recoil_Pt", samplename="qcd", i
     c.cd()
     r.gPad.SetLogy()
 
-    h_nominal = Frame.Histo1D((samplename+"_"+variableName, samplename+"_nominal", 300, 0, 3000), variableName,"commonweight")
-    h_MuRUp = Frame.Histo1D((samplename+"_"+variableName+"_muRUp", samplename+"_muRUp", 300, 0, 3000), variableName, "muRUpWeight")
-    h_MuRDown = Frame.Histo1D((samplename+"_"+variableName+"_muRDown", samplename+"_muRDown", 300, 0, 3000), variableName, "muRDownWeight")
-    h_MuFUp = Frame.Histo1D((samplename+"_"+variableName+"_muFUp", samplename +"_muFUp", 300, 0, 3000), variableName, "muFUpWeight")
-    h_MuFDown = Frame.Histo1D((samplename+"_"+variableName+"_muFDown", samplename+"_muFDown", 300, 0, 3000), variableName, "muFDownWeight")
+    h_nominal = Frame.Histo1D((samplename+"_"+variableName, samplename+"_nominal", 100, 0, 3000), variableName,"commonweight")
+    h_MuRUp = Frame.Histo1D((samplename+"_"+variableName+"_muRUp", samplename+"_muRUp", 100, 0, 3000), variableName, "muRUpWeight")
+    h_MuRDown = Frame.Histo1D((samplename+"_"+variableName+"_muRDown", samplename+"_muRDown", 100, 0, 3000), variableName, "muRDownWeight")
+    h_MuFUp = Frame.Histo1D((samplename+"_"+variableName+"_muFUp", samplename +"_muFUp", 100, 0, 3000), variableName, "muFUpWeight")
+    h_MuFDown = Frame.Histo1D((samplename+"_"+variableName+"_muFDown", samplename+"_muFDown", 100, 0, 3000), variableName, "muFDownWeight")
 
     h_nominal.Sumw2()
     h_MuRUp.Sumw2()
