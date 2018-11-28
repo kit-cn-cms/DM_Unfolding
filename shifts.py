@@ -94,6 +94,7 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     ratioUp.Divide(up)
     ratioUp.SetLineColor(up.GetLineColor())
     ratioUp.Draw("E0")
+    ratioUp.SetMarkerSize(0)
     ratioUp.GetYaxis().SetTitle("#frac{nominal}{variation}")
     ratioUp.GetYaxis().CenterTitle()
     ratioUp.GetYaxis().SetRangeUser(0.45, 1.65)
@@ -115,6 +116,8 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     ratioDown.Divide(down)
     ratioDown.SetLineColor(down.GetLineColor())
     ratioDown.Draw("E0same")
+    ratioDown.SetMarkerSize(0)
+
     # ratioDown.SetTitle("");
     # ratioDown.GetYaxis().SetTitle("nominal/variation");
 
