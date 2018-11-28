@@ -15,26 +15,47 @@ for path, subdirs, files in os.walk(path_ntuples):
 
 print ch.GetEntries()
 
-canvas=ROOT.TCanvas()
+ROOT.gStyle.SetPadRightMargin(0.15)
+ROOT.gStyle.SetPalette(57)
+w=1200
+h=800
+canvas = ROOT.TCanvas()
+canvas.cd()
+canvas.SetCanvasSize(w,h)
+
 ROOT.gPad.SetLogz()
 ROOT.gStyle.SetOptStat(0)
-ch.Draw("Hadr_Recoil_Pt:Gen_Hadr_Recoil_Pt>>met(100,0,800,100,0,800)","Weight_XS*Weight_GEN_nom*Weight_PU*Weight_CSV","colz")
+ch.Draw("Gen_Hadr_Recoil_Pt:Hadr_Recoil_Pt>>met(100,0,800,100,0,800)","Weight_XS*Weight_GEN_nom*Weight_PU*Weight_CSV","colz")
 met=ROOT.gDirectory.Get("met")
-met.GetXaxis().SetTitle("generated hadr. Recoil #vec{U} [Gev/c]")
-met.GetYaxis().SetTitle("reconstructed hadr. Recoil #vec{U} [Gev/c]")
-met.SetTitle("CMS private work simulation")
+met.GetXaxis().SetTitle("generated hadr. recoil |#vec{U}| [GeV/c]")
+met.GetXaxis().SetTitleSize(0.05)
+met.GetXaxis().SetLabelSize(0.04)
+met.GetXaxis().SetTitleOffset(0.82)
 
-metclone=met.Clone()
-for xbin in range(met.GetNbinsX()):
-	for ybin in range(met.GetNbinsY()):
-		metclone.SetBinContent(ybin,xbin,met.GetBinContent(xbin,ybin))
-metclone.GetYaxis().SetTitle("generated hadr. Recoil #vec{U} [Gev/c]")
-metclone.GetXaxis().SetTitle("reconstructed hadr. Recoil #vec{U} [Gev/c]")
-metclone.SetTitle("CMS private work simulation")
-metclone.Draw("colz")
+met.GetYaxis().SetTitle("reconstructed hadr. recoil |#vec{U}| [GeV/c]")
+met.SetTitle("")
+met.GetYaxis().SetTitleSize(0.05)
+met.GetYaxis().SetLabelSize(0.04)
+met.GetYaxis().SetTitleOffset(0.85)
+
+met.GetZaxis().SetTitle("Events")
+met.GetZaxis().SetTitleSize(0.07)
+met.GetZaxis().SetLabelSize(0.04)
+met.GetZaxis().SetTitleOffset(0.7)
+
+cms = ROOT.TLatex(0.12, 0.91, 'CMS private work in progress'  )
+cms.SetNDC()
+cms.SetTextSize(0.055)
+lumi = ROOT.TLatex(0.7, 0.91, '35.9 fb^{-1} (13 TeV)'  )
+lumi.SetNDC()
+lumi.SetTextSize(0.045)
+
+cms.Draw()
+lumi.Draw()
+
 canvas.Print("hadrRecoil.pdf")
 
-ROOT.gStyle.SetOptStat(000001111)
+# ROOT.gStyle.SetOptStat(000001111)
 
 # canvas2=ROOT.TCanvas()
 # canvas2.cd()
@@ -44,8 +65,8 @@ ROOT.gStyle.SetOptStat(000001111)
 # canvas2.Print("LeadingJetPt.pdf")
 
 
-canvas3=ROOT.TCanvas()
-canvas3.cd()
+# canvas3=ROOT.TCanvas()
+# canvas3.cd()
 
 # ch.Draw("Evt_Pt_MET-Evt_Pt_GenMET>>Diff(100,-100,100)","Weight_XS*Weight_GEN_nom")
 # canvas3.Print("recoMingen.pdf")
@@ -56,7 +77,7 @@ canvas3.cd()
 # ch.Draw("Evt_Pt_MET-Evt_Pt_GenMET>>Diff(100,-100,100)","Weight_XS*Weight_GEN_nom*recoSelected*GenMETSelection*GenMonoJetSelection*GenLeptonVetoSelection*GenBTagVetoSelection*GenPhotonVetoSelection*GenmonoVselection")
 # canvas3.Print("recoMingen_RecoGenSelected.pdf")
 
-ch.Draw("Evt_Pt_GenMET>>monov(100,0,800)","Weight_XS*Weight_GEN_nom*recoSelected*GenMETSelection*GenMonoJetSelection*GenLeptonVetoSelection*GenBTagVetoSelection*GenPhotonVetoSelection*(GenmonoVselection!=1)")
-monov=ROOT.gDirectory.Get("monov")
-print monov.Integral()
-canvas3.Print("monovfailed.pdf")
+# ch.Draw("Evt_Pt_GenMET>>monov(100,0,800)","Weight_XS*Weight_GEN_nom*recoSelected*GenMETSelection*GenMonoJetSelection*GenLeptonVetoSelection*GenBTagVetoSelection*GenPhotonVetoSelection*(GenmonoVselection!=1)")
+# monov=ROOT.gDirectory.Get("monov")
+# print monov.Integral()
+# canvas3.Print("monovfailed.pdf")
