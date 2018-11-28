@@ -148,19 +148,19 @@ void UnfoldWrapper::DoIt() {
 // SYST SOURCES
 //input data stat error
 	TH2* ErrorMatrix_input = unfold->GetEmatrixInput("ErrorMatrix_input");
-	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+	Drawer.Draw2D(ErrorMatrix_input, "ErrorMatrix_input" + label, log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 	writer.addToFile(ErrorMatrix_input);
 
 // subtracted bkgs
 	TH2* ErrorMatrix_subBKGuncorr = unfold->GetEmatrixSysBackgroundUncorr("fakes" + label, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+	Drawer.Draw2D(ErrorMatrix_subBKGuncorr, "ErrorMatrix_subBKGuncorr" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 	TH2* ErrorMatrix_subBKGscale = (TH2*)ErrorMatrix_subBKGuncorr->Clone();
 	ErrorMatrix_subBKGscale->Reset();
 	unfold->GetEmatrixSysBackgroundScale(ErrorMatrix_subBKGscale, "fakes" + label);
-	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+	Drawer.Draw2D(ErrorMatrix_subBKGscale, "ErrorMatrix_subBKGscale" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 
 	TH2* ErrorMatrix_MCstat = unfold->GetEmatrixSysUncorr("ErrorMatrix_MCstat");
-	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+	Drawer.Draw2D(ErrorMatrix_MCstat, "ErrorMatrix_MCstat" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 	writer.addToFile(ErrorMatrix_MCstat);
 
 	TH2* DataMCStat = (TH2*) ErrorMatrix_MCstat->Clone();
@@ -175,7 +175,7 @@ void UnfoldWrapper::DoIt() {
 
 // Visualize ERRORS
 	TH2* ErrorMatrixTotal = unfold->GetEmatrixTotal("ErrorMatrixTotal");
-	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+	Drawer.Draw2D(ErrorMatrixTotal, "ErrorMatrixTotal" + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 	writer.addToFile(ErrorMatrixTotal);
 
 //create shift Histos from MatrixErrors
@@ -212,7 +212,7 @@ void UnfoldWrapper::DoIt() {
 		tmp->Reset();
 		unfold->GetEmatrixSysSource(tmp, TString(var));
 		v_ErrorMatrixVariations.push_back(tmp);
-		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX);
+		Drawer.Draw2D(tmp, "ErrorMatrixVariations_" + TString(var) + label,  log, !moveUF, "unfolded " + RecoVariableNameLateX, "unfolded " + RecoVariableNameLateX, "covariance");
 
 		if (!manualErrors) {
 			TH1* Delta = (TH1*) GenMC[0].at(0)->Clone();
@@ -359,7 +359,7 @@ void UnfoldWrapper::DoIt() {
 
 // Drawer.Draw2D(ErrorMatrix, "ErrorMatrix" + label, log, "unfolded "+ varName, "unfolded "+ varName);
 	Drawer.Draw2D(L, "L" + label);
-	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, !moveUF, "unfolded " + varName, "unfolded " + varName);
+	Drawer.Draw2D(RhoTotal, "RhoTotal" + label, !log, !moveUF, "unfolded " + varName, "unfolded " + varName, "correlation factor");
 
 	//calculate correlationmatrix for input+MCStat
 	TMatrixDSym cov(DataMCFakeStat->GetNbinsX());
@@ -389,7 +389,7 @@ void UnfoldWrapper::DoIt() {
 	corr.Print();
 	TH2* h_corrDataMCstat = new TH2D(corr);
 	h_corrDataMCstat->SetName("h_corrDataMCstat");
-	Drawer.Draw2D(h_corrDataMCstat, "RhoDataMCstat" + label, !log, !moveUF, "unfolded Bin Number", "unfolded Bin Number");
+	Drawer.Draw2D(h_corrDataMCstat, "RhoDataMCstat" + label, !log, !moveUF, "unfolded Bin Number", "unfolded Bin Number", "correlation factor");
 
 
 	Drawer.DrawDataMC(data, MC.at(0), nameRecoSampleColorMap, recovar + label, log, !normalize, !drawpull, varName, "# Events");

@@ -11,6 +11,7 @@
 #include <TStyle.h>
 #include <TPaveText.h>
 #include <numeric>
+#include <TLatex.h>
 
 template<typename Base, typename T>
 inline bool instanceof(const T *ptr) {
@@ -127,19 +128,38 @@ void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair
 	output->Close();
 }
 
-void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString xlabel, TString ylabel) {
+void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString xlabel, TString ylabel, TString zlabel) {
 	std::cout << "Making Plot: " << name << std::endl;
 	// set_color_env();
 	TFile *output = new TFile(path.GetOutputFilePath(), "update");
 	TCanvas* c = new TCanvas(name, name);
+	c->cd();
+	c->SetCanvasSize(1200, 800);
+
 	gStyle->SetStatY(0.9);
 	gStyle->SetStatX(0.9);
 	gStyle->SetOptStat(0);
 
+	gStyle->SetPadRightMargin(0.15);
+	gStyle->SetPalette(57);
 
-	TH2* histClone = (TH2*) hist->Clone();
+	TH2 * histClone = (TH2*) hist->Clone();
+
 	histClone->Draw("COLZ1");
 	histClone->SetTitle(name);
+
+	histClone->GetXaxis()->SetTitleSize(0.05);
+	histClone->GetXaxis()->SetLabelSize(0.04);
+	histClone->GetXaxis()->SetTitleOffset(0.82);
+
+	histClone->GetYaxis()->SetTitleSize(0.05);
+	histClone->GetYaxis()->SetLabelSize(0.04);
+	histClone->GetYaxis()->SetTitleOffset(0.9);
+
+	histClone->GetZaxis()->SetTitleSize(0.07);
+	histClone->GetZaxis()->SetLabelSize(0.04);
+	histClone->GetZaxis()->SetTitleOffset(0.7);
+
 	if (log) gPad->SetLogz();
 
 	if (xlabel == "none") {
@@ -152,13 +172,28 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString 
 	}
 	else histClone-> SetYTitle(ylabel);
 
+	if (zlabel == "none") {
+		histClone->GetZaxis()->SetTitle("Events");
+	}
+	else histClone->GetZaxis()->SetTitle(zlabel);
+
+	TLatex* cms = new TLatex(0.12, 0.91, "CMS private work in progress");
+	cms->SetNDC();
+	cms->SetTextSize(0.055);
+	TLatex* lumi = new TLatex(0.7, 0.91, "35.9 fb^{-1} (13 TeV)");
+	lumi->SetNDC();
+	lumi->SetTextSize(0.045);
+
+	cms->Draw();
+	lumi->Draw();
+
 	// if (moveUF) {
 	// 	for (Int_t iBin = 0; iBin <= histClone->GetNbinsY(); iBin++) {
 	// 		histClone->SetBinContent(1, iBin, histClone->GetBinContent(0, iBin));
 	// 	}
 	// }
 
-	DrawLumiLabel(c);
+	// DrawLumiLabel(c);
 	c->SaveAs(path.GetPdfPath() + name + ".pdf");
 	c->SaveAs(path.GetPdfPath() + "../pngs/" + name + ".png");
 	c->Write();
