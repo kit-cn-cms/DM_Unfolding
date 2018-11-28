@@ -710,7 +710,7 @@ void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
 }
 
 TLegend* HistDrawer::getLegend() {
-	TLegend* legend = new TLegend(0.5, 0.7, 0.92, 0.9);
+	TLegend* legend = new TLegend(0.45, 0.7, 0.85, 0.9);
 	legend->SetNColumns(2);
 	legend->SetColumnSeparation(0.2);
 	legend->SetBorderSize(0);
