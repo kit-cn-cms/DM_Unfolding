@@ -18,21 +18,21 @@ print ch.GetEntries()
 canvas=ROOT.TCanvas()
 ROOT.gPad.SetLogz()
 ROOT.gStyle.SetOptStat(0)
-ch.Draw("Evt_Pt_MET:Evt_Pt_GenMET>>met(100,0,800,100,0,800)","Weight_XS*Weight_GEN_nom","colz")
+ch.Draw("Hadr_Recoil_Pt:Gen_Hadr_Recoil_Pt>>met(100,0,800,100,0,800)","Weight_XS*Weight_GEN_nom*Weight_PU*Weight_CSV","colz")
 met=ROOT.gDirectory.Get("met")
-met.GetXaxis().SetTitle("generated #slash{E}_{T} [GeV]")
-met.GetYaxis().SetTitle("reconstructed #slash{E}_{T} [GeV]")
+met.GetXaxis().SetTitle("generated hadr. Recoil #vec{U} [Gev/c]")
+met.GetYaxis().SetTitle("reconstructed hadr. Recoil #vec{U} [Gev/c]")
 met.SetTitle("CMS private work simulation")
 
 metclone=met.Clone()
 for xbin in range(met.GetNbinsX()):
 	for ybin in range(met.GetNbinsY()):
 		metclone.SetBinContent(ybin,xbin,met.GetBinContent(xbin,ybin))
-metclone.GetYaxis().SetTitle("generated #slash{E}_{T} [GeV]")
-metclone.GetXaxis().SetTitle("reconstructed #slash{E}_{T} [GeV]")
+metclone.GetYaxis().SetTitle("generated hadr. Recoil #vec{U} [Gev/c]")
+metclone.GetXaxis().SetTitle("reconstructed hadr. Recoil #vec{U} [Gev/c]")
 metclone.SetTitle("CMS private work simulation")
 metclone.Draw("colz")
-canvas.Print("MET.pdf")
+canvas.Print("hadrRecoil.pdf")
 
 ROOT.gStyle.SetOptStat(000001111)
 
