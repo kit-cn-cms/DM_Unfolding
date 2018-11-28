@@ -64,11 +64,15 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 	//Draw Tau Graphs
 	TCanvas* tau = new TCanvas("tau_" + name, "tau_" + name);
 	tau->cd();
+	tau->SetBottomMargin(0.15);
+	tau->SetLeftMargin(0.15);
 	knots->GetXaxis()->SetTitle("log #tau");
-	knots->GetXaxis()->SetTitleSize(0.05);
+	knots->GetXaxis()->SetTitleSize(0.06);
+	knots->GetXaxis()->SetLabelSize(0.05);
 
 	knots->GetYaxis()->SetTitle("#bar{#rho}");
-	knots->GetYaxis()->SetTitleSize(0.05);
+	knots->GetYaxis()->SetTitleSize(0.06);
+	knots->GetYaxis()->SetLabelSize(0.05);
 
 	knots->Draw("A*");
 	bestRhoLogTau->SetMarkerColor(kRed);
@@ -82,12 +86,20 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 
 	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
 	clCurve->cd();
+	clCurve->SetBottomMargin(0.15);
+	clCurve->SetLeftMargin(0.15);
 	lCurve->Draw();
 	bestLCurve->Draw("*");
 	lCurve->GetXaxis()->SetTitle("log #chi_{A}");
+	lCurve->GetXaxis()->SetTitleSize(0.06);
+	lCurve->GetXaxis()->SetLabelSize(0.05);
+
 	lCurve->GetYaxis()->SetTitle("log #chi_{L}");
-	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
-	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
+	lCurve->GetYaxis()->SetTitleSize(0.06);
+	lCurve->GetYaxis()->SetLabelSize(0.05);
+
+	clCurve->SaveAs(path.GetPdfPath() + "LCurve_fromRhoScan_" + name + ".pdf");
+	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_fromRhoScan_" + name + ".png");
 
 	output->Close();
 
@@ -131,6 +143,8 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 
 	TCanvas* curv = new TCanvas("curvature_" + name, "curvature_" + name);
 	curv->cd();
+	curv->SetBottomMargin(0.15);
+	curv->SetLeftMargin(0.15);
 	logTauCurvature->Draw();
 	curvknots->Draw("*");
 	bestCLogTau->SetMarkerColor(kRed);
@@ -140,11 +154,16 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 
 	TCanvas* clCurve = new TCanvas("LCurve_" + name, "LCurve_" + name);
 	clCurve->cd();
+	clCurve->SetBottomMargin(0.15);
+	clCurve->SetLeftMargin(0.15);
 	lCurve->Draw("AL");
 	lCurve->GetXaxis()->SetTitle("log #chi_{A}");
-	lCurve->GetXaxis()->SetTitleSize(0.05);
+	lCurve->GetXaxis()->SetTitleSize(0.06);
+	lCurve->GetXaxis()->SetLabelSize(0.05);
+
 	lCurve->GetYaxis()->SetTitle("log #chi_{L}");
 	lCurve->GetYaxis()->SetTitleSize(0.05);
+	lCurve->GetYaxis()->SetLabelSize(0.05);
 	bestLcurve->SetMarkerColor(kRed);
 	bestLcurve->Draw("*");
 	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");

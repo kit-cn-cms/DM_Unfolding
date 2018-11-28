@@ -113,7 +113,7 @@ void HistDrawer::DrawStack(std::vector<TH1*> MC, std::map<std::string, std::pair
 	}
 	else stack->GetXaxis()->SetTitle(xlabel);
 
-	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetTitle("Events");
 	stack->GetXaxis()->SetLabelSize(stack->GetXaxis()->GetLabelSize() * 1.2);
 	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
 	stack->GetXaxis()->SetTitleSize(stack->GetXaxis()->GetTitleSize() * 1.5);
@@ -229,9 +229,9 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	legend->Draw("same");
 	data->SetStats(false);
 
-	stack->GetYaxis()->SetTitle("#Events");
-	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
-	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
+	stack->GetYaxis()->SetTitle("Events");
+	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.3);
+	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.6);
 	stack->GetYaxis()->SetTitleOffset(1);
 	stack->SetTitle("");
 
@@ -249,9 +249,9 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 	ratio->Draw("E0");
 	ratio->GetYaxis()->SetTitle("#frac{Data}{MC Sample}");
 	ratio->GetYaxis()->SetRangeUser(0.45, 1.65);
-	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
+	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.6);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
-	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
+	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3.4);
 	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleOffset(0.5);
 	ratio->SetTitle("");
@@ -265,10 +265,10 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::vector<std::st
 
 
 	if (drawpull) {
-		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
-		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
-		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
-		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.9);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.9);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.9);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.9);
 		ratio->GetYaxis()->SetTitleOffset(0.3);
 
 		c->Update();
@@ -359,7 +359,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	data->SetStats(false);
 	DrawLumiLabel(c);
 
-	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetTitle("Events");
 	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
 	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
 	stack->GetYaxis()->SetTitleOffset(1);
@@ -383,7 +383,7 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 	ratio->GetYaxis()->SetRangeUser(0.45, 1.65);
 	ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 2.4);
 	ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 2.4);
-	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3);
+	ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 3.4);
 	ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 3);
 	ratio->GetYaxis()->SetTitleOffset(0.5);
 	ratio->SetTitle("");
@@ -397,10 +397,10 @@ void HistDrawer::DrawDataMC(TH1* data, std::vector<TH1*> MC, std::map<std::strin
 
 
 	if (drawpull) {
-		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
-		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
-		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
-		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.9);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.9);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.9);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.9);
 		ratio->GetYaxis()->SetTitleOffset(0.3);
 
 		c->Update();
@@ -487,7 +487,7 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 	stack->SetMinimum(10);
 	stack->Draw("hist");
 
-	stack->GetYaxis()->SetTitle("#Events");
+	stack->GetYaxis()->SetTitle("Events");
 	stack->GetYaxis()->SetLabelSize(stack->GetYaxis()->GetLabelSize() * 1.2);
 	stack->GetYaxis()->SetTitleSize(stack->GetYaxis()->GetTitleSize() * 1.5);
 	stack->GetYaxis()->SetTitleOffset(1);
@@ -547,10 +547,10 @@ void HistDrawer::DrawDataMCerror(TGraphAsymmErrors* dataTGraph, std::vector<TH1*
 
 
 	if (drawpull) {
-		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.75);
-		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.75);
-		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.75);
-		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.75);
+		ratio->GetXaxis()->SetLabelSize(ratio->GetXaxis()->GetLabelSize() * 1.9);
+		ratio->GetYaxis()->SetLabelSize(ratio->GetYaxis()->GetLabelSize() * 1.9);
+		ratio->GetXaxis()->SetTitleSize(ratio->GetXaxis()->GetTitleSize() * 1.9);
+		ratio->GetYaxis()->SetTitleSize(ratio->GetYaxis()->GetTitleSize() * 1.9);
 		ratio->GetYaxis()->SetTitleOffset(0.3);
 
 		c->Update();
@@ -670,6 +670,7 @@ void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
 	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
 	pt->AddText("work in Progress            CMS private work");
 	pt->SetFillColor(kWhite);
+	pt->SetTextSize(0.055);
 	pt->Draw("SAME");
 }
 
