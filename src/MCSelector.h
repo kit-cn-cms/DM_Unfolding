@@ -116,6 +116,31 @@ public:
   std::map<std::string, TH1F*> h_Jet_PtSys;
   TH1F* h_Jet_Eta = 0;
   std::map<std::string, TH1F*> h_Jet_EtaSys;
+  TH1F* h_Jet_Phi = 0;
+  std::map<std::string, TH1F*> h_Jet_PhiSys;
+
+  TH1F* h_Jet_Pt_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_Pt_0Sys;
+  TH1F* h_Jet_Eta_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_Eta_0Sys;
+  TH1F* h_Jet_Phi_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_Phi_0Sys;
+
+  TH1F* h_N_JetsAK8 = 0;
+  std::map<std::string, TH1F*> h_N_JetsAK8Sys;
+  TH1F* h_Jet_PtAK8 = 0;
+  std::map<std::string, TH1F*> h_Jet_PtAK8Sys;
+  TH1F* h_Jet_EtaAK8 = 0;
+  std::map<std::string, TH1F*> h_Jet_EtaAK8Sys;
+  TH1F* h_Jet_PhiAK8 = 0;
+  std::map<std::string, TH1F*> h_Jet_PhiAK8Sys;
+  TH1F* h_Jet_Chf = 0;
+  std::map<std::string, TH1F*> h_Jet_ChfSys;
+  TH1F* h_Jet_Nhf = 0;
+  std::map<std::string, TH1F*> h_Jet_NhfSys;
+
+
+
   TH1F* h_Evt_Phi_MET = 0;
   std::map<std::string, TH1F*> h_Evt_Phi_METSys;
   TH1F* h_Evt_Phi_GenMET = 0;
@@ -130,6 +155,15 @@ public:
 
   TH1F* h_MET = 0;
   std::map<std::string, TH1F*> h_METSys;
+
+  TH1F* h_CaloMET = 0;
+  std::map<std::string, TH1F*> h_CaloMETSys;
+
+  TH1F* h_CaloMET_PFMET_ratio = 0;
+  std::map<std::string, TH1F*> h_CaloMET_PFMET_ratioSys;
+
+  TH1F* h_dPhi_Jet_MET = 0;
+  std::map<std::string, TH1F*> h_dPhi_Jet_METSys;
 
   TH1F* h_GenMET = 0;
   std::map<std::string, TH1F*> h_GenMETSys;
@@ -163,6 +197,30 @@ public:
 
   TTreeReaderValue<Long64_t> N_Jets = { fReader, "N_Jets" };
   TTreeReaderValue<Long64_t> N_LooseLeptons = { fReader, "N_LooseLeptons" };
+  TTreeReaderValue<Long64_t> N_LooseElectrons = { fReader, "N_LooseElectrons" };
+  TTreeReaderValue<Long64_t> N_LooseMuons = { fReader, "N_LooseMuons" };
+  TTreeReaderValue<Long64_t> N_LooseTaus = { fReader, "N_LooseTaus" };
+
+  TTreeReaderValue<Float_t> CaloMET = { fReader, "CaloMET" };
+  TTreeReaderValue<Float_t> CaloMET_PFMET_ratio = { fReader, "CaloMET_PFMET_ratio" };
+  TTreeReaderValue<Float_t> DeltaPhi_Jet_MET = { fReader, "DeltaPhi_Jet_MET" };  
+
+  // Additional Variables
+  TTreeReaderValue<Float_t> Jet_Pt = { fReader, "Jet_Pt" };
+  TTreeReaderValue<Float_t> Jet_Eta = { fReader, "Jet_Eta" };
+  TTreeReaderValue<Float_t> Jet_Phi = { fReader, "Jet_Phi" };  
+  TTreeReaderValue<Float_t> Jet_Chf = { fReader, "Jet_Chf" };  
+  TTreeReaderValue<Float_t> Jet_Nhf = { fReader, "Jet_Nhf" };  
+
+  TTreeReaderValue<Long64_t> N_JetsAK8 = { fReader, "N_JetsAK8" };
+  TTreeReaderValue<Float_t> Jet_PtAK8 = { fReader, "Jet_PtAK8" };
+  TTreeReaderValue<Float_t> Jet_EtaAK8 = { fReader, "Jet_EtaAK8" };
+  TTreeReaderValue<Float_t> Jet_PhiAK8 = { fReader, "Jet_PhiAK8" }; 
+
+  TTreeReaderValue<Float_t> Evt_Phi_MET = { fReader, "Evt_Phi_MET" };
+  TTreeReaderValue<Float_t> Evt_Phi_GenMET = { fReader, "Evt_Phi_GenMET" };
+
+
   // Float_t varDeltaPhi_Jet_MET[100];
   // TBranch *BrDeltaPhi_Jet_MET;
 
@@ -305,15 +363,6 @@ public:
   };
 
   std::map<std::string, double> BosonSystematicWeights;
-
-  // Additional Variables
-  TTreeReaderValue<Float_t> Jet_Pt = { fReader, "Jet_Pt" };
-  TTreeReaderValue<Float_t> Jet_Eta = { fReader, "Jet_Eta" };
-
-  TTreeReaderValue<Float_t> Evt_Phi_MET = { fReader, "Evt_Phi_MET" };
-  TTreeReaderValue<Float_t> Evt_Phi_GenMET = { fReader, "Evt_Phi_GenMET" };
-
-
 
   TFile* histofile = 0;
   MCSelector(TTree * = 0) { }

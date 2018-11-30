@@ -181,6 +181,9 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   auto bookSysHistos = [this](std::map<std::string, TH1F*> &histMap, TString name, TString var, int nBins, std::vector<double> BinEdges) {
     if (doadditionalsystematics) {
+      if (!name.EndsWith("_")) {
+        name.Append("_");
+      }
       for (auto& sys : allSystematics) {
         TH1F* tmp = new TH1F(name + sys, var, nBins, BinEdges.data());
         tmp->Sumw2();
@@ -192,6 +195,9 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   auto bookSysHistosequBins = [this](std::map<std::string, TH1F*> &histMap, TString name, TString var, int nBins, double xmin, double xmax) {
     if (doadditionalsystematics) {
+      if (!name.EndsWith("_")) {
+        name.Append("_");
+      }
       for (auto& sys : allSystematics) {
         TH1F* tmp = new TH1F(name + sys, var, nBins, xmin, xmax);
         tmp->Sumw2();
@@ -203,6 +209,9 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   auto bookSysHistos2D = [this](std::map<std::string, TH2D*> &histMap, TString name, TString var, int nBinsx, std::vector<double> BinEdgesx, int nBinsy, std::vector<double> BinEdgesy) {
     if (doadditionalsystematics) {
+      if (!name.EndsWith("_")) {
+        name.Append("_");
+      }
       for (auto& sys : allSystematics) {
         TH2D* tmp = new TH2D(name + sys, var, nBinsx, BinEdgesx.data(), nBinsy, BinEdgesy.data());
         tmp->Sumw2();
@@ -214,6 +223,9 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
 
   auto bookSysHistos2DequBins = [this](std::map<std::string, TH2D*> &histMap, TString name, TString var, int nBinsx, double xmin, double xmax, int nBinsy, double ymin, double ymax) {
     if (doadditionalsystematics) {
+      if (!name.EndsWith("_")) {
+        name.Append("_");
+      }
       for (auto& sys : allSystematics) {
         TH2D* tmp = new TH2D(name + sys, var, nBinsx, xmin, xmax, nBinsy, ymin, ymax);
         tmp->Sumw2();
@@ -332,10 +344,15 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   bookSysHistos(h_misses_SplitSys, strippedOption + "misses_Split_" , "misses", nBins_Gen, BinEdgesGen);
 
   // Additional Variables
-  h_N_Jets = new TH1F(strippedOption + "N_Jets" + currentJESJERvar, "N_Jets", 15, 0, 15);
+  h_N_Jets = new TH1F(strippedOption + "N_Jets" + currentJESJERvar, "N_Jets", 12, 0, 12);
   h_N_Jets->Sumw2();
   GetOutputList()->Add(h_N_Jets);
-  bookSysHistosequBins(h_N_JetsSys, strippedOption + "N_Jets" , "N_Jets", 15, 0, 15);
+  bookSysHistosequBins(h_N_JetsSys, strippedOption + "N_Jets" , "N_Jets", 12, 0, 12);
+
+  h_N_JetsAK8 = new TH1F(strippedOption + "N_JetsAK8" + currentJESJERvar, "N_JetsAK8", 12, 0, 12);
+  h_N_JetsAK8->Sumw2();
+  GetOutputList()->Add(h_N_JetsAK8);
+  bookSysHistosequBins(h_N_JetsAK8Sys, strippedOption + "N_JetsAK8" , "N_JetsAK8", 12, 0, 12);
 
   // Additional Variables
   h_N_looseLeptons = new TH1F(strippedOption + "N_LooseLeptons" + currentJESJERvar, "N_LooseLeptons", 4, 0, 4);
@@ -343,25 +360,25 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_N_looseLeptons);
   bookSysHistosequBins(h_N_looseLeptonsSys, strippedOption + "N_LooseLeptons" , "N_LooseLeptons", 4, 0, 4);
 
-  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 80, 0, 800);
+  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 40, 0, 800);
   h_Jet_Pt->Sumw2();
   GetOutputList()->Add(h_Jet_Pt);
-  bookSysHistosequBins(h_Jet_PtSys, strippedOption + "Jet_Pt_" , "Jet_Pt", 80, 0, 800);
+  bookSysHistosequBins(h_Jet_PtSys, strippedOption + "Jet_Pt_" , "Jet_Pt", 40, 0, 800);
 
-  h_Jet_Eta = new TH1F(strippedOption + "Jet_Eta" + currentJESJERvar, "Jet_Eta", 40, -4, 4);
+  h_Jet_Eta = new TH1F(strippedOption + "Jet_Eta" + currentJESJERvar, "Jet_Eta", 30, -3, 3);
   h_Jet_Eta->Sumw2();
   GetOutputList()->Add(h_Jet_Eta);
-  bookSysHistosequBins(h_Jet_EtaSys, strippedOption + "Jet_Eta_" , "Jet_Eta", 40, -4, 4);
+  bookSysHistosequBins(h_Jet_EtaSys, strippedOption + "Jet_Eta_" , "Jet_Eta", 30, -3, 3);
 
-  h_Evt_Phi_MET = new TH1F(strippedOption + "Evt_Phi_MET" + currentJESJERvar, "Evt_Phi_MET", 50, -3.2, 3.2);
+  h_Evt_Phi_MET = new TH1F(strippedOption + "Evt_Phi_MET" + currentJESJERvar, "Evt_Phi_MET", 20, -3.2, 3.2);
   h_Evt_Phi_MET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_MET);
-  bookSysHistosequBins(h_Evt_Phi_METSys, strippedOption + "Evt_Phi_MET_" , "Evt_Phi_MET", 40, -4, 4);
+  bookSysHistosequBins(h_Evt_Phi_METSys, strippedOption + "Evt_Phi_MET_" , "Evt_Phi_MET", 20, -3.2, 3.2);
 
-  h_Evt_Phi_GenMET = new TH1F(strippedOption + "Evt_Phi_GenMET" + currentJESJERvar, "Evt_Phi_GenMET", 50, -3.2, 3.2);
+  h_Evt_Phi_GenMET = new TH1F(strippedOption + "Evt_Phi_GenMET" + currentJESJERvar, "Evt_Phi_GenMET", 20, -3.2, 3.2);
   h_Evt_Phi_GenMET->Sumw2();
   GetOutputList()->Add(h_Evt_Phi_GenMET);
-  bookSysHistosequBins(h_Evt_Phi_GenMETSys, strippedOption + "Evt_Phi_GenMET_" , "Evt_Phi_GenMET", 50, -3.2, 3.2);
+  bookSysHistosequBins(h_Evt_Phi_GenMETSys, strippedOption + "Evt_Phi_GenMET_" , "Evt_Phi_GenMET", 20, -3.2, 3.2);
 
   h_W_Pt = new TH1F(strippedOption + "h_W_Pt" + currentJESJERvar, "h_W_Pt", 60, 0, 1200);
   h_W_Pt->Sumw2();
@@ -373,15 +390,79 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_Z_Pt);
   bookSysHistosequBins(h_Z_PtSys, strippedOption + "h_Z_Pt_" , "h_Z_Pt", 60, 0, 1200);
 
-  h_HadrRecoil_Phi = new TH1F(strippedOption + "Hadr_Recoil_Phi" + currentJESJERvar, "Hadr_Recoil_Phi", 50, -3.2, 3.2);
+  h_HadrRecoil_Phi = new TH1F(strippedOption + "Hadr_Recoil_Phi" + currentJESJERvar, "Hadr_Recoil_Phi", 20, -3.2, 3.2);
   h_HadrRecoil_Phi->Sumw2();
   GetOutputList()->Add(h_HadrRecoil_Phi);
-  bookSysHistosequBins(h_HadrRecoil_PhiSys, strippedOption + "Hadr_Recoil_Phi_" , "Hadr_Recoil_Phi", 40, -4, 4);
+  bookSysHistosequBins(h_HadrRecoil_PhiSys, strippedOption + "Hadr_Recoil_Phi_" , "Hadr_Recoil_Phi", 20, -3.2, 3.2);
 
-  h_GenHadrRecoil_Phi = new TH1F(strippedOption + "GenHadr_Recoil_Phi" + currentJESJERvar, "GenHadr_Recoil_Phi", 50, -3.2, 3.2);
+  h_GenHadrRecoil_Phi = new TH1F(strippedOption + "GenHadr_Recoil_Phi" + currentJESJERvar, "GenHadr_Recoil_Phi", 20, -3.2, 3.2);
   h_GenHadrRecoil_Phi->Sumw2();
   GetOutputList()->Add(h_GenHadrRecoil_Phi);
-  bookSysHistosequBins(h_GenHadrRecoil_PhiSys, strippedOption + "GenHadr_Recoil_Phi_" , "GenHadr_Recoil_Phi", 40, -4, 4);
+  bookSysHistosequBins(h_GenHadrRecoil_PhiSys, strippedOption + "GenHadr_Recoil_Phi_" , "GenHadr_Recoil_Phi", 20, -3.2, 3.2);
+
+  h_Jet_Phi = new TH1F(strippedOption + "Jet_Phi" + currentJESJERvar, "Jet_Phi", 20, -3.2, 3.2);
+  h_Jet_Phi->Sumw2();
+  GetOutputList()->Add(h_Jet_Phi);
+  bookSysHistosequBins(h_Jet_PhiSys, strippedOption + "Jet_Phi_" , "Jet_Phi", 20, -3.2, 3.2);
+
+  h_Jet_Phi_0 = new TH1F(strippedOption + "Jet_Phi_0_" + currentJESJERvar, "Jet_Phi_0", 20, -3.2, 3.2);
+  h_Jet_Phi_0->Sumw2();
+  GetOutputList()->Add(h_Jet_Phi_0);
+  bookSysHistosequBins(h_Jet_Phi_0Sys, strippedOption + "Jet_Phi_0_" , "Jet_Phi_0", 20, -3.2, 3.2);
+
+  h_Jet_Pt_0 = new TH1F(strippedOption + "Jet_Pt_0" + currentJESJERvar, "Jet_Pt_0", 20, 0, 500);
+  h_Jet_Pt_0->Sumw2();
+  GetOutputList()->Add(h_Jet_Pt_0);
+  bookSysHistosequBins(h_Jet_Pt_0Sys, strippedOption + "Jet_Pt_0_" , "Jet_Pt_0", 20, 0, 500);
+
+  h_Jet_Eta_0 = new TH1F(strippedOption + "Jet_Eta_0" + currentJESJERvar, "Jet_Eta_0", 30, -3, 3);
+  h_Jet_Eta_0->Sumw2();
+  GetOutputList()->Add(h_Jet_Eta_0);
+  bookSysHistosequBins(h_Jet_Eta_0Sys, strippedOption + "Jet_Eta_0_" , "Jet_Eta_0", 30, -3, 3);
+
+  h_Jet_PtAK8 = new TH1F(strippedOption + "Jet_PtAK8" + currentJESJERvar, "Jet_PtAK8", 50, 0, 1000);
+  h_Jet_PtAK8->Sumw2();
+  GetOutputList()->Add(h_Jet_PtAK8);
+  bookSysHistosequBins(h_Jet_PtAK8Sys, strippedOption + "Jet_PtAK8_" , "Jet_PtAK8", 50, 0, 1000);
+
+  h_Jet_EtaAK8 = new TH1F(strippedOption + "Jet_EtaAK8" + currentJESJERvar, "Jet_EtaAK8", 30, -3, 3);
+  h_Jet_EtaAK8->Sumw2();
+  GetOutputList()->Add(h_Jet_EtaAK8);
+  bookSysHistosequBins(h_Jet_EtaAK8Sys, strippedOption + "Jet_EtaAK8_" , "Jet_EtaAK8", 30, -3, 3);
+
+  h_Jet_PhiAK8 = new TH1F(strippedOption + "Jet_PhiAK8" + currentJESJERvar, "Jet_PhiAK8", 20, -3.2, 3.2);
+  h_Jet_PhiAK8->Sumw2();
+  GetOutputList()->Add(h_Jet_PhiAK8);
+  bookSysHistosequBins(h_Jet_PhiAK8Sys, strippedOption + "Jet_PhiAK8_" , "Jet_PhiAK8", 20, -3.2, 3.2);
+
+  h_Jet_Chf = new TH1F(strippedOption + "Jet_Chf" + currentJESJERvar, "Jet_Chf", 20, 0, 1);
+  h_Jet_Chf->Sumw2();
+  GetOutputList()->Add(h_Jet_Chf);
+  bookSysHistosequBins(h_Jet_ChfSys, strippedOption + "Jet_Chf_" , "Jet_Chf", 20, 0, 1);
+
+  h_Jet_Nhf = new TH1F(strippedOption + "Jet_Nhf" + currentJESJERvar, "Jet_Nhf", 20, 0, 1);
+  h_Jet_Nhf->Sumw2();
+  GetOutputList()->Add(h_Jet_Nhf);
+  bookSysHistosequBins(h_Jet_NhfSys, strippedOption + "Jet_Nhf_" , "Jet_Nhf", 20, 0, 1);
+
+  h_CaloMET = new TH1F(strippedOption + "CaloMET" + currentJESJERvar, "CaloMET", nBins_Reco, BinEdgesReco.data());
+  h_CaloMET->Sumw2();
+  GetOutputList()->Add(h_CaloMET);
+  bookSysHistos(h_CaloMETSys, strippedOption + "CaloMET_" , "CaloMET", nBins_Reco, BinEdgesReco);
+
+  h_CaloMET_PFMET_ratio = new TH1F(strippedOption + "CaloMET_PFMET_ratio" + currentJESJERvar, "CaloMET_PFMET_ratio", 20, 0, 1);
+  h_CaloMET_PFMET_ratio->Sumw2();
+  GetOutputList()->Add(h_CaloMET_PFMET_ratio);
+  bookSysHistosequBins(h_CaloMET_PFMET_ratioSys, strippedOption + "CaloMET_PFMET_ratio" , "CaloMET_PFMET_ratio",  20, 0, 1);
+
+  h_dPhi_Jet_MET = new TH1F(strippedOption + "dPhi_Jet_MET" + currentJESJERvar, "dPhi_Jet_MET", 32, 0, 3.2);
+  h_dPhi_Jet_MET->Sumw2();
+  GetOutputList()->Add(h_dPhi_Jet_MET);
+  bookSysHistosequBins(h_dPhi_Jet_METSys, strippedOption + "dPhi_Jet_MET" , "dPhi_Jet_MET",  32, 0, 3.2);
+
+  TH1F* h_dPhi_Jet_MET = 0;
+  std::map<std::string, TH1F*> h_dPhi_Jet_METSys;
+
 
   std::cout << "All Histos SetUp!" << std::endl;
 }
@@ -494,12 +575,16 @@ MCSelector::Process(Long64_t entry)
   Float_t recoVariable = *Hadr_Recoil_Pt;
 
 
-  bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
+  // bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_X || *Triggered_HLT_PFMETNoMu110_PFMHTNoMu110_IDTight_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X || *Triggered_HLT_PFMETNoMu90_PFMHTNoMu90_IDTight_X;
+  bool triggered = *Triggered_HLT_PFMET170_X || *Triggered_HLT_PFMETNoMu120_PFMHTNoMu120_IDTight_X;
+  bool leptonveto = *N_LooseElectrons == 0 && *N_LooseMuons == 0 && *N_LooseTaus == 0;
 
   // bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
   bool gensel = genVariable > BinEdgesGen.at(0)  && *GenMonoJetSelection && *GenLeptonVetoSelection && *GenBTagVetoSelection && *GenPhotonVetoSelection &&  *GenmonoVselection;
   // bool gensel = *GenMET > BinEdgesGen.at(0) && *GenMETSelection  && *GenMonoJetSelection && *GenLeptonVetoSelection;
-  bool recosel = triggered && recoVariable > BinEdgesReco.at(0) && *METSelection && *MonoJetSelection &&  *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
+
+  // bool recosel = triggered && recoVariable > BinEdgesReco.at(0) && *METSelection && *MonoJetSelection &&  *LeptonVetoSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
+  bool recosel = triggered && recoVariable > BinEdgesReco.at(0) && *CaloMET_PFMET_ratio < 0.5 && leptonveto && *METSelection && *MonoJetSelection && *BTagVetoSelection && *PhotonVetoSelection && *monoVselection && *FilterSelection && *VertexSelection;
 
   bool miss = gensel && !recosel;
 
@@ -549,7 +634,10 @@ MCSelector::Process(Long64_t entry)
     fillSys(h_RecoSys, recoVariable);
     // Additional Variables
     h_N_Jets->Fill(*N_Jets, weight_);
-    fillSys(h_RecoSys, *N_Jets);
+    fillSys(h_N_JetsSys, *N_Jets);
+
+    h_N_JetsAK8->Fill(*N_JetsAK8, weight_);
+    fillSys(h_N_JetsAK8Sys, *N_JetsAK8);
 
     h_N_looseLeptons->Fill(*N_LooseLeptons, weight_);
     fillSys(h_N_looseLeptonsSys, *N_LooseLeptons);
@@ -589,6 +677,40 @@ MCSelector::Process(Long64_t entry)
 
     h_GenHadrRecoil_Phi->Fill(*Gen_Hadr_Recoil_Phi, weight_);
     fillSys(h_GenHadrRecoil_PhiSys, *Gen_Hadr_Recoil_Phi);
+
+    h_Jet_Phi->Fill(*Jet_Phi, weight_);
+    fillSys(h_Jet_PhiSys, *Jet_Phi);
+
+    h_Jet_PtAK8->Fill(*Jet_PtAK8, weight_);
+    fillSys(h_Jet_PtAK8Sys, *Jet_PtAK8);
+
+    h_Jet_EtaAK8->Fill(*Jet_EtaAK8, weight_);
+    fillSys(h_Jet_EtaAK8Sys, *Jet_EtaAK8);
+
+    h_Jet_PhiAK8->Fill(*Jet_PhiAK8, weight_);
+    fillSys(h_Jet_PhiAK8Sys, *Jet_PhiAK8);
+
+    h_Jet_Chf->Fill(*Jet_Chf, weight_);
+    fillSys(h_Jet_ChfSys, *Jet_Chf);
+
+    h_Jet_Nhf->Fill(*Jet_Nhf, weight_);
+    fillSys(h_Jet_NhfSys, *Jet_Nhf);
+
+    // TH1F* h_Jet_Pt_0 = 0;
+    // std::map<std::string, TH1F*> h_Jet_Pt_0Sys;
+    // TH1F* h_Jet_Eta_0 = 0;
+    // std::map<std::string, TH1F*> h_Jet_Eta_0Sys;
+    // TH1F* h_Jet_Phi_0 = 0;
+    // std::map<std::string, TH1F*> h_Jet_Phi_0Sys;
+
+    h_CaloMET->Fill(*CaloMET, weight_);
+    fillSys(h_CaloMETSys, *CaloMET);
+
+    h_CaloMET_PFMET_ratio->Fill(*CaloMET_PFMET_ratio, weight_);
+    fillSys(h_CaloMET_PFMET_ratioSys, *CaloMET_PFMET_ratio);
+
+    h_dPhi_Jet_MET->Fill(*DeltaPhi_Jet_MET, weight_);
+    fillSys(h_dPhi_Jet_METSys, *DeltaPhi_Jet_MET);
 
     if (isPseudoData) {
       h_RecoSplit->Fill(recoVariable, weight_);
