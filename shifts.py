@@ -1,6 +1,7 @@
 import ROOT
 import sys
 import os
+ROOT.gROOT.SetBatch(True)
 
 def getCanvas():
     c = ROOT.TCanvas("c", "c", 1024, 1024)
@@ -97,7 +98,7 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     ratioUp.SetMarkerSize(0)
     ratioUp.GetYaxis().SetTitle("#frac{nominal}{variation}")
     ratioUp.GetYaxis().CenterTitle()
-    ratioUp.GetYaxis().SetRangeUser(0.45, 1.65)
+    ratioUp.GetYaxis().SetRangeUser(0.68, 1.32)
     # ratioUp.GetXaxis().SetLabelSize(nom.GetXaxis().GetLabelSize() * 3.5)
     # ratioUp.GetYaxis().SetLabelSize(nom.GetYaxis().GetLabelSize() * 3.5)
     # ratioUp.GetXaxis().SetTitleSize(nom.GetXaxis().GetTitleSize() * 3.5)

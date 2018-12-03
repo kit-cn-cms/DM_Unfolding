@@ -360,10 +360,10 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_N_looseLeptons);
   bookSysHistosequBins(h_N_looseLeptonsSys, strippedOption + "N_LooseLeptons" , "N_LooseLeptons", 4, 0, 4);
 
-  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 40, 0, 800);
+  h_Jet_Pt = new TH1F(strippedOption + "Jet_Pt" + currentJESJERvar, "Jet_Pt", 50, 0, 1000);
   h_Jet_Pt->Sumw2();
   GetOutputList()->Add(h_Jet_Pt);
-  bookSysHistosequBins(h_Jet_PtSys, strippedOption + "Jet_Pt_" , "Jet_Pt", 40, 0, 800);
+  bookSysHistosequBins(h_Jet_PtSys, strippedOption + "Jet_Pt_" , "Jet_Pt", 50, 0, 1000);
 
   h_Jet_Eta = new TH1F(strippedOption + "Jet_Eta" + currentJESJERvar, "Jet_Eta", 30, -3, 3);
   h_Jet_Eta->Sumw2();
@@ -420,10 +420,10 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   GetOutputList()->Add(h_Jet_Eta_0);
   bookSysHistosequBins(h_Jet_Eta_0Sys, strippedOption + "Jet_Eta_0_" , "Jet_Eta_0", 30, -3, 3);
 
-  h_Jet_PtAK8 = new TH1F(strippedOption + "Jet_PtAK8" + currentJESJERvar, "Jet_PtAK8", 50, 0, 1000);
+  h_Jet_PtAK8 = new TH1F(strippedOption + "Jet_PtAK8" + currentJESJERvar, "Jet_PtAK8", 60, 0, 1200);
   h_Jet_PtAK8->Sumw2();
   GetOutputList()->Add(h_Jet_PtAK8);
-  bookSysHistosequBins(h_Jet_PtAK8Sys, strippedOption + "Jet_PtAK8_" , "Jet_PtAK8", 50, 0, 1000);
+  bookSysHistosequBins(h_Jet_PtAK8Sys, strippedOption + "Jet_PtAK8_" , "Jet_PtAK8", 60, 0, 1200);
 
   h_Jet_EtaAK8 = new TH1F(strippedOption + "Jet_EtaAK8" + currentJESJERvar, "Jet_EtaAK8", 30, -3, 3);
   h_Jet_EtaAK8->Sumw2();
