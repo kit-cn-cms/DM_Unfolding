@@ -81,7 +81,7 @@ public:
   std::map<std::string, TH2D*> ASys;
   TH2D* A_equBins = 0;
   std::map<std::string, TH2D*> A_equBinsSys;
-  
+
   // Split Sample
   TH1F* h_DummyDataSplit = 0;
   std::map<std::string, TH1F*> h_DummyDataSplitSys;
@@ -134,6 +134,15 @@ public:
   std::map<std::string, TH1F*> h_Jet_EtaAK8Sys;
   TH1F* h_Jet_PhiAK8 = 0;
   std::map<std::string, TH1F*> h_Jet_PhiAK8Sys;
+
+  TH1F* h_Jet_PtAK8_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_PtAK8_0Sys;
+  TH1F* h_Jet_EtaAK8_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_EtaAK8_0Sys;
+  TH1F* h_Jet_PhiAK8_0 = 0;
+  std::map<std::string, TH1F*> h_Jet_PhiAK8_0Sys;
+
+
   TH1F* h_Jet_Chf = 0;
   std::map<std::string, TH1F*> h_Jet_ChfSys;
   TH1F* h_Jet_Nhf = 0;
@@ -167,7 +176,7 @@ public:
 
   TH1F* h_GenMET = 0;
   std::map<std::string, TH1F*> h_GenMETSys;
-  
+
   TH1F* h_HadrRecoil = 0;
   std::map<std::string, TH1F*> h_HadrRecoilSys;
 
@@ -176,7 +185,7 @@ public:
 
   TH1F* h_HadrRecoil_Phi = 0;
   std::map<std::string, TH1F*> h_HadrRecoil_PhiSys;
-  
+
   TH1F* h_GenHadrRecoil_Phi = 0;
   std::map<std::string, TH1F*> h_GenHadrRecoil_PhiSys;
   /////////////////////////////
@@ -203,26 +212,50 @@ public:
 
   TTreeReaderValue<Float_t> CaloMET = { fReader, "CaloMET" };
   TTreeReaderValue<Float_t> CaloMET_PFMET_ratio = { fReader, "CaloMET_PFMET_ratio" };
-  TTreeReaderValue<Float_t> DeltaPhi_Jet_MET = { fReader, "DeltaPhi_Jet_MET" };  
+  TTreeReaderValue<Float_t> DeltaPhi_Jet_MET = { fReader, "DeltaPhi_Jet_MET" };
 
   // Additional Variables
   TTreeReaderValue<Float_t> Jet_Pt = { fReader, "Jet_Pt" };
   TTreeReaderValue<Float_t> Jet_Eta = { fReader, "Jet_Eta" };
-  TTreeReaderValue<Float_t> Jet_Phi = { fReader, "Jet_Phi" };  
-  TTreeReaderValue<Float_t> Jet_Chf = { fReader, "Jet_Chf" };  
-  TTreeReaderValue<Float_t> Jet_Nhf = { fReader, "Jet_Nhf" };  
+  TTreeReaderValue<Float_t> Jet_Phi = { fReader, "Jet_Phi" };
+  TTreeReaderValue<Float_t> Jet_Chf = { fReader, "Jet_Chf" };
+  TTreeReaderValue<Float_t> Jet_Nhf = { fReader, "Jet_Nhf" };
 
   TTreeReaderValue<Long64_t> N_JetsAK8 = { fReader, "N_JetsAK8" };
   TTreeReaderValue<Float_t> Jet_PtAK8 = { fReader, "Jet_PtAK8" };
   TTreeReaderValue<Float_t> Jet_EtaAK8 = { fReader, "Jet_EtaAK8" };
-  TTreeReaderValue<Float_t> Jet_PhiAK8 = { fReader, "Jet_PhiAK8" }; 
+  TTreeReaderValue<Float_t> Jet_PhiAK8 = { fReader, "Jet_PhiAK8" };
 
   TTreeReaderValue<Float_t> Evt_Phi_MET = { fReader, "Evt_Phi_MET" };
   TTreeReaderValue<Float_t> Evt_Phi_GenMET = { fReader, "Evt_Phi_GenMET" };
 
 
-  // Float_t varDeltaPhi_Jet_MET[100];
-  // TBranch *BrDeltaPhi_Jet_MET;
+  Float_t varDeltaPhi_Jet_MET[100];
+  TBranch *BrDeltaPhi_Jet_MET;
+
+  Float_t varJet_Pt[100];
+  TBranch *BrJet_Pt;
+
+  Float_t varJet_Eta[100];
+  TBranch *BrJet_Eta;
+
+  Float_t varJet_Phi[100];
+  TBranch *BrJet_Phi;
+
+  Float_t varJet_CHS[100];
+  TBranch *BrJet_CHS;
+
+  Float_t varJet_NHF[100];
+  TBranch *BrJet_NHF;
+
+  Float_t varAK8Jet_Pt[100];
+  TBranch *BrAK8Jet_Pt;
+
+  Float_t varAK8Jet_Eta[100];
+  TBranch *BrAK8Jet_Eta;
+
+  Float_t varAK8Jet_Phi[100];
+  TBranch *BrAK8Jet_Phi;
 
   TTreeReaderValue<Float_t> Weight_XS = { fReader, "Weight_XS" };
   TTreeReaderValue<Float_t> Weight_GenValue = { fReader, "Weight_GenValue" };
@@ -316,7 +349,7 @@ public:
     {"Weight_PUUp", ((MCSelector*)this)->MCSelector::Weight_PUup},
     {"Weight_PUDown", ((MCSelector*)this)->MCSelector::Weight_PUdown},
     {"Weight_PDFUp", ((MCSelector*)this)->MCSelector::Weight_PDFup},
-    {"Weight_PDFDown", ((MCSelector*)this)->MCSelector::Weight_PDFdown}, 
+    {"Weight_PDFDown", ((MCSelector*)this)->MCSelector::Weight_PDFdown},
     {"Weight_scale_variation_muRUp", ((MCSelector*)this)->MCSelector::Weight_MuRup},
     {"Weight_scale_variation_muRDown", ((MCSelector*)this)->MCSelector::Weight_MuRdown},
     {"Weight_scale_variation_muFUp", ((MCSelector*)this)->MCSelector::Weight_MuFup},

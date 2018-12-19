@@ -20,8 +20,25 @@ def getCanvas():
     c.cd(1).SetTicks(1, 1)
     return c
 
+def GetMasses(string_):
+    # print string_
+    index_l = string_.find("Mphi")
+    index_m = string_.find("Mchi")
+    index_r = string_.find("gSM")
+    mphi = string_[index_l:index_m-1]
+    mphi = mphi.replace("Mphi-","")
+    mchi = string_[index_m:index_r-1] 
+    mchi = mchi.replace("Mchi-","")
+    return [float(mphi),float(mchi)]
 
-def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CMS_scale_j", addName="", xlabel="unfolded Recoil |#vec{U}| [GeV/c]", processlabel=""):
+def GetCoupling(string_):
+    s = string_.split('_MonoJ_')
+    if s[0] == 'Axial':
+        s[0] = "Axial-Vector"
+    return s[0]
+
+
+def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CMS_scale_j", addName="", xlabel="unfolded Recoil |#vec{U}_{T}| [GeV/c]", processlabel=""):
     ROOT.gStyle.SetOptStat(0)
     c = getCanvas()
     c.cd(1)
@@ -46,7 +63,7 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     nom.GetYaxis().SetLabelSize(0.04)
 
 
-    cms = ROOT.TLatex(0.12, 0.95, 'CMS private work'  )
+    cms = ROOT.TLatex(0.12, 0.95, 'CMS #it{private work}'  )
     cms.SetNDC()
     cms.SetTextSize(0.07)
     ROOT.gStyle.SetPalette(1)
@@ -59,11 +76,22 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     processlabel.SetNDC()
     processlabel.SetTextSize(0.07)
 
-
     nom.Draw("PE0")
     cms.Draw()
     lumi.Draw()
     processlabel.Draw()
+
+    if 'MonoJ' in addName:
+        masses = GetMasses(addName)
+        coupling = GetCoupling(addName)
+        m_med = masses[0]
+        m_DM = masses[1]
+        label = coupling + ", m_{med}="+str(int(m_med))+"GeV, m_{DM}="+str(int(m_DM))+"GeV"
+        # print label
+        signallabel = ROOT.TLatex(0.18, 0.07, label)
+        signallabel.SetNDC()
+        signallabel.SetTextSize(0.04)   
+        signallabel.Draw()
 
     up.Print()
     down.Print()
@@ -81,7 +109,7 @@ def drawshifts(file, process="unfolded", variable="Gen_Hadr_Recoil_Pt", syst="CM
     down.SetLineColor(4)
     down.SetLineWidth(2)
 
-    legend = ROOT.TLegend(0.35, 0.6, 0.83, 0.8)
+    legend = ROOT.TLegend(0.32, 0.7, 0.83, 0.85)
     legend.AddEntry(nom, "nominal", "P")
     legend.AddEntry(up, syst + " up", "l")
     legend.AddEntry(down, syst + " down", "l")
@@ -205,24 +233,24 @@ defaultmuRmuR = [
 
 for sys in WZSystematics+additionalsysts:
     drawshifts(file=BKGfile, process="z_nunu_jets",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="z_nunu_jets", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="Z(#nu#nu) + jets")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="z_nunu_jets", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="Z(#nu#nu) + jets")
     drawshifts(file=BKGfile, process="z_ll_jets",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="z_ll_jets", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="Z(ll) + jets") 
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="z_ll_jets", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="Z(ll) + jets") 
     drawshifts(file=BKGfile, process="w_lnu_jets",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="w_lnu_jets", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="W(l#nu) + jets")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="w_lnu_jets", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="W(l#nu) + jets")
 
 for sys in additionalsysts + powhegmuRmuR + defaultmuRmuR:
     drawshifts(file=BKGfile, process="singletop",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="singletop", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="single top")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="singletop", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="single top")
     drawshifts(file=BKGfile, process="ttbar",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="ttbar", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="t#bar{t}")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="ttbar", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="t#bar{t}")
 
 
 for sys in additionalsysts + madgraphmuRmuR + defaultmuRmuR:
     drawshifts(file=BKGfile, process="qcd",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="qcd", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="QCD")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="qcd", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="QCD")
     drawshifts(file=BKGfile, process="gamma_jets",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="gamma_jets", xlabel="Gen Recoil |#vec{U}| [GeV/c]", processlabel="#gamma + jets)")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="gamma_jets", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]", processlabel="#gamma + jets)")
 
 axialsamples = []
 vectorsamples = []
@@ -239,7 +267,7 @@ for x in os.listdir(signalSamplepath):
             lists[i].append(x)
             for sys in signalmuRmuR:
                 drawshifts(file=signalsFile, process=x,
-                variable="Gen_Hadr_Recoil_Pt", syst=sys, addName=x, xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+                variable="Gen_Hadr_Recoil_Pt", syst=sys, addName=x, xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
 
 
 noSelectionmuRmuR = [
@@ -251,18 +279,18 @@ noselectionFile = ROOT.TFile.Open("rootfiles/muRmuFnormalization.root")
 
 for sys in noSelectionmuRmuR:
     drawshifts(file=noselectionFile, process="qcd",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="qcd_noSelection", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="qcd_noSelection", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
     drawshifts(file=noselectionFile, process="qcd",
-               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="qcd_noSelection_scaled", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="qcd_noSelection_scaled", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
     
     drawshifts(file=noselectionFile, process="ttbar",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="ttbar_noSelection", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="ttbar_noSelection", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
     drawshifts(file=noselectionFile, process="ttbar",
-               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="ttbar_noSelection_scaled", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="ttbar_noSelection_scaled", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
 
     drawshifts(file=noselectionFile, process="gamma_jets",
-               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="gamma_jets_noSelection", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt", syst=sys, addName="gamma_jets_noSelection", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
     drawshifts(file=noselectionFile, process="gamma_jets",
-               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="gamma_jets_noSelection_scaled", xlabel="Gen Recoil |#vec{U}| [GeV/c]")
+               variable="Gen_Hadr_Recoil_Pt_scaled", syst=sys, addName="gamma_jets_noSelection_scaled", xlabel="Gen Recoil |#vec{U}_{T}| [GeV/c]")
 
 # raw_input()

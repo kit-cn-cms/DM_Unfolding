@@ -177,7 +177,7 @@ void HistDrawer::Draw2D(TH2* hist, TString name, bool log, bool moveUF, TString 
 	}
 	else histClone->GetZaxis()->SetTitle(zlabel);
 
-	TLatex* cms = new TLatex(0.12, 0.91, "CMS private work in progress");
+	TLatex* cms = new TLatex(0.12, 0.91, "CMS #it{private work}");
 	cms->SetNDC();
 	cms->SetTextSize(0.055);
 	TLatex* lumi = new TLatex(0.7, 0.91, "35.9 fb^{-1} (13 TeV)");
@@ -703,7 +703,7 @@ TCanvas* HistDrawer::getCanvas(TString name, bool ratiopad, bool pullpad) {
 
 void HistDrawer::DrawLumiLabel(TCanvas* canvas) {
 	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
-	pt->AddText("work in Progress            CMS private work");
+	pt->AddText("CMS #it{private work}");
 	pt->SetFillColor(kWhite);
 	pt->SetTextSize(0.055);
 	pt->Draw("SAME");

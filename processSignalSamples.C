@@ -190,22 +190,22 @@ TH1* processSignal(TString SignalName) {
 	TH1* h_sig_MuRup_unscaled = (TH1*) h_sig_MuRup->Clone();
 	h_sig_MuRup_unscaled->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_Weight_scale_variation_muRUp");
 	h_sig_MuRup->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_signal_scale_variation_muRUp");
-	h_sig_MuRup->Scale(muRupWeight);
+	// h_sig_MuRup->Scale(muRupWeight);
 
 	TH1* h_sig_MuRdown_unscaled = (TH1*) h_sig_MuRdown->Clone();
 	h_sig_MuRdown_unscaled->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_Weight_scale_variation_muRDown");
 	h_sig_MuRdown->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_signal_scale_variation_muRDown");
-	h_sig_MuRdown->Scale(muRdownWeight);
+	// h_sig_MuRdown->Scale(muRdownWeight);
 
 	TH1* h_sig_MuFup_unscaled = (TH1*) h_sig_MuFup->Clone();
 	h_sig_MuFup_unscaled->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_Weight_scale_variation_muFUp");
 	h_sig_MuFup->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_signal_scale_variation_muFUp");
-	h_sig_MuFup->Scale(muFupWeight);
+	// h_sig_MuFup->Scale(muFupWeight);
 
 	TH1* h_sig_MuFdown_unscaled = (TH1*) h_sig_MuFdown->Clone();
 	h_sig_MuFdown_unscaled->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_Weight_scale_variation_muFDown");
 	h_sig_MuFdown->SetName(SignalName + "_Gen_Hadr_Recoil_Pt_signal_scale_variation_muFDown");
-	h_sig_MuFdown->Scale(muFdownWeight);
+	// h_sig_MuFdown->Scale(muFdownWeight);
 
 	h_sig->Write();
 

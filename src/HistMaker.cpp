@@ -274,8 +274,8 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	watch.Start();
 	//SetUp TProof
 	// TProof *pl = TProof::Open("workers=3");
-	TProof *pl = TProof::Open("workers=12");
-	// TProof *pl = TProof::Open("");
+	// TProof *pl = TProof::Open("workers=12");
+	TProof *pl = TProof::Open("");
 	if (useBatch) {
 		pl->Close();
 		TString connect = gSystem->GetFromPipe("pod-info -c");
@@ -283,23 +283,27 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	}
 	//Load necessary Macros
 	Bool_t notOnClient = kFALSE;
-	Bool_t uniqueWorkers = kFALSE;
+	Bool_t uniqueWorkers = kTRUE;
 	pl->Load(path.GetIncludePath() + "PathHelper.hpp+", notOnClient, uniqueWorkers);
+	// pl->Load(path.GetIncludePath() + "PathHelper.hpp+," + path.GetSourcePath() + "PathHelper.cpp+," + path.GetSourcePath() + "MCSelector.C+", notOnClient, uniqueWorkers);
 	pl->Load(path.GetSourcePath() + "PathHelper.cpp+", notOnClient, uniqueWorkers);
 	pl->Load(path.GetSourcePath() + "MCSelector.C+", notOnClient, uniqueWorkers);
 
 	MCSelector *sel = new MCSelector(); // This is my custom selector class
 	//Set Custom InputParameter (not used for now)
 	pl->SetParameter("outputpath", (TString)path.GetOutputFilePath());
-	TH1F* h_Gen = histhelper.Get1DHisto(genvar);
-	pl->AddInput(h_Gen);
+	pl->SetParameter("PROOF_StatsHist", "");
+	pl->SetParameter("PROOF_StatsTrace", "");
+	pl->SetParameter("PROOF_SlaveStatsTrace", "");
+	// TH1F* h_Gen = histhelper.Get1DHisto(genvar);
+	// pl->AddInput(h_Gen);
 	//Process Chains
 	//Data
 	int nVariation = 0;
 	for (auto& chain : DataChains) {
 		chain->SetProof();
 		chain->Process(sel, "data_" + TString(variation.at(nVariation)));
-		pl->ClearCache();
+		// pl->ClearCache();
 		nVariation += 1;
 		delete chain;
 	}
@@ -308,7 +312,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 	for (auto& chain : SignalChains) {
 		chain->SetProof();
 		chain->Process(sel, "signal_" + TString(variation.at(nVariation)));
-		pl->ClearCache();
+		// pl->ClearCache();
 		nVariation += 1;
 		delete chain;
 	}
@@ -319,7 +323,7 @@ void HistMaker::FillHistos(std::vector<TChain*> SignalChains, std::vector<TChain
 		for (auto& chain : varchains) {
 			chain->SetProof();
 			chain->Process(sel, TString(bkgnames.at(j)) + "_" + variation.at(nVariation));
-			pl->ClearCache();
+			// pl->ClearCache();
 			delete chain;
 			j += 1;
 		}

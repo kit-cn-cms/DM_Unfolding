@@ -63,7 +63,16 @@ MCSelector::Init(TTree* tree)
   // (once per file to be processed).
   // tree->Print();
   fReader.SetTree(tree);
-  // tree->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET, &BrDeltaPhi_Jet_MET);
+  tree->SetBranchAddress("DeltaPhi_Jet_MET", &varDeltaPhi_Jet_MET, &BrDeltaPhi_Jet_MET);
+  tree->SetBranchAddress("Jet_Pt", &varJet_Pt, &BrJet_Pt);
+  tree->SetBranchAddress("Jet_Eta", &varJet_Eta, &BrJet_Eta);
+  tree->SetBranchAddress("Jet_Phi", &varJet_Phi, &BrJet_Phi);
+  tree->SetBranchAddress("Jet_Chf", &varJet_CHS, &BrJet_CHS);
+  tree->SetBranchAddress("Jet_Nhf", &varJet_NHF, &BrJet_NHF);
+
+  tree->SetBranchAddress("Jet_PtAK8", &varAK8Jet_Pt, &BrAK8Jet_Pt);
+  tree->SetBranchAddress("Jet_EtaAK8", &varAK8Jet_Eta, &BrAK8Jet_Eta);
+  tree->SetBranchAddress("Jet_PhiAK8", &varAK8Jet_Phi, &BrAK8Jet_Phi);
 }
 
 Bool_t
@@ -403,12 +412,12 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Jet_Phi = new TH1F(strippedOption + "Jet_Phi" + currentJESJERvar, "Jet_Phi", 20, -3.2, 3.2);
   h_Jet_Phi->Sumw2();
   GetOutputList()->Add(h_Jet_Phi);
-  bookSysHistosequBins(h_Jet_PhiSys, strippedOption + "Jet_Phi_" , "Jet_Phi", 20, -3.2, 3.2);
+  bookSysHistosequBins(h_Jet_PhiSys, strippedOption + "Jet_Phi" , "Jet_Phi", 20, -3.2, 3.2);
 
-  h_Jet_Phi_0 = new TH1F(strippedOption + "Jet_Phi_0_" + currentJESJERvar, "Jet_Phi_0", 20, -3.2, 3.2);
+  h_Jet_Phi_0 = new TH1F(strippedOption + "Jet_Phi_0" + currentJESJERvar, "Jet_Phi_0", 20, -3.2, 3.2);
   h_Jet_Phi_0->Sumw2();
   GetOutputList()->Add(h_Jet_Phi_0);
-  bookSysHistosequBins(h_Jet_Phi_0Sys, strippedOption + "Jet_Phi_0_" , "Jet_Phi_0", 20, -3.2, 3.2);
+  bookSysHistosequBins(h_Jet_Phi_0Sys, strippedOption + "Jet_Phi_0" , "Jet_Phi_0", 20, -3.2, 3.2);
 
   h_Jet_Pt_0 = new TH1F(strippedOption + "Jet_Pt_0" + currentJESJERvar, "Jet_Pt_0", 20, 0, 500);
   h_Jet_Pt_0->Sumw2();
@@ -423,27 +432,43 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_Jet_PtAK8 = new TH1F(strippedOption + "Jet_PtAK8" + currentJESJERvar, "Jet_PtAK8", 60, 0, 1200);
   h_Jet_PtAK8->Sumw2();
   GetOutputList()->Add(h_Jet_PtAK8);
-  bookSysHistosequBins(h_Jet_PtAK8Sys, strippedOption + "Jet_PtAK8_" , "Jet_PtAK8", 60, 0, 1200);
+  bookSysHistosequBins(h_Jet_PtAK8Sys, strippedOption + "Jet_PtAK8" , "Jet_PtAK8", 60, 0, 1200);
 
   h_Jet_EtaAK8 = new TH1F(strippedOption + "Jet_EtaAK8" + currentJESJERvar, "Jet_EtaAK8", 30, -3, 3);
   h_Jet_EtaAK8->Sumw2();
   GetOutputList()->Add(h_Jet_EtaAK8);
-  bookSysHistosequBins(h_Jet_EtaAK8Sys, strippedOption + "Jet_EtaAK8_" , "Jet_EtaAK8", 30, -3, 3);
+  bookSysHistosequBins(h_Jet_EtaAK8Sys, strippedOption + "Jet_EtaAK8" , "Jet_EtaAK8", 30, -3, 3);
 
   h_Jet_PhiAK8 = new TH1F(strippedOption + "Jet_PhiAK8" + currentJESJERvar, "Jet_PhiAK8", 20, -3.2, 3.2);
   h_Jet_PhiAK8->Sumw2();
   GetOutputList()->Add(h_Jet_PhiAK8);
-  bookSysHistosequBins(h_Jet_PhiAK8Sys, strippedOption + "Jet_PhiAK8_" , "Jet_PhiAK8", 20, -3.2, 3.2);
+  bookSysHistosequBins(h_Jet_PhiAK8Sys, strippedOption + "Jet_PhiAK8" , "Jet_PhiAK8", 20, -3.2, 3.2);
+
+  h_Jet_PhiAK8_0 = new TH1F(strippedOption + "Jet_PhiAK8_0" + currentJESJERvar, "Jet_PhiAK8_0", 20, -3.2, 3.2);
+  h_Jet_PhiAK8_0->Sumw2();
+  GetOutputList()->Add(h_Jet_PhiAK8_0);
+  bookSysHistosequBins(h_Jet_PhiAK8_0Sys, strippedOption + "Jet_PhiAK8_0" , "Jet_PhiAK8_0", 20, -3.2, 3.2);
+
+  h_Jet_PtAK8_0 = new TH1F(strippedOption + "Jet_PtAK8_0" + currentJESJERvar, "Jet_PtAK8_0", 60, 0, 1200);
+  h_Jet_PtAK8_0->Sumw2();
+  GetOutputList()->Add(h_Jet_PtAK8_0);
+  bookSysHistosequBins(h_Jet_PtAK8_0Sys, strippedOption + "Jet_PtAK8_0_" , "Jet_PtAK8_0", 60, 0, 1200);
+
+  h_Jet_EtaAK8_0 = new TH1F(strippedOption + "Jet_EtaAK8_0" + currentJESJERvar, "Jet_EtaAK8_0", 30, -3, 3);
+  h_Jet_EtaAK8_0->Sumw2();
+  GetOutputList()->Add(h_Jet_EtaAK8_0);
+  bookSysHistosequBins(h_Jet_EtaAK8_0Sys, strippedOption + "Jet_EtaAK8_0_" , "Jet_EtaAK8_0", 30, -3, 3);
+
 
   h_Jet_Chf = new TH1F(strippedOption + "Jet_Chf" + currentJESJERvar, "Jet_Chf", 20, 0, 1);
   h_Jet_Chf->Sumw2();
   GetOutputList()->Add(h_Jet_Chf);
-  bookSysHistosequBins(h_Jet_ChfSys, strippedOption + "Jet_Chf_" , "Jet_Chf", 20, 0, 1);
+  bookSysHistosequBins(h_Jet_ChfSys, strippedOption + "Jet_Chf" , "Jet_Chf", 20, 0, 1);
 
   h_Jet_Nhf = new TH1F(strippedOption + "Jet_Nhf" + currentJESJERvar, "Jet_Nhf", 20, 0, 1);
   h_Jet_Nhf->Sumw2();
   GetOutputList()->Add(h_Jet_Nhf);
-  bookSysHistosequBins(h_Jet_NhfSys, strippedOption + "Jet_Nhf_" , "Jet_Nhf", 20, 0, 1);
+  bookSysHistosequBins(h_Jet_NhfSys, strippedOption + "Jet_Nhf" , "Jet_Nhf", 20, 0, 1);
 
   h_CaloMET = new TH1F(strippedOption + "CaloMET" + currentJESJERvar, "CaloMET", nBins_Reco, BinEdgesReco.data());
   h_CaloMET->Sumw2();
@@ -459,10 +484,6 @@ MCSelector::SlaveBegin(TTree* /*tree*/)
   h_dPhi_Jet_MET->Sumw2();
   GetOutputList()->Add(h_dPhi_Jet_MET);
   bookSysHistosequBins(h_dPhi_Jet_METSys, strippedOption + "dPhi_Jet_MET" , "dPhi_Jet_MET",  32, 0, 3.2);
-
-  TH1F* h_dPhi_Jet_MET = 0;
-  std::map<std::string, TH1F*> h_dPhi_Jet_METSys;
-
 
   std::cout << "All Histos SetUp!" << std::endl;
 }
@@ -488,7 +509,18 @@ MCSelector::Process(Long64_t entry)
   TString option = GetOption();
   fReader.SetLocalEntry(entry);
 
-  // BrDeltaPhi_Jet_MET->GetEntry(entry);
+  BrDeltaPhi_Jet_MET->GetEntry(entry);
+
+  BrJet_Pt->GetEntry(entry);
+  BrJet_Eta->GetEntry(entry);
+  BrJet_Phi->GetEntry(entry);
+  BrJet_CHS->GetEntry(entry);
+  BrJet_NHF->GetEntry(entry);
+
+  BrAK8Jet_Pt->GetEntry(entry);
+  BrAK8Jet_Eta->GetEntry(entry);
+  BrAK8Jet_Phi->GetEntry(entry);
+
   //////////////////////
   // Add weights here!!//
   //////////////////////
@@ -642,12 +674,6 @@ MCSelector::Process(Long64_t entry)
     h_N_looseLeptons->Fill(*N_LooseLeptons, weight_);
     fillSys(h_N_looseLeptonsSys, *N_LooseLeptons);
 
-    h_Jet_Pt->Fill(*Jet_Pt, weight_);
-    fillSys(h_Jet_PtSys, *Jet_Pt);
-
-    h_Jet_Eta->Fill(*Jet_Eta, weight_);
-    fillSys(h_Jet_EtaSys, *Jet_Eta);
-
     h_Evt_Phi_MET->Fill(*Evt_Phi_MET, weight_);
     fillSys(h_Evt_Phi_METSys, *Evt_Phi_MET);
 
@@ -678,30 +704,23 @@ MCSelector::Process(Long64_t entry)
     h_GenHadrRecoil_Phi->Fill(*Gen_Hadr_Recoil_Phi, weight_);
     fillSys(h_GenHadrRecoil_PhiSys, *Gen_Hadr_Recoil_Phi);
 
-    h_Jet_Phi->Fill(*Jet_Phi, weight_);
-    fillSys(h_Jet_PhiSys, *Jet_Phi);
+    h_Jet_Pt_0->Fill(varJet_Pt[0], weight_);
+    fillSys(h_Jet_Pt_0Sys, varJet_Pt[0]);
 
-    h_Jet_PtAK8->Fill(*Jet_PtAK8, weight_);
-    fillSys(h_Jet_PtAK8Sys, *Jet_PtAK8);
+    h_Jet_Eta_0->Fill(varJet_Eta[0], weight_);
+    fillSys(h_Jet_Eta_0Sys, varJet_Eta[0]);
 
-    h_Jet_EtaAK8->Fill(*Jet_EtaAK8, weight_);
-    fillSys(h_Jet_EtaAK8Sys, *Jet_EtaAK8);
+    h_Jet_Phi_0->Fill(varJet_Phi[0], weight_);
+    fillSys(h_Jet_Phi_0Sys, varJet_Phi[0]);
 
-    h_Jet_PhiAK8->Fill(*Jet_PhiAK8, weight_);
-    fillSys(h_Jet_PhiAK8Sys, *Jet_PhiAK8);
+    h_Jet_PtAK8_0->Fill(varAK8Jet_Pt[0], weight_);
+    fillSys(h_Jet_PtAK8_0Sys, varAK8Jet_Pt[0]);
 
-    h_Jet_Chf->Fill(*Jet_Chf, weight_);
-    fillSys(h_Jet_ChfSys, *Jet_Chf);
+    h_Jet_EtaAK8_0->Fill(varAK8Jet_Eta[0], weight_);
+    fillSys(h_Jet_EtaAK8_0Sys, varAK8Jet_Eta[0]);
 
-    h_Jet_Nhf->Fill(*Jet_Nhf, weight_);
-    fillSys(h_Jet_NhfSys, *Jet_Nhf);
-
-    // TH1F* h_Jet_Pt_0 = 0;
-    // std::map<std::string, TH1F*> h_Jet_Pt_0Sys;
-    // TH1F* h_Jet_Eta_0 = 0;
-    // std::map<std::string, TH1F*> h_Jet_Eta_0Sys;
-    // TH1F* h_Jet_Phi_0 = 0;
-    // std::map<std::string, TH1F*> h_Jet_Phi_0Sys;
+    h_Jet_PhiAK8_0->Fill(varAK8Jet_Phi[0], weight_);
+    fillSys(h_Jet_PhiAK8_0Sys, varAK8Jet_Phi[0]);
 
     h_CaloMET->Fill(*CaloMET, weight_);
     fillSys(h_CaloMETSys, *CaloMET);
@@ -709,8 +728,39 @@ MCSelector::Process(Long64_t entry)
     h_CaloMET_PFMET_ratio->Fill(*CaloMET_PFMET_ratio, weight_);
     fillSys(h_CaloMET_PFMET_ratioSys, *CaloMET_PFMET_ratio);
 
-    h_dPhi_Jet_MET->Fill(*DeltaPhi_Jet_MET, weight_);
-    fillSys(h_dPhi_Jet_METSys, *DeltaPhi_Jet_MET);
+    for (uint i = 0; i < *N_Jets; i++) {
+      h_dPhi_Jet_MET->Fill(varDeltaPhi_Jet_MET[i], weight_);
+      fillSys(h_dPhi_Jet_METSys, varDeltaPhi_Jet_MET[i]);
+
+      h_Jet_Pt->Fill(varJet_Pt[i], weight_);
+      fillSys(h_Jet_PtSys, varJet_Pt[i]);
+
+      h_Jet_Eta->Fill(varJet_Eta[i], weight_);
+      fillSys(h_Jet_EtaSys, varJet_Eta[i]);
+
+      h_Jet_Phi->Fill(varJet_Phi[i], weight_);
+      fillSys(h_Jet_PhiSys, varJet_Phi[i]);
+
+      h_Jet_Chf->Fill(varJet_CHS[i], weight_);
+      fillSys(h_Jet_ChfSys, varJet_CHS[i]);
+
+      h_Jet_Nhf->Fill(varJet_NHF[i], weight_);
+      fillSys(h_Jet_NhfSys, varJet_NHF[i]);
+    }
+
+
+    for (uint i = 0; i < *N_JetsAK8; i++) {
+      h_Jet_PtAK8->Fill(varAK8Jet_Pt[i], weight_);
+      fillSys(h_Jet_PtAK8Sys, varAK8Jet_Pt[i]);
+
+      h_Jet_EtaAK8->Fill(varAK8Jet_Eta[i], weight_);
+      fillSys(h_Jet_EtaAK8Sys, varAK8Jet_Eta[i]);
+
+      h_Jet_PhiAK8->Fill(varAK8Jet_Phi[i], weight_);
+      fillSys(h_Jet_PhiAK8Sys, varAK8Jet_Phi[i]);
+
+
+    }
 
     if (isPseudoData) {
       h_RecoSplit->Fill(recoVariable, weight_);

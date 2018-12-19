@@ -2,6 +2,9 @@ import ROOT as r
 import os
 import array
 import subprocess
+import json
+
+r.gROOT.SetBatch(True)
 
 def getCanvas():
     c = r.TCanvas("c", "c", 1024, 1024)
@@ -156,6 +159,8 @@ def calcNormFactor(chain, variableName="Gen_Hadr_Recoil_Pt", samplename="qcd", i
 
     weights = {"muRUp": muRUpWeight, "muRDown": muRDownWeight,
                "muFUp": muFUpWeight, "muFDown": muFDownWeight}
+    with open('muRmuFWeights.json', 'a') as fp:
+        json.dump({samplename: weights}, fp, sort_keys=True, indent=4)
     return weights
 
 
@@ -212,7 +217,7 @@ subprocess.call("cp /nfs/dust/cms/user/swieland/Darkmatter/DM_Unfolding/rootfile
 r.ROOT.EnableImplicitMT()
 
 
-path = "/nfs/dust/cms/user/swieland/Darkmatter/ntuples_tagging"
+path = "/nfs/dust/cms/user/swieland/Darkmatter/ntuples_cr_tagging"
 
 # qcd
 qcdBins = [
@@ -277,8 +282,12 @@ ttbarChain = createChain(Bins=ttbarBins, commonpath=path)
 ttbarweights = calcNormFactor(chain=ttbarChain, samplename="ttbar")
 scaleHistos(processname="ttbar", variableName="Gen_Hadr_Recoil_Pt", weights=ttbarweights, generatorLabel="powheg")
 
-# # signals
-# signalSamplepath = "/nfs/dust/cms/user/swieland/Darkmatter/ntUples_signal_madgraph_tagging"
+# signals
+# signalSamplepath = "/nfs/dust/cms/user/swieland/Darkmatter/ntuples_signal_madgraph_tagging"
+# axialsamples = []
+# vectorsamples = []
+# pseudosamples = []
+# scalarsamples = []
 
 # listnames = ["Axial", "Vector", "Pseudo", "Scalar"]
 # lists = [axialsamples, vectorsamples, pseudosamples, scalarsamples]

@@ -7,6 +7,8 @@
 #include "TCanvas.h"
 #include "TH2D.h"
 #include <TString.h>
+#include <TPaveText.h>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -78,6 +80,12 @@ std::tuple<int , TSpline*, TGraph*> Unfolder::FindBestTau(TUnfoldDensity* unfold
 	bestRhoLogTau->SetMarkerColor(kRed);
 	bestRhoLogTau->Draw("*");
 	scanResult->Draw("same");
+
+	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
+	pt->AddText("CMS #it{private work}");
+	pt->SetFillColor(kWhite);
+	pt->SetTextSize(0.055);
+	pt->Draw("SAME");
 
 	gPad->Update();
 	tau->SaveAs(path.GetPdfPath() + "tau_" + name + ".pdf");
@@ -166,6 +174,13 @@ std::tuple<int , TGraph*> Unfolder::FindBestTauLcurve(TUnfoldDensity* unfold, TS
 	lCurve->GetYaxis()->SetLabelSize(0.05);
 	bestLcurve->SetMarkerColor(kRed);
 	bestLcurve->Draw("*");
+
+	TPaveText *pt = new TPaveText(0.2, .95, 0.9, 0.99, "blNDC");
+	pt->AddText("CMS #it{private work}");
+	pt->SetFillColor(kWhite);
+	pt->SetTextSize(0.055);
+	pt->Draw("SAME");
+
 	clCurve->SaveAs(path.GetPdfPath() + "LCurve_" + name + ".pdf");
 	clCurve->SaveAs(path.GetPdfPath() +  "../pngs/LCurve_" + name + ".png");
 
