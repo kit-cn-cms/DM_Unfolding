@@ -124,9 +124,9 @@ void UnfoldWrapper::DoIt() {
 	if (doRhoScan) Unfolder.FindBestTau(unfold, label);
 
 	//drop regularization
-	// unfold->DoUnfold(0.0);
+	unfold->DoUnfold(0.0);
 	// Unfolder.FindBestTauLcurve(unfold, label);
-	Unfolder.FindBestTau(unfold, label);
+	// Unfolder.FindBestTau(unfold, label);
 
 
 // Get Output
