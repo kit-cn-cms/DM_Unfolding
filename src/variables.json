@@ -1,0 +1,26 @@
+{
+	"Evt_Pt_MET" : 
+	{
+		"laTeX" : "#vec{E}_{T} [GeV]",
+		"xmin" : 0,
+		"xmax" : 1200,
+		"nBins": 50
+	},
+
+	"Evt_Phi_MET" : 
+	{
+		"laTeX" : "#Phi",
+		"xmin" : -4,
+		"xmax" : 4,
+		"nBins": 50
+	},
+
+	"N_Jets" : 
+	{
+		"laTeX" : "# Jets",
+		"xmin" : 0,
+		"xmax" : 10,
+		"nBins": 10
+	}
+
+}
